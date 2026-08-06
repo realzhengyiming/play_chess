@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>家具空间棋 · 家具偏好配置中心</title>
+  <style>
+    :root{color-scheme:light;--ink:#18231f;--muted:#69736f;--paper:#f5f3ec;--panel:rgba(255,255,255,.9);--line:#d9ddd7;--accent:#ff5b38;--green:#126c5c;--blue:#376f9e;--shadow:0 18px 48px rgba(40,50,45,.09);--radius:20px}
+    *{box-sizing:border-box}body{margin:0;min-width:320px;color:var(--ink);background:radial-gradient(circle at 12% 8%,rgba(255,91,56,.09),transparent 25rem),radial-gradient(circle at 88% 5%,rgba(18,108,92,.08),transparent 28rem),var(--paper);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+    button,input,select,textarea{font:inherit}button{color:inherit}.shell{width:min(1500px,calc(100% - 28px));margin:0 auto;padding:24px 0 42px}header{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:10px 4px 22px}.eyebrow{margin:0 0 8px;color:var(--green);font-size:12px;font-weight:800;letter-spacing:.15em}.title{margin:0;font-size:clamp(30px,4vw,52px);line-height:1;letter-spacing:-.05em}.header-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 13px;border:1px solid var(--line);border-radius:12px;background:white;color:var(--ink);font-size:12px;font-weight:750;text-decoration:none;cursor:pointer}.btn.primary{border-color:var(--accent);color:white;background:var(--accent)}.btn.green{border-color:var(--green);color:white;background:var(--green)}.btn.danger{color:#a13c30}.workspace{display:grid;grid-template-columns:290px minmax(0,1fr) 390px;gap:15px;align-items:start}.panel{border:1px solid rgba(24,35,31,.08);border-radius:var(--radius);background:var(--panel);box-shadow:var(--shadow);overflow:hidden}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 17px;border-bottom:1px solid var(--line)}.panel-head h2{margin:0;font-size:14px}.kicker{color:var(--muted);font-size:10px;font-weight:750}.panel-body{padding:16px}.filters{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}.field{display:grid;gap:5px}.field label,.field>span{color:var(--muted);font-size:10px;font-weight:750}.field input,.field select,.field textarea{width:100%;min-width:0;border:1px solid var(--line);border-radius:9px;color:var(--ink);background:white;outline:none}.field input,.field select{height:36px;padding:0 9px}.field textarea{min-height:74px;padding:9px;resize:vertical}.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(18,108,92,.09)}.rule-list{display:grid;gap:6px;max-height:710px;overflow:auto;overscroll-behavior:contain}.rule-item{display:grid;grid-template-columns:10px 1fr auto;align-items:center;gap:9px;width:100%;padding:9px;border:1px solid transparent;border-radius:11px;background:transparent;text-align:left;cursor:pointer}.rule-item:hover{background:#f3f5f1}.rule-item.active{border-color:rgba(18,108,92,.26);background:#edf5f1}.dot{width:9px;height:9px;border-radius:3px;background:var(--green)}.rule-item strong{display:block;font-size:12px}.rule-item small{display:block;margin-top:2px;color:var(--muted);font-size:9px}.rule-item code{color:var(--muted);font-size:9px}.editor{display:grid;gap:16px}.group{padding-bottom:16px;border-bottom:1px solid var(--line)}.group:last-child{border-bottom:0;padding-bottom:0}.group h3{margin:0 0 11px;font-size:12px;color:var(--green)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}.check{display:flex;align-items:center;gap:8px;min-height:36px;color:var(--ink);font-size:11px;font-weight:700}.check input{accent-color:var(--green)}.editor-actions{position:sticky;bottom:0;display:flex;flex-wrap:wrap;gap:8px;padding:13px 16px;border-top:1px solid var(--line);background:rgba(255,255,255,.96)}.preview-wrap{display:grid;gap:13px}.preview{position:relative;height:260px;border-radius:15px;background:linear-gradient(90deg,rgba(24,35,31,.035) 1px,transparent 1px),linear-gradient(rgba(24,35,31,.035) 1px,transparent 1px),#fbfaf5;background-size:24px 24px;overflow:hidden}.preview svg{display:block;width:100%;height:100%}.legend{display:flex;flex-wrap:wrap;gap:9px 14px;color:var(--muted);font-size:10px}.legend span{display:flex;align-items:center;gap:6px}.legend i{display:inline-block;width:15px;height:9px;border-radius:3px}.json{max-height:370px;margin:0;padding:13px;border-radius:13px;color:#dfece7;background:#1d2925;font:11px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre-wrap;overflow:auto}.status{min-height:36px;padding:9px 11px;border-radius:10px;color:var(--muted);background:#f0f2ee;font-size:10px;line-height:1.5}.status.ok{color:var(--green);background:#edf5f1}.status.error{color:#a13c30;background:#fff0ec}.schema-note{margin:0;color:var(--muted);font-size:10px;line-height:1.65}.hidden{display:none!important}
+    @media(max-width:1120px){.workspace{grid-template-columns:260px minmax(0,1fr)}.preview-panel{grid-column:1/-1}.preview-wrap{grid-template-columns:minmax(0,1fr) minmax(320px,.8fr);align-items:start}}
+    @media(max-width:760px){.shell{width:min(100% - 16px,1500px);padding-top:10px}header{align-items:flex-start;flex-direction:column}.header-actions{justify-content:flex-start}.workspace{grid-template-columns:1fr}.rule-list{max-height:320px}.preview-wrap{grid-template-columns:1fr}.grid,.grid.three{grid-template-columns:1fr 1fr}.editor-actions{position:static}}
+    @media(max-width:470px){.grid,.grid.three,.filters{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div><p class="eyebrow">ROOM / CHESS ENGINE · FURNITURE CATALOG</p><h1 class="title">家具偏好配置中心</h1></div>
+      <div class="header-actions">
+        <a class="btn" href="bedroom-space-chess-V3.html">返回空间棋 Demo</a>
+        <button class="btn primary" id="newBtn" type="button">＋ 添加家具</button>
+        <button class="btn" id="duplicateBtn" type="button">复制家具</button>
+        <label class="btn" for="importFile">导入 JSON</label><input class="hidden" id="importFile" type="file" accept="application/json,.json" />
+        <button class="btn green" id="exportBtn" type="button">导出规则库</button>
+        <button class="btn" id="restoreDefaultsBtn" type="button">恢复基础配置</button>
+      </div>
+    </header>
+
+    <section class="workspace">
+      <aside class="panel">
+        <div class="panel-head"><h2>规则目录</h2><span class="kicker" id="catalogCount"></span></div>
+        <div class="panel-body">
+          <div class="filters">
+            <div class="field"><label for="programFilter">房间</label><select id="programFilter"><option value="all">全部</option><option value="bedroom">卧室</option><option value="living">客厅</option><option value="shared">通用</option></select></div>
+            <div class="field"><label for="searchInput">搜索</label><input id="searchInput" type="search" placeholder="名称或 ID" /></div>
+          </div>
+          <div class="rule-list" id="ruleList"></div>
+        </div>
+      </aside>
+
+      <section class="panel">
+        <div class="panel-head"><h2>规则字段</h2><span class="kicker">修改后点击保存</span></div>
+        <form class="panel-body editor" id="ruleForm">
+          <section class="group">
+            <h3>1 · 家具身份、尺寸与数量</h3>
+            <div class="grid three">
+              <div class="field"><label for="ruleId">类型 ID</label><input id="ruleId" name="id" required pattern="[A-Za-z][A-Za-z0-9_-]*" /></div>
+              <div class="field"><label for="ruleLabel">显示名称</label><input id="ruleLabel" name="label" required /></div>
+              <div class="field"><label for="ruleProgram">适用房间</label><select id="ruleProgram" name="program"><option value="bedroom">卧室</option><option value="living">客厅</option><option value="shared">通用</option></select></div>
+              <div class="field"><label for="ruleCategory">家具分类</label><input id="ruleCategory" name="category" /></div>
+              <div class="field"><label for="ruleRole">功能角色</label><input id="ruleRole" name="role" /></div>
+              <div class="field"><label for="ruleColor">显示颜色</label><input id="ruleColor" name="color" type="color" /></div>
+            </div>
+            <div class="grid three" style="margin-top:10px">
+              <div class="field"><label for="width">宽度 m</label><input id="width" name="width" type="number" min="0.1" max="8" step="0.01" /></div>
+              <div class="field"><label for="depth">深度 m</label><input id="depth" name="depth" type="number" min="0.1" max="5" step="0.01" /></div>
+              <div class="field"><label for="shape">实体形状</label><select id="shape" name="shape"><option value="box">Box</option><option value="l-left">左贵妃 L 形</option><option value="l-right">右贵妃 L 形</option></select></div>
+              <div class="field"><label for="minCount">最少数量</label><input id="minCount" name="minCount" type="number" min="0" max="20" step="1" /></div>
+              <div class="field"><label for="maxCount">最多数量</label><input id="maxCount" name="maxCount" type="number" min="0" max="20" step="1" /></div>
+              <div class="field"><label for="defaultCount">默认数量 / 搜索上限</label><input id="defaultCount" name="defaultCount" type="number" min="0" max="20" step="1" /></div>
+              <label class="check"><input id="accessTarget" name="accessTarget" type="checkbox" />入口必须可达</label>
+            </div>
+          </section>
+
+          <section class="group">
+            <h3>2 · 偏好与搜索顺序</h3>
+            <div class="grid three">
+              <div class="field"><label for="preferenceWeight">选用偏好（1 为中性）</label><input id="preferenceWeight" name="preferenceWeight" type="number" min="0" max="3" step="0.1" /></div>
+              <div class="field"><label for="placementPriority">摆放优先级（小数先下）</label><input id="placementPriority" name="placementPriority" type="number" min="1" max="999" step="1" /></div>
+              <div class="field"><span>含义</span><p class="schema-note">偏好越高，合法候选的局部分越高；优先级决定它位于搜索树的第几手。</p></div>
+            </div>
+          </section>
+
+          <section class="group">
+            <h3>3 · 候选点生成</h3>
+            <div class="grid three">
+              <div class="field"><label for="candidateMode">候选生成方式</label><select id="candidateMode" name="candidateMode"><option value="wall">沿墙采样</option><option value="zone">功能区采样</option><option value="corner">角落采样</option><option value="relation">相对家具采样</option></select></div>
+              <div class="field"><label for="requiredAnchor">必须锚定</label><select id="requiredAnchor" name="requiredAnchor"><option value="none">无</option><option value="wall">墙</option><option value="zone">功能区</option><option value="relation">其他家具</option></select></div>
+              <div class="field"><label for="rotations">允许旋转角度</label><input id="rotations" name="rotations" placeholder="0, 90" /></div>
+              <div class="field"><label for="relativeTo">相对家具类型</label><input id="relativeTo" name="relativeTo" placeholder="例如 sofa" /></div>
+              <div class="field"><label for="relation">关系名称</label><input id="relation" name="relation" placeholder="例如 sofa-front" /></div>
+              <div class="field"><label for="relationGap">关系净距 m</label><input id="relationGap" name="relationGap" type="number" min="0" max="5" step="0.01" /></div>
+              <label class="check"><input id="avoidWindow" name="avoidWindow" type="checkbox" />避开窗户</label>
+            </div>
+          </section>
+
+          <section class="group">
+            <h3>4 · 使用区与硬约束</h3>
+            <div class="grid three">
+              <div class="field"><label for="serviceLabel">使用区名称</label><input id="serviceLabel" name="serviceLabel" /></div>
+              <div class="field"><label for="serviceSide">使用区方向</label><select id="serviceSide" name="serviceSide"><option value="front">正面</option><option value="back">背面</option><option value="left">左侧</option><option value="right">右侧</option></select></div>
+              <div class="field"><label for="serviceDepth">使用区深度 m</label><input id="serviceDepth" name="serviceDepth" type="number" min="0" max="3" step="0.01" /></div>
+              <div class="field"><label for="spanExtra">两侧加宽 m</label><input id="spanExtra" name="spanExtra" type="number" min="-1" max="2" step="0.01" /></div>
+              <div class="field"><label for="allowBodyTypes">允许进入的家具</label><input id="allowBodyTypes" name="allowBodyTypes" placeholder="chair, diningChair" /></div>
+              <label class="check"><input id="serviceHard" name="serviceHard" type="checkbox" />硬使用区：被占用即非法</label>
+            </div>
+          </section>
+
+          <section class="group">
+            <h3>5 · 可变长度柜体</h3>
+            <label class="check"><input id="runEnabled" name="runEnabled" type="checkbox" />允许沿剩余墙段连续变长</label>
+            <div class="grid three" id="runFields">
+              <div class="field"><label for="runMin">最小宽度 m</label><input id="runMin" name="runMin" type="number" min="0.1" max="8" step="0.01" /></div>
+              <div class="field"><label for="runMax">最大宽度 m</label><input id="runMax" name="runMax" type="number" min="0.1" max="8" step="0.01" /></div>
+              <div class="field"><label for="runStep">搜索步长 m</label><input id="runStep" name="runStep" type="number" min="0.01" max="1" step="0.01" /></div>
+              <div class="field"><label for="fillMin">墙段填充下限</label><input id="fillMin" name="fillMin" type="number" min="0.1" max="1" step="0.01" /></div>
+              <div class="field"><label for="fillMax">墙段填充上限</label><input id="fillMax" name="fillMax" type="number" min="0.1" max="1" step="0.01" /></div>
+            </div>
+          </section>
+        </form>
+        <div class="editor-actions">
+          <button class="btn primary" id="saveBtn" type="button">保存并应用</button>
+          <button class="btn" id="resetBtn" type="button">恢复未保存值</button>
+          <button class="btn danger" id="deleteBtn" type="button">删除当前规则</button>
+        </div>
+      </section>
+
+      <aside class="panel preview-panel">
+        <div class="panel-head"><h2>实时预览与 JSON</h2><span class="kicker">实体 + 使用区</span></div>
+        <div class="panel-body preview-wrap">
+          <div>
+            <div class="preview"><svg id="previewSvg" viewBox="0 0 360 260" role="img" aria-label="家具实体和使用区预览"></svg></div>
+            <div class="legend" style="margin-top:10px"><span><i style="background:var(--blue)"></i>家具实体</span><span><i style="border:1px dashed var(--accent);background:rgba(255,91,56,.08)"></i>硬使用区</span><span><i style="border:1px dashed var(--green);background:rgba(18,108,92,.06)"></i>软使用区</span></div>
+            <p class="schema-note" style="margin-top:12px">候选生成器读取 <code>candidate.mode</code>；合法性读取 <code>placement</code> 与 <code>service</code>；连续柜体读取 <code>run</code>。新增关系型家具时，还需让主引擎识别对应的关系语义。</p>
+          </div>
+          <div>
+            <div class="status" id="status">修改保存在当前浏览器；由本页打开的空间棋会自动载入。也可导出 JSON 给其他人使用。</div>
+            <pre class="json" id="jsonPreview" aria-label="当前规则 JSON"></pre>
+          </div>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+  (()=>{
+    'use strict';
+    const STORAGE_KEY='room-chess-furniture-rule-catalog-v1';
+    const CORE_IDS=new Set(['bedroom:bed','bedroom:wardrobe','living:sofa','living:tv']);
+    const DEFAULT_COUNTS={bedroom:{bed:1,wardrobe:1,desk:1,vanity:0,chest:0,shelf:0,tvbench:0,bench:0,night:2,chair:1,vanityStool:0,lounge:0,hamper:0},living:{sofa:1,tv:1,coffee:1,diningTable:0,diningChair:0,sideboard:1,bookcase:0,display:0,console:0,arm:2,ottoman:0,side:1,floorLamp:0,plant:0,infillCabinet:1}};
+    const row=(program,id,label,width,depth,category,role,color,rule={})=>({
+      schemaVersion:1,program,id,label,category,role,color,geometry:{width,depth,shape:'box'},quantity:{min:0,max:1},accessTarget:false,
+      preferences:{weight:1},
+      candidate:{mode:rule.requiredAnchor==='wall'?'wall':'zone',rotations:[0,90],relativeTo:'',relation:'',gap:0},
+      placement:{requiredAnchor:rule.requiredAnchor||'none',avoidWindow:!!rule.avoidWindow},
+      service:{label:'日常使用区',side:'front',depth:.42,spanExtra:0,hard:false,allowBodyTypes:[]},
+      ...(rule.patch||{}),run:rule.run||null
+    });
+    const defaults=[
+      row('bedroom','bed','双人床',1.5,2,'核心家具','睡眠核心','#2f6da0',{requiredAnchor:'wall',patch:{quantity:{min:1,max:1},accessTarget:true,service:{label:'床尾活动区',side:'front',depth:.72,spanExtra:.16,hard:false,allowBodyTypes:[]}}}),
+      row('bedroom','wardrobe','衣柜',1.8,.6,'核心家具','衣物收纳','#9b6a46',{requiredAnchor:'wall',avoidWindow:true,run:{min:.9,max:3.2,step:.1,fill:[.72,.96]},patch:{quantity:{min:1,max:1},accessTarget:true,service:{label:'柜门开启区',side:'front',depth:.74,spanExtra:.08,hard:true,allowBodyTypes:[]}}}),
+      row('bedroom','desk','书桌',1.2,.6,'工作与梳妆','工作学习','#2f8a78',{requiredAnchor:'wall',patch:{accessTarget:true,service:{label:'座椅与工作区',side:'front',depth:.72,spanExtra:.1,hard:true,allowBodyTypes:['chair']}}}),
+      row('bedroom','chair','工作椅',.5,.5,'床组与座椅','工作组','#59a391',{patch:{candidate:{mode:'relation',rotations:[0,90],relativeTo:'desk',relation:'desk-front',gap:.32},service:{label:'座椅后退区',side:'back',depth:.48,spanExtra:.1,hard:true,allowBodyTypes:[]}}}),
+      row('bedroom','vanity','梳妆台',1,.45,'工作与梳妆','梳妆','#a66f86',{requiredAnchor:'wall',patch:{accessTarget:true,service:{label:'梳妆操作区',side:'front',depth:.64,spanExtra:.08,hard:true,allowBodyTypes:['vanityStool']}}}),
+      row('bedroom','vanityStool','梳妆凳',.42,.42,'床组与座椅','梳妆组','#b78aa0',{patch:{candidate:{mode:'relation',rotations:[0,90],relativeTo:'vanity',relation:'vanity-seat',gap:.26},service:{label:'坐凳后退区',side:'back',depth:.42,spanExtra:.08,hard:true,allowBodyTypes:[]}}}),
+      row('bedroom','night','床头柜',.45,.45,'床组与座椅','床组','#6a8db2',{patch:{quantity:{min:0,max:2},candidate:{mode:'relation',rotations:[0,90],relativeTo:'bed',relation:'bed-side',gap:.045},service:{label:'抽屉开启区',side:'front',depth:.42,spanExtra:.03,hard:true,allowBodyTypes:[]}}}),
+      row('bedroom','bench','床尾凳',1.1,.4,'床组与座椅','床尾辅助','#6686a2',{patch:{candidate:{mode:'relation',rotations:[0,90],relativeTo:'bed',relation:'bed-foot',gap:.34},service:{label:'床尾坐用区',side:'front',depth:.42,spanExtra:.05,hard:false,allowBodyTypes:[]}}}),
+      row('bedroom','chest','斗柜',1,.45,'收纳家具','叠放收纳','#a47b58',{requiredAnchor:'wall',run:{min:.7,max:1.8,step:.1,fill:[.58,.88]},patch:{quantity:{min:0,max:2},accessTarget:true,service:{label:'抽屉拉出区',side:'front',depth:.66,spanExtra:.06,hard:true,allowBodyTypes:[]}}}),
+      row('bedroom','shelf','书柜',.9,.35,'收纳家具','书物收纳','#6d796f',{requiredAnchor:'wall',avoidWindow:true,run:{min:.7,max:2.4,step:.1,fill:[.62,.92]},patch:{accessTarget:true,service:{label:'取物站立区',side:'front',depth:.58,spanExtra:.06,hard:true,allowBodyTypes:[]}}}),
+      row('bedroom','tvbench','卧室电视柜',1.2,.4,'收纳家具','视听收纳','#505f69',{requiredAnchor:'wall',avoidWindow:true,run:{min:1,max:2.6,step:.1,fill:[.58,.9]},patch:{accessTarget:true,service:{label:'抽屉与设备区',side:'front',depth:.52,spanExtra:.05,hard:true,allowBodyTypes:[]}}}),
+      row('bedroom','lounge','休闲椅',.72,.72,'床组与座椅','阅读休憩','#6b9888',{patch:{quantity:{min:0,max:2},candidate:{mode:'corner',rotations:[0,90],relativeTo:'',relation:'reading-corner',gap:0},service:{label:'休闲椅使用区',side:'front',depth:.56,spanExtra:.1,hard:false,allowBodyTypes:[]}}}),
+      row('bedroom','hamper','洗衣篮',.42,.42,'小件家具','角落收纳','#9b9070',{patch:{candidate:{mode:'corner',rotations:[0,90],relativeTo:'',relation:'utility-corner',gap:0},service:{label:'取放衣物区',side:'front',depth:.3,spanExtra:.04,hard:false,allowBodyTypes:[]}}}),
+      row('living','sofa','沙发',2.2,.9,'会客核心','会客核心','#be633e',{patch:{quantity:{min:1,max:1},accessTarget:true,candidate:{mode:'zone',rotations:[0,90],relativeTo:'',relation:'floating-sofa',gap:0},service:{label:'沙发起坐区',side:'front',depth:.78,spanExtra:.12,hard:false,allowBodyTypes:[]}}}),
+      row('living','tv','电视柜',1.8,.45,'会客核心','视听中心','#34424d',{requiredAnchor:'wall',avoidWindow:true,patch:{quantity:{min:1,max:1},accessTarget:true,candidate:{mode:'relation',rotations:[0,90],relativeTo:'sofa',relation:'sofa-facing',gap:1.55},service:{label:'设备与抽屉区',side:'front',depth:.48,spanExtra:.05,hard:true,allowBodyTypes:[]}}}),
+      row('living','coffee','茶几',1.2,.6,'会客核心','会客中心','#bd9252',{patch:{quantity:{min:1,max:1},candidate:{mode:'relation',rotations:[0,90],relativeTo:'sofa',relation:'sofa-front',gap:.42},service:{label:'茶几取用区',side:'front',depth:.38,spanExtra:.06,hard:false,allowBodyTypes:[]}}}),
+      row('living','arm','单人沙发',.8,.8,'座椅与小件','围合座位','#d7895d',{patch:{quantity:{min:0,max:4},candidate:{mode:'relation',rotations:[0,90],relativeTo:'sofa',relation:'conversation-side',gap:.72},service:{label:'单椅起坐区',side:'front',depth:.56,spanExtra:.1,hard:false,allowBodyTypes:[]}}}),
+      row('living','side','边几',.5,.5,'座椅与小件','沙发组','#79927e',{patch:{quantity:{min:0,max:2},candidate:{mode:'relation',rotations:[0,90],relativeTo:'sofa',relation:'sofa-side',gap:.07},service:{label:'边几取用区',side:'front',depth:.3,spanExtra:.04,hard:false,allowBodyTypes:[]}}}),
+      row('living','ottoman','脚凳',.6,.5,'座椅与小件','弹性座位','#aa7d67',{patch:{quantity:{min:0,max:2},candidate:{mode:'relation',rotations:[0,90],relativeTo:'arm',relation:'seat-ottoman',gap:.34},service:{label:'脚凳使用区',side:'front',depth:.34,spanExtra:.05,hard:false,allowBodyTypes:[]}}}),
+      row('living','diningTable','餐桌',1.4,.8,'客餐家具','客餐厅用餐','#8f704d',{patch:{accessTarget:true,candidate:{mode:'zone',rotations:[0,90],relativeTo:'',relation:'dining-zone',gap:0},service:{label:'餐桌使用区',side:'front',depth:.52,spanExtra:.18,hard:false,allowBodyTypes:[]}}}),
+      row('living','diningChair','餐椅',.46,.5,'客餐家具','餐桌组','#b08a64',{patch:{quantity:{min:0,max:6},candidate:{mode:'relation',rotations:[0,90],relativeTo:'diningTable',relation:'dining-seat',gap:.24},service:{label:'餐椅后退区',side:'back',depth:.5,spanExtra:.1,hard:true,allowBodyTypes:[]}}}),
+      row('living','sideboard','餐边柜',1.6,.45,'沿墙柜体','餐储与台面','#8b6a4e',{requiredAnchor:'wall',run:{min:1,max:3.2,step:.1,fill:[.66,.96]},patch:{quantity:{min:0,max:2},accessTarget:true,service:{label:'柜门与抽屉区',side:'front',depth:.72,spanExtra:.08,hard:true,allowBodyTypes:[]}}}),
+      row('living','bookcase','书柜 / 矮柜',1.2,.35,'沿墙柜体','沿墙收纳','#7b6657',{requiredAnchor:'wall',avoidWindow:true,run:{min:.8,max:2.6,step:.1,fill:[.62,.94]},patch:{quantity:{min:0,max:2},accessTarget:true,service:{label:'取书站立区',side:'front',depth:.58,spanExtra:.06,hard:true,allowBodyTypes:[]}}}),
+      row('living','display','展示柜',.9,.38,'沿墙柜体','陈列收纳','#65736b',{requiredAnchor:'wall',avoidWindow:true,run:{min:.7,max:2,step:.1,fill:[.56,.86]},patch:{quantity:{min:0,max:2},accessTarget:true,service:{label:'柜门开启区',side:'front',depth:.68,spanExtra:.06,hard:true,allowBodyTypes:[]}}}),
+      row('living','console','玄关 / 沙发边柜',1.2,.35,'沿墙柜体','窄型台面','#927a69',{requiredAnchor:'wall',run:{min:.8,max:2.4,step:.1,fill:[.6,.92]},patch:{accessTarget:true,service:{label:'抽屉开启区',side:'front',depth:.56,spanExtra:.05,hard:true,allowBodyTypes:[]}}}),
+      row('living','floorLamp','落地灯',.36,.36,'座椅与小件','座位照明','#c5a968',{patch:{quantity:{min:0,max:2},candidate:{mode:'relation',rotations:[0,90],relativeTo:'arm',relation:'seat-light',gap:.08},service:{label:'灯具维护区',side:'front',depth:.24,spanExtra:.02,hard:false,allowBodyTypes:[]}}}),
+      row('living','plant','绿植',.42,.42,'座椅与小件','角落软装','#5f8b68',{patch:{quantity:{min:0,max:3},candidate:{mode:'corner',rotations:[0,90],relativeTo:'',relation:'corner-accent',gap:0},service:{label:'绿植养护区',side:'front',depth:.24,spanExtra:.02,hard:false,allowBodyTypes:[]}}}),
+      row('living','infillCabinet','拓展填缝定制柜',2.4,.4,'拓展填缝定制柜','末轮墙面补齐','#526f68',{requiredAnchor:'wall',avoidWindow:true,run:{min:1.1,max:5.6,step:.05,fill:[.96,1]},patch:{quantity:{min:0,max:2},accessTarget:true,service:{label:'连续柜门使用区',side:'front',depth:.62,spanExtra:.04,hard:true,allowBodyTypes:[]}}})
+    ];
+
+    const clone=value=>JSON.parse(JSON.stringify(value));
+    let catalog=loadCatalog(),selectedId=catalog[0]?.id||null,original=null;
+    const $=id=>document.getElementById(id),form=$('ruleForm'),status=$('status');
+    const fields=['ruleId','ruleLabel','ruleProgram','ruleCategory','ruleRole','ruleColor','width','depth','shape','minCount','maxCount','defaultCount','preferenceWeight','placementPriority','accessTarget','candidateMode','requiredAnchor','rotations','relativeTo','relation','relationGap','avoidWindow','serviceLabel','serviceSide','serviceDepth','spanExtra','allowBodyTypes','serviceHard','runEnabled','runMin','runMax','runStep','fillMin','fillMax'];
+
+    function normalizeRule(rule,index=0){
+      const value=clone(rule),finite=(input,fallback)=>Number.isFinite(Number(input))?Number(input):fallback,min=Math.max(0,Math.round(finite(value.quantity?.min,0))),max=Math.max(min,Math.round(finite(value.quantity?.max,1)));
+      const defaultCount=DEFAULT_COUNTS[value.program]?.[value.id]??min;
+      value.quantity={min,max};value.preferences={defaultCount:Math.min(max,Math.max(min,Math.round(finite(value.preferences?.defaultCount,defaultCount)))),weight:Math.min(3,Math.max(0,finite(value.preferences?.weight,1))),priority:Math.max(1,Math.round(finite(value.preferences?.priority,(index+1)*10)))};
+      value.geometry=value.geometry||{width:1,depth:.4,shape:'box'};value.candidate=value.candidate||{mode:'wall',rotations:[0,90],relativeTo:'',relation:'',gap:0};value.placement=value.placement||{requiredAnchor:'none',avoidWindow:false};value.service=value.service||{label:'日常使用区',side:'front',depth:.42,spanExtra:0,hard:false,allowBodyTypes:[]};
+      return value;
+    }
+    function normalizeCatalog(rows){return rows.map(normalizeRule)}
+    function loadCatalog(){try{const value=JSON.parse(localStorage.getItem(STORAGE_KEY));if(Array.isArray(value)&&value.length)return normalizeCatalog(value)}catch(error){}return normalizeCatalog(clone(defaults))}
+    function persist(){localStorage.setItem(STORAGE_KEY,JSON.stringify(catalog))}
+    function active(){return catalog.find(rule=>rule.id===selectedId)||catalog[0]}
+    function number(id,fallback=0){const value=Number($(id).value);return Number.isFinite(value)?value:fallback}
+    function splitList(value){return value.split(',').map(row=>row.trim()).filter(Boolean)}
+    function valueFromForm(){
+      const run=$('runEnabled').checked?{min:number('runMin',.8),max:number('runMax',2.4),step:number('runStep',.1),fill:[number('fillMin',.6),number('fillMax',.92)]}:null;
+      return {schemaVersion:1,program:$('ruleProgram').value,id:$('ruleId').value.trim(),label:$('ruleLabel').value.trim(),category:$('ruleCategory').value.trim(),role:$('ruleRole').value.trim(),color:$('ruleColor').value,
+        geometry:{width:number('width',1),depth:number('depth',.4),shape:$('shape').value},quantity:{min:Math.round(number('minCount',0)),max:Math.round(number('maxCount',1))},preferences:{defaultCount:Math.round(number('defaultCount',0)),weight:number('preferenceWeight',1),priority:Math.round(number('placementPriority',100))},accessTarget:$('accessTarget').checked,
+        candidate:{mode:$('candidateMode').value,rotations:splitList($('rotations').value).map(Number).filter(Number.isFinite),relativeTo:$('relativeTo').value.trim(),relation:$('relation').value.trim(),gap:number('relationGap',0)},
+        placement:{requiredAnchor:$('requiredAnchor').value,avoidWindow:$('avoidWindow').checked},
+        service:{label:$('serviceLabel').value.trim(),side:$('serviceSide').value,depth:number('serviceDepth',.42),spanExtra:number('spanExtra',0),hard:$('serviceHard').checked,allowBodyTypes:splitList($('allowBodyTypes').value)},run};
+    }
+    function setForm(rule){
+      original=clone(rule);$('ruleId').value=rule.id;$('ruleLabel').value=rule.label;$('ruleProgram').value=rule.program;$('ruleCategory').value=rule.category;$('ruleRole').value=rule.role;$('ruleColor').value=rule.color||'#376f9e';
+      $('width').value=rule.geometry.width;$('depth').value=rule.geometry.depth;$('shape').value=rule.geometry.shape||'box';$('minCount').value=rule.quantity.min;$('maxCount').value=rule.quantity.max;$('defaultCount').value=rule.preferences?.defaultCount??rule.quantity.min;$('preferenceWeight').value=rule.preferences?.weight??1;$('placementPriority').value=rule.preferences?.priority??100;$('accessTarget').checked=!!rule.accessTarget;
+      $('candidateMode').value=rule.candidate.mode;$('requiredAnchor').value=rule.placement.requiredAnchor||'none';$('rotations').value=(rule.candidate.rotations||[0,90]).join(', ');$('relativeTo').value=rule.candidate.relativeTo||'';$('relation').value=rule.candidate.relation||'';$('relationGap').value=rule.candidate.gap||0;$('avoidWindow').checked=!!rule.placement.avoidWindow;
+      $('serviceLabel').value=rule.service.label;$('serviceSide').value=rule.service.side;$('serviceDepth').value=rule.service.depth;$('spanExtra').value=rule.service.spanExtra||0;$('allowBodyTypes').value=(rule.service.allowBodyTypes||[]).join(', ');$('serviceHard').checked=!!rule.service.hard;
+      $('runEnabled').checked=!!rule.run;$('runMin').value=rule.run?.min??.8;$('runMax').value=rule.run?.max??2.4;$('runStep').value=rule.run?.step??.1;$('fillMin').value=rule.run?.fill?.[0]??.6;$('fillMax').value=rule.run?.fill?.[1]??.92;toggleRun();renderLive();
+    }
+    function validate(rule){
+      const errors=[];
+      if(!/^[A-Za-z][A-Za-z0-9_-]*$/.test(rule.id))errors.push('类型 ID 必须以字母开头，只包含字母、数字、_、-');
+      if(!rule.label)errors.push('缺少显示名称');if(rule.geometry.width<=0||rule.geometry.depth<=0)errors.push('实体宽深必须大于 0');
+      if(CORE_IDS.has(`${rule.program}:${rule.id}`)&&rule.quantity.min<1)errors.push('核心家具的最少数量必须至少为 1');
+      if(rule.quantity.max<rule.quantity.min)errors.push('最多数量不能小于最少数量');if(rule.preferences.defaultCount<rule.quantity.min||rule.preferences.defaultCount>rule.quantity.max)errors.push('默认数量必须在最少和最多数量之间');if(rule.preferences.weight<0||rule.preferences.weight>3)errors.push('选用偏好必须在 0–3 之间');if(rule.preferences.priority<1)errors.push('摆放优先级必须大于 0');if(rule.service.depth<0)errors.push('使用区深度不能为负数');
+      if(rule.candidate.mode==='relation'&&!rule.candidate.relativeTo)errors.push('关系型候选需要填写相对家具类型');
+      if(rule.run&&(rule.run.max<rule.run.min||rule.run.step<=0||rule.run.fill[1]<rule.run.fill[0]))errors.push('连续柜体的范围或填充比例无效');
+      return errors;
+    }
+    function renderList(){
+      const program=$('programFilter').value,query=$('searchInput').value.trim().toLowerCase();
+      const rows=catalog.filter(rule=>(program==='all'||rule.program===program)&&(!query||`${rule.id} ${rule.label} ${rule.category}`.toLowerCase().includes(query)));
+      $('catalogCount').textContent=`${rows.length} / ${catalog.length}`;
+      $('ruleList').innerHTML=rows.sort((a,b)=>(a.preferences?.priority||100)-(b.preferences?.priority||100)).map(rule=>`<button class="rule-item ${rule.id===selectedId?'active':''}" type="button" data-rule-id="${rule.id}" aria-label="编辑 ${rule.label}"><span class="dot" style="background:${rule.color}"></span><span><strong>${rule.label}</strong><small>${rule.category} · 数量 ${rule.quantity.min}–${rule.quantity.max} · 偏好 ${(rule.preferences?.weight??1).toFixed(1)}</small></span><code>${rule.id}</code></button>`).join('')||'<p class="schema-note">没有匹配规则。</p>';
+      $('ruleList').querySelectorAll('[data-rule-id]').forEach(button=>button.addEventListener('click',()=>{selectedId=button.dataset.ruleId;setForm(active());renderList()}));
+    }
+    function toggleRun(){$('runFields').style.opacity=$('runEnabled').checked?'1':'.38';$('runFields').querySelectorAll('input').forEach(input=>input.disabled=!$('runEnabled').checked)}
+    function renderPreview(rule){
+      const svg=$('previewSvg'),W=360,H=260,pad=36,maxW=Math.max(rule.geometry.width,(rule.service.side==='left'||rule.service.side==='right'?rule.geometry.width+rule.service.depth:rule.geometry.width+Math.max(0,rule.service.spanExtra)*2),.5),maxD=Math.max(rule.geometry.depth,(rule.service.side==='front'||rule.service.side==='back'?rule.geometry.depth+rule.service.depth:rule.geometry.depth+Math.max(0,rule.service.spanExtra)*2),.5),scale=Math.min((W-pad*2)/maxW,(H-pad*2)/maxD,120),bw=rule.geometry.width*scale,bd=rule.geometry.depth*scale,cx=W/2,cy=H/2;
+      let sw=(rule.geometry.width+rule.service.spanExtra*2)*scale,sd=rule.service.depth*scale,sx=cx-sw/2,sy=cy+bd/2+4;
+      if(rule.service.side==='back')sy=cy-bd/2-4-sd;if(rule.service.side==='left'||rule.service.side==='right'){sw=rule.service.depth*scale;sd=(rule.geometry.depth+rule.service.spanExtra*2)*scale;sy=cy-sd/2;sx=rule.service.side==='left'?cx-bw/2-4-sw:cx+bw/2+4}
+      const zoneColor=rule.service.hard?'#ff5b38':'#126c5c';
+      svg.innerHTML=`<rect x="${Math.max(4,sx)}" y="${Math.max(4,sy)}" width="${Math.max(2,sw)}" height="${Math.max(2,sd)}" rx="7" fill="${zoneColor}" fill-opacity=".08" stroke="${zoneColor}" stroke-width="2" stroke-dasharray="7 5"/><rect x="${cx-bw/2}" y="${cy-bd/2}" width="${bw}" height="${bd}" rx="9" fill="${rule.color}" stroke="#18231f" stroke-opacity=".55" stroke-width="2"/><line x1="${cx}" y1="${cy}" x2="${cx}" y2="${cy+Math.min(34,bd*.38)}" stroke="white" stroke-width="3"/><text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" fill="white" font-family="system-ui" font-size="13" font-weight="700">${escapeHtml(rule.label||rule.id)}</text><text x="${W/2}" y="${H-13}" text-anchor="middle" fill="#69736f" font-family="system-ui" font-size="11">${rule.geometry.width.toFixed(2)} × ${rule.geometry.depth.toFixed(2)} m · ${rule.service.label||'使用区'} ${rule.service.depth.toFixed(2)} m</text>`;
+    }
+    function escapeHtml(value){return String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))}
+    function renderLive(){const rule=valueFromForm(),errors=validate(rule);$('jsonPreview').textContent=JSON.stringify(rule,null,2);renderPreview(rule);status.className=`status ${errors.length?'error':'ok'}`;status.textContent=errors.length?errors.join('；'):'规则结构有效。保存后进入当前规则库，导出后可交给引擎读取。'}
+    function save(){
+      const rule=valueFromForm(),errors=validate(rule);if(errors.length){renderLive();return}
+      const collision=catalog.find(item=>item.id===rule.id&&item.id!==selectedId);if(collision){status.className='status error';status.textContent=`ID ${rule.id} 已存在`;return}
+      const index=catalog.findIndex(item=>item.id===selectedId);if(index>=0)catalog[index]=rule;else catalog.push(rule);selectedId=rule.id;persist();original=clone(rule);renderList();renderLive();status.className='status ok';status.textContent='已保存并应用。已打开的空间棋页面会自动刷新。';
+    }
+    function createRule(copyCurrent=false){
+      const base=copyCurrent?clone(valueFromForm()):row('shared','newFurniture','新家具',1,.4,'自定义家具','待定义','#376f9e',{});let suffix=1,id=copyCurrent?`${base.id}Copy`:base.id;while(catalog.some(rule=>rule.id===id))id=`${copyCurrent?base.id+'Copy':'newFurniture'}${suffix++}`;base.id=id;base.label=copyCurrent?`${base.label} 副本`:base.label;catalog.push(base);selectedId=id;persist();renderList();setForm(base);status.className='status ok';status.textContent='已新建规则，请完善字段后保存。';
+    }
+    function exportCatalog(){const blob=new Blob([JSON.stringify({schemaVersion:1,exportedAt:new Date().toISOString(),furnitureRules:catalog},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='room-chess-furniture-rules.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),0)}
+    function importCatalog(file){const reader=new FileReader();reader.onload=()=>{try{const parsed=JSON.parse(reader.result),rows=Array.isArray(parsed)?parsed:parsed.furnitureRules;if(!Array.isArray(rows)||!rows.length)throw new Error('没有 furnitureRules 数组');const normalized=normalizeCatalog(rows),invalid=normalized.flatMap((rule,index)=>validate(rule).map(message=>`第 ${index+1} 条：${message}`));if(invalid.length)throw new Error(invalid.slice(0,4).join('；'));catalog=normalized;selectedId=catalog[0].id;persist();renderList();setForm(active());status.className='status ok';status.textContent=`已导入并应用 ${catalog.length} 条规则。`}catch(error){status.className='status error';status.textContent=`导入失败：${error.message}`}};reader.readAsText(file)}
+
+    form.addEventListener('submit',event=>{event.preventDefault();save()});
+    fields.forEach(id=>$(id).addEventListener('input',()=>{if(id==='runEnabled')toggleRun();renderLive()}));
+    $('programFilter').addEventListener('change',renderList);$('searchInput').addEventListener('input',renderList);$('saveBtn').addEventListener('click',save);$('resetBtn').addEventListener('click',()=>setForm(original));$('newBtn').addEventListener('click',()=>createRule(false));$('duplicateBtn').addEventListener('click',()=>createRule(true));$('exportBtn').addEventListener('click',exportCatalog);$('importFile').addEventListener('change',event=>{const file=event.target.files[0];if(file)importCatalog(file);event.target.value=''});
+    $('restoreDefaultsBtn').addEventListener('click',()=>{if(!confirm('恢复基础家具目录？当前浏览器中的自定义家具会被覆盖。'))return;catalog=normalizeCatalog(clone(defaults));selectedId=catalog[0].id;persist();renderList();setForm(active());status.className='status ok';status.textContent='已恢复基础配置并应用。'});
+    $('deleteBtn').addEventListener('click',()=>{const rule=active();if(CORE_IDS.has(`${rule.program}:${rule.id}`)){status.className='status error';status.textContent='床、衣柜、沙发和电视柜是核心家具，不能删除；可修改尺寸和偏好。';return}if(catalog.length<=1){status.className='status error';status.textContent='规则库至少保留一条规则。';return}if(!confirm(`删除“${rule.label}”？`))return;catalog=catalog.filter(item=>item!==rule);selectedId=catalog[0].id;persist();renderList();setForm(active());status.className='status ok';status.textContent='已删除当前家具并应用。'});
+    renderList();setForm(active());
+  })();
+  </script>
+</body>
+</html>

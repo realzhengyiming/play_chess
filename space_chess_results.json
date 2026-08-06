@@ -1,0 +1,1291 @@
+{
+  "bedroom": {
+    "stats": {
+      "program": "bedroom",
+      "grid": [
+        32,
+        31
+      ],
+      "slots": 8,
+      "expanded": 13518,
+      "legal_candidates": 2821,
+      "duplicate_states": 204,
+      "elapsed_ms": 232.42059999029152,
+      "final_beam": 88,
+      "output_count": 8
+    },
+    "layouts": [
+      {
+        "rank": 1,
+        "score": 92.76,
+        "scores": {
+          "feasible": 100.0,
+          "function": 96.4,
+          "circulation": 100.0,
+          "relation": 100.0,
+          "composition": 97.61,
+          "storage": 59.27,
+          "comfort": 100.0,
+          "daylight": 56.93
+        },
+        "hard_pass": true,
+        "actual_count": 3,
+        "density": 0.3509,
+        "furniture": [
+          {
+            "id": "bed",
+            "type": "bed",
+            "label": "床",
+            "variant": "双人床",
+            "x": 2.81,
+            "y": 1.025,
+            "rotation": 0,
+            "width": 1.5,
+            "depth": 2.0,
+            "relation": "wall",
+            "wall_index": 0
+          },
+          {
+            "id": "wardrobe",
+            "type": "wardrobe",
+            "label": "衣柜",
+            "variant": "固定尺寸",
+            "x": 2.316,
+            "y": 3.475,
+            "rotation": 0,
+            "width": 1.8,
+            "depth": 0.6,
+            "relation": "wall",
+            "wall_index": 2
+          },
+          {
+            "id": "desk",
+            "type": "desk",
+            "label": "书桌",
+            "variant": "固定尺寸",
+            "x": 0.325,
+            "y": 1.267,
+            "rotation": 90,
+            "width": 1.2,
+            "depth": 0.6,
+            "relation": "wall",
+            "wall_index": 3
+          }
+        ]
+      },
+      {
+        "rank": 2,
+        "score": 92.63,
+        "scores": {
+          "feasible": 100.0,
+          "function": 96.4,
+          "circulation": 100.0,
+          "relation": 100.0,
+          "composition": 96.3,
+          "storage": 59.27,
+          "comfort": 100.0,
+          "daylight": 59.76
+        },
+        "hard_pass": true,
+        "actual_count": 3,
+        "density": 0.3509,
+        "furniture": [
+          {
+            "id": "bed",
+            "type": "bed",
+            "label": "床",
+            "variant": "双人床",
+            "x": 2.81,
+            "y": 1.025,
+            "rotation": 0,
+            "width": 1.5,
+            "depth": 2.0,
+            "relation": "wall",
+            "wall_index": 0
+          },
+          {
+            "id": "wardrobe",
+            "type": "wardrobe",
+            "label": "衣柜",
+            "variant": "固定尺寸",
+            "x": 2.4,
+            "y": 3.475,
+            "rotation": 0,
+            "width": 1.8,
+            "depth": 0.6,
+            "relation": "wall",
+            "wall_index": 2
+          },
+          {
+            "id": "desk",
+            "type": "desk",
+            "label": "书桌",
+            "variant": "固定尺寸",
+            "x": 0.325,
+            "y": 1.0,
+            "rotation": 90,
+            "width": 1.2,
+            "depth": 0.6,
+            "relation": "wall",
+            "wall_index": 3
+          }
+        ]
+      },
+      {
+        "rank": 3,
+        "score": 92.24,
+        "scores": {
+          "feasible": 100.0,
+          "function": 96.4,
+          "circulation": 100.0,
+          "relation": 100.0,
+          "composition": 93.61,
+          "storage": 59.27,
+          "comfort": 100.0,
+          "daylight": 62.69
+        },
+        "hard_pass": true,
+        "actual_count": 3,
+        "density": 0.3509,
+        "furniture": [
+          {
+            "id": "bed",
+            "type": "bed",
+            "label": "床",
+            "variant": "双人床",
+            "x": 2.81,
+            "y": 1.025,
+            "rotation": 0,
+            "width": 1.5,
+            "depth": 2.0,
+            "relation": "wall",
+            "wall_index": 0
+          },
+          {
+            "id": "wardrobe",
+            "type": "wardrobe",
+            "label": "衣柜",
+            "variant": "固定尺寸",
+            "x": 2.316,
+            "y": 3.475,
+            "rotation": 0,
+            "width": 1.8,
+            "depth": 0.6,
+            "relation": "wall",
+            "wall_index": 2
+          },
+          {
+            "id": "desk",
+            "type": "desk",
+            "label": "书桌",
+            "variant": "固定尺寸",
+            "x": 0.325,
+            "y": 0.64,
+            "rotation": 90,
+            "width": 1.2,
+            "depth": 0.6,
+            "relation": "wall",
+            "wall_index": 3
+          }
+        ]
+      },
+      {
+        "rank": 4,
+        "score": 92.23,
+        "scores": {
+          "feasible": 100.0,
+          "function": 96.4,
+          "circulation": 100.0,
+          "relation": 100.0,
+          "composition": 94.96,
+          "storage": 59.27,
+          "comfort": 100.0,
+          "daylight": 56.93
+        },
+        "hard_pass": true,
+        "actual_count": 3,
+        "density": 0.3509,
+        "furniture": [
+          {
+            "id": "bed",
+            "type": "bed",
+            "label": "床",
+            "variant": "双人床",
+            "x": 2.81,
+            "y": 1.025,
+            "rotation": 0,
+            "width": 1.5,
+            "depth": 2.0,
+            "relation": "wall",
+            "wall_index": 0
+          },
+          {
+            "id": "wardrobe",
+            "type": "wardrobe",
+            "label": "衣柜",
+            "variant": "固定尺寸",
+            "x": 2.66,
+            "y": 3.475,
+            "rotation": 0,
+            "width": 1.8,
+            "depth": 0.6,
+            "relation": "wall",
+            "wall_index": 2
+          },
+          {
+            "id": "desk",
+            "type": "desk",
+            "label": "书桌",
+            "variant": "固定尺寸",
+            "x": 0.325,
+            "y": 1.267,
+            "rotation": 90,
+            "width": 1.2,
+            "depth": 0.6,
+            "relation": "wall",
+            "wall_index": 3
+          }
+        ]
+      },
+      {
+        "rank": 5,
+        "score": 92.18,
+        "scores": {
+          "feasible": 100.0,
+          "function": 100.0,
+          "circulation": 100.0,
+          "relation": 100.0,
+          "composition": 81.28,
+          "storage": 59.27,
+          "comfort": 100.0,
+          "daylight": 100.0
+        },
+        "hard_pass": true,
+        "actual_count": 3,
+        "density": 0.4298,
+        "furniture": [
+          {
+            "id": "bed",
+            "type": "bed",
+            "label": "床",
+            "variant": "单人床",
+            "x": 2.575,
+            "y": 0.64,
+            "rotation": 90,
+            "width": 1.2,
+            "depth": 2.0,
+            "relation": "wall",
+            "wall_index": 1
+          },
+          {
+            "id": "bed2",
+            "type": "bed",
+            "label": "床",
+            "variant": "单人床",
+            "x": 0.64,
+            "y": 1.025,
+            "rotation": 0,
+            "width": 1.2,
+            "depth": 2.0,
+            "relation": "wall",
+            "wall_index": 0
+          },
+          {
+            "id": "wardrobe",
+            "type": "wardrobe",
+            "label": "衣柜",
+            "variant": "固定尺寸",
+            "x": 2.316,
+            "y": 3.475,
+            "rotation": 0,
+            "width": 1.8,
+            "depth": 0.6,
+            "relation": "wall",
+            "wall_index": 2
+          }
+        ]
+      },
+      {
+        "rank": 6,
+        "score": 92.04,
+        "scores": {
+          "feasible": 100.0,
+          "function": 96.4,
+          "circulation": 100.0,
+          "relation": 100.0,
+          "composition": 92.58,
+          "storage": 59.27,
+          "comfort": 100.0,
+          "daylight": 62.69
+        },
+        "hard_pass": true,
+        "actual_count": 3,
+        "density": 0.3509,
+        "furniture": [
+          {
+            "id": "bed",
+            "type": "bed",
+            "label": "床",
+            "variant": "双人床",
+            "x": 2.81,
+            "y": 1.025,
+            "rotation": 0,
+            "width": 1.5,
+            "depth": 2.0,
+            "relation": "wall",
+            "wall_index": 0
+          },
+          {
+            "id": "wardrobe",
+            "type": "wardrobe",
+            "label": "衣柜",
+            "variant": "固定尺寸",
+            "x": 2.66,
+            "y": 3.475,
+            "rotation": 0,
+            "width": 1.8,
+            "depth": 0.6,
+            "relation": "wall",
+            "wall_index": 2
+          },
+          {
+            "id": "desk",
+            "type": "desk",
+            "label": "书桌",
+            "variant": "固定尺寸",
+            "x": 0.325,
+            "y": 0.64,
+            "rotation": 90,
+            "width": 1.2,
+            "depth": 0.6,
+            "relation": "wall",
+            "wall_index": 3
+          }
+        ]
+      },
+      {
+        "rank": 7,
+        "score": 92.04,
+        "scores": {
+          "feasible": 100.0,
+          "function": 100.0,
+          "circulation": 100.0,
+          "relation": 100.0,
+          "composition": 79.24,
+          "storage": 76.65,
+          "comfort": 100.0,
+          "daylight": 70.45
+        },
+        "hard_pass": true,
+        "actual_count": 5,
+        "density": 0.3986,
+        "furniture": [
+          {
+            "id": "bed",
+            "type": "bed",
+            "label": "床",
+            "variant": "双人床",
+            "x": 2.81,
+            "y": 1.025,
+            "rotation": 0,
+            "width": 1.5,
+            "depth": 2.0,
+            "relation": "wall",
+            "wall_index": 0
+          },
+          {
+            "id": "wardrobe",
+            "type": "wardrobe",
+            "label": "衣柜",
+            "variant": "固定尺寸",
+            "x": 2.66,
+            "y": 3.475,
+            "rotation": 0,
+            "width": 1.8,
+            "depth": 0.6,
+            "relation": "wall",
+            "wall_index": 2
+          },
+          {
+            "id": "night2",
+            "type": "night",
+            "label": "床头柜",
+            "variant": "标准床头柜",
+            "x": 1.835,
+            "y": 0.25,
+            "rotation": 0,
+            "width": 0.45,
+            "depth": 0.45,
+            "relation": "bed-side",
+            "wall_index": 0
+          },
+          {
+            "id": "desk",
+            "type": "desk",
+            "label": "书桌",
+            "variant": "固定尺寸",
+            "x": 0.64,
+            "y": 0.325,
+            "rotation": 0,
+            "width": 1.2,
+            "depth": 0.6,
+            "relation": "wall",
+            "wall_index": 0
+          },
+          {
+            "id": "chest",
+            "type": "chest",
+            "label": "斗柜",
+            "variant": "固定尺寸",
+            "x": 0.25,
+            "y": 2.24,
+            "rotation": 90,
+            "width": 1.0,
+            "depth": 0.45,
+            "relation": "wall",
+            "wall_index": 3
+          }
+        ]
+      },
+      {
+        "rank": 8,
+        "score": 92.02,
+        "scores": {
+          "feasible": 100.0,
+          "function": 96.4,
+          "circulation": 100.0,
+          "relation": 100.0,
+          "composition": 88.95,
+          "storage": 59.27,
+          "comfort": 100.0,
+          "daylight": 76.89
+        },
+        "hard_pass": true,
+        "actual_count": 3,
+        "density": 0.3509,
+        "furniture": [
+          {
+            "id": "bed",
+            "type": "bed",
+            "label": "床",
+            "variant": "双人床",
+            "x": 2.81,
+            "y": 1.025,
+            "rotation": 0,
+            "width": 1.5,
+            "depth": 2.0,
+            "relation": "wall",
+            "wall_index": 0
+          },
+          {
+            "id": "wardrobe",
+            "type": "wardrobe",
+            "label": "衣柜",
+            "variant": "固定尺寸",
+            "x": 2.316,
+            "y": 3.475,
+            "rotation": 0,
+            "width": 1.8,
+            "depth": 0.6,
+            "relation": "wall",
+            "wall_index": 2
+          },
+          {
+            "id": "desk",
+            "type": "desk",
+            "label": "书桌",
+            "variant": "固定尺寸",
+            "x": 0.971,
+            "y": 0.325,
+            "rotation": 0,
+            "width": 1.2,
+            "depth": 0.6,
+            "relation": "wall",
+            "wall_index": 0
+          }
+        ]
+      }
+    ]
+  },
+  "living": {
+    "stats": {
+      "program": "living",
+      "grid": [
+        35,
+        40
+      ],
+      "slots": 9,
+      "expanded": 5453,
+      "legal_candidates": 2176,
+      "duplicate_states": 9,
+      "elapsed_ms": 135.5909999983851,
+      "final_beam": 88,
+      "output_count": 8
+    },
+    "layouts": [
+      {
+        "rank": 1,
+        "score": 96.24,
+        "scores": {
+          "feasible": 100.0,
+          "function": 100.0,
+          "circulation": 100.0,
+          "relation": 100.0,
+          "composition": 95.79,
+          "storage": 70.86,
+          "comfort": 100.0,
+          "daylight": 100.0
+        },
+        "hard_pass": true,
+        "actual_count": 6,
+        "density": 0.2693,
+        "furniture": [
+          {
+            "id": "sofa",
+            "type": "sofa",
+            "label": "沙发",
+            "variant": "固定尺寸",
+            "x": 3.66,
+            "y": 0.475,
+            "rotation": 0,
+            "width": 2.2,
+            "depth": 0.9,
+            "relation": "wall",
+            "wall_index": 0
+          },
+          {
+            "id": "tv",
+            "type": "tv",
+            "label": "电视柜",
+            "variant": "固定尺寸",
+            "x": 3.536,
+            "y": 3.95,
+            "rotation": 0,
+            "width": 1.8,
+            "depth": 0.45,
+            "relation": "sofa-facing",
+            "wall_index": 2
+          },
+          {
+            "id": "coffee",
+            "type": "coffee",
+            "label": "茶几",
+            "variant": "固定尺寸",
+            "x": 3.46,
+            "y": 1.645,
+            "rotation": 0,
+            "width": 1.2,
+            "depth": 0.6,
+            "relation": "sofa-front",
+            "wall_index": -1
+          },
+          {
+            "id": "arm2",
+            "type": "arm",
+            "label": "单人沙发",
+            "variant": "固定尺寸",
+            "x": 3.66,
+            "y": 2.375,
+            "rotation": 0,
+            "width": 0.8,
+            "depth": 0.8,
+            "relation": "conversation-opposite",
+            "wall_index": -1
+          },
+          {
+            "id": "sideboard",
+            "type": "sideboard",
+            "label": "餐边柜",
+            "variant": "固定尺寸",
+            "x": 0.25,
+            "y": 2.28,
+            "rotation": 90,
+            "width": 1.6,
+            "depth": 0.45,
+            "relation": "wall",
+            "wall_index": 3
+          },
+          {
+            "id": "infillCabinet",
+            "type": "infillCabinet",
+            "label": "拓展填缝定制柜",
+            "variant": "定制 1.40m",
+            "x": 0.225,
+            "y": 0.745,
+            "rotation": 90,
+            "width": 1.4,
+            "depth": 0.4,
+            "relation": "custom-infill",
+            "wall_index": 3
+          }
+        ]
+      },
+      {
+        "rank": 2,
+        "score": 96.03,
+        "scores": {
+          "feasible": 100.0,
+          "function": 100.0,
+          "circulation": 100.0,
+          "relation": 100.0,
+          "composition": 92.21,
+          "storage": 75.86,
+          "comfort": 100.0,
+          "daylight": 100.0
+        },
+        "hard_pass": true,
+        "actual_count": 6,
+        "density": 0.2763,
+        "furniture": [
+          {
+            "id": "sofa",
+            "type": "sofa",
+            "label": "沙发",
+            "variant": "固定尺寸",
+            "x": 3.66,
+            "y": 0.475,
+            "rotation": 0,
+            "width": 2.2,
+            "depth": 0.9,
+            "relation": "wall",
+            "wall_index": 0
+          },
+          {
+            "id": "tv",
+            "type": "tv",
+            "label": "电视柜",
+            "variant": "固定尺寸",
+            "x": 3.536,
+            "y": 3.95,
+            "rotation": 0,
+            "width": 1.8,
+            "depth": 0.45,
+            "relation": "sofa-facing",
+            "wall_index": 2
+          },
+          {
+            "id": "coffee",
+            "type": "coffee",
+            "label": "茶几",
+            "variant": "固定尺寸",
+            "x": 3.46,
+            "y": 1.645,
+            "rotation": 0,
+            "width": 1.2,
+            "depth": 0.6,
+            "relation": "sofa-front",
+            "wall_index": -1
+          },
+          {
+            "id": "arm2",
+            "type": "arm",
+            "label": "单人沙发",
+            "variant": "固定尺寸",
+            "x": 3.66,
+            "y": 2.375,
+            "rotation": 0,
+            "width": 0.8,
+            "depth": 0.8,
+            "relation": "conversation-opposite",
+            "wall_index": -1
+          },
+          {
+            "id": "sideboard",
+            "type": "sideboard",
+            "label": "餐边柜",
+            "variant": "固定尺寸",
+            "x": 0.25,
+            "y": 2.28,
+            "rotation": 90,
+            "width": 1.6,
+            "depth": 0.45,
+            "relation": "wall",
+            "wall_index": 3
+          },
+          {
+            "id": "infillCabinet",
+            "type": "infillCabinet",
+            "label": "拓展填缝定制柜",
+            "variant": "定制 1.75m",
+            "x": 0.937,
+            "y": 0.225,
+            "rotation": 0,
+            "width": 1.75,
+            "depth": 0.4,
+            "relation": "custom-infill",
+            "wall_index": 0
+          }
+        ]
+      },
+      {
+        "rank": 3,
+        "score": 95.97,
+        "scores": {
+          "feasible": 100.0,
+          "function": 100.0,
+          "circulation": 100.0,
+          "relation": 100.0,
+          "composition": 91.94,
+          "storage": 75.86,
+          "comfort": 100.0,
+          "daylight": 100.0
+        },
+        "hard_pass": true,
+        "actual_count": 6,
+        "density": 0.2763,
+        "furniture": [
+          {
+            "id": "sofa",
+            "type": "sofa",
+            "label": "沙发",
+            "variant": "固定尺寸",
+            "x": 3.66,
+            "y": 0.475,
+            "rotation": 0,
+            "width": 2.2,
+            "depth": 0.9,
+            "relation": "wall",
+            "wall_index": 0
+          },
+          {
+            "id": "tv",
+            "type": "tv",
+            "label": "电视柜",
+            "variant": "固定尺寸",
+            "x": 3.536,
+            "y": 3.95,
+            "rotation": 0,
+            "width": 1.8,
+            "depth": 0.45,
+            "relation": "sofa-facing",
+            "wall_index": 2
+          },
+          {
+            "id": "coffee",
+            "type": "coffee",
+            "label": "茶几",
+            "variant": "固定尺寸",
+            "x": 3.46,
+            "y": 1.645,
+            "rotation": 0,
+            "width": 1.2,
+            "depth": 0.6,
+            "relation": "sofa-front",
+            "wall_index": -1
+          },
+          {
+            "id": "arm2",
+            "type": "arm",
+            "label": "单人沙发",
+            "variant": "固定尺寸",
+            "x": 1.98,
+            "y": 2.045,
+            "rotation": 90,
+            "width": 0.8,
+            "depth": 0.8,
+            "relation": "conversation-side",
+            "wall_index": -1
+          },
+          {
+            "id": "sideboard",
+            "type": "sideboard",
+            "label": "餐边柜",
+            "variant": "固定尺寸",
+            "x": 0.25,
+            "y": 2.28,
+            "rotation": 90,
+            "width": 1.6,
+            "depth": 0.45,
+            "relation": "wall",
+            "wall_index": 3
+          },
+          {
+            "id": "infillCabinet",
+            "type": "infillCabinet",
+            "label": "拓展填缝定制柜",
+            "variant": "定制 1.75m",
+            "x": 0.937,
+            "y": 0.225,
+            "rotation": 0,
+            "width": 1.75,
+            "depth": 0.4,
+            "relation": "custom-infill",
+            "wall_index": 0
+          }
+        ]
+      },
+      {
+        "rank": 4,
+        "score": 95.82,
+        "scores": {
+          "feasible": 100.0,
+          "function": 100.0,
+          "circulation": 100.0,
+          "relation": 100.0,
+          "composition": 91.15,
+          "storage": 75.86,
+          "comfort": 100.0,
+          "daylight": 100.0
+        },
+        "hard_pass": true,
+        "actual_count": 6,
+        "density": 0.2763,
+        "furniture": [
+          {
+            "id": "sofa",
+            "type": "sofa",
+            "label": "沙发",
+            "variant": "固定尺寸",
+            "x": 3.66,
+            "y": 0.475,
+            "rotation": 0,
+            "width": 2.2,
+            "depth": 0.9,
+            "relation": "wall",
+            "wall_index": 0
+          },
+          {
+            "id": "tv",
+            "type": "tv",
+            "label": "电视柜",
+            "variant": "固定尺寸",
+            "x": 3.536,
+            "y": 3.95,
+            "rotation": 0,
+            "width": 1.8,
+            "depth": 0.45,
+            "relation": "sofa-facing",
+            "wall_index": 2
+          },
+          {
+            "id": "coffee",
+            "type": "coffee",
+            "label": "茶几",
+            "variant": "固定尺寸",
+            "x": 3.46,
+            "y": 1.645,
+            "rotation": 0,
+            "width": 1.2,
+            "depth": 0.6,
+            "relation": "sofa-front",
+            "wall_index": -1
+          },
+          {
+            "id": "arm2",
+            "type": "arm",
+            "label": "单人沙发",
+            "variant": "固定尺寸",
+            "x": 3.66,
+            "y": 2.375,
+            "rotation": 0,
+            "width": 0.8,
+            "depth": 0.8,
+            "relation": "conversation-opposite",
+            "wall_index": -1
+          },
+          {
+            "id": "sideboard",
+            "type": "sideboard",
+            "label": "餐边柜",
+            "variant": "固定尺寸",
+            "x": 0.25,
+            "y": 1.92,
+            "rotation": 90,
+            "width": 1.6,
+            "depth": 0.45,
+            "relation": "wall",
+            "wall_index": 3
+          },
+          {
+            "id": "infillCabinet",
+            "type": "infillCabinet",
+            "label": "拓展填缝定制柜",
+            "variant": "定制 1.75m",
+            "x": 0.937,
+            "y": 0.225,
+            "rotation": 0,
+            "width": 1.75,
+            "depth": 0.4,
+            "relation": "custom-infill",
+            "wall_index": 0
+          }
+        ]
+      },
+      {
+        "rank": 5,
+        "score": 95.74,
+        "scores": {
+          "feasible": 100.0,
+          "function": 100.0,
+          "circulation": 100.0,
+          "relation": 100.0,
+          "composition": 90.75,
+          "storage": 75.86,
+          "comfort": 100.0,
+          "daylight": 100.0
+        },
+        "hard_pass": true,
+        "actual_count": 6,
+        "density": 0.2763,
+        "furniture": [
+          {
+            "id": "sofa",
+            "type": "sofa",
+            "label": "沙发",
+            "variant": "固定尺寸",
+            "x": 3.66,
+            "y": 0.475,
+            "rotation": 0,
+            "width": 2.2,
+            "depth": 0.9,
+            "relation": "wall",
+            "wall_index": 0
+          },
+          {
+            "id": "tv",
+            "type": "tv",
+            "label": "电视柜",
+            "variant": "固定尺寸",
+            "x": 3.536,
+            "y": 3.95,
+            "rotation": 0,
+            "width": 1.8,
+            "depth": 0.45,
+            "relation": "sofa-facing",
+            "wall_index": 2
+          },
+          {
+            "id": "coffee",
+            "type": "coffee",
+            "label": "茶几",
+            "variant": "固定尺寸",
+            "x": 3.46,
+            "y": 1.645,
+            "rotation": 0,
+            "width": 1.2,
+            "depth": 0.6,
+            "relation": "sofa-front",
+            "wall_index": -1
+          },
+          {
+            "id": "arm2",
+            "type": "arm",
+            "label": "单人沙发",
+            "variant": "固定尺寸",
+            "x": 1.98,
+            "y": 2.045,
+            "rotation": 90,
+            "width": 0.8,
+            "depth": 0.8,
+            "relation": "conversation-side",
+            "wall_index": -1
+          },
+          {
+            "id": "sideboard",
+            "type": "sideboard",
+            "label": "餐边柜",
+            "variant": "固定尺寸",
+            "x": 0.25,
+            "y": 1.92,
+            "rotation": 90,
+            "width": 1.6,
+            "depth": 0.45,
+            "relation": "wall",
+            "wall_index": 3
+          },
+          {
+            "id": "infillCabinet",
+            "type": "infillCabinet",
+            "label": "拓展填缝定制柜",
+            "variant": "定制 1.75m",
+            "x": 0.937,
+            "y": 0.225,
+            "rotation": 0,
+            "width": 1.75,
+            "depth": 0.4,
+            "relation": "custom-infill",
+            "wall_index": 0
+          }
+        ]
+      },
+      {
+        "rank": 6,
+        "score": 95.73,
+        "scores": {
+          "feasible": 100.0,
+          "function": 100.0,
+          "circulation": 100.0,
+          "relation": 100.0,
+          "composition": 93.21,
+          "storage": 70.86,
+          "comfort": 100.0,
+          "daylight": 100.0
+        },
+        "hard_pass": true,
+        "actual_count": 6,
+        "density": 0.2693,
+        "furniture": [
+          {
+            "id": "sofa",
+            "type": "sofa",
+            "label": "沙发",
+            "variant": "固定尺寸",
+            "x": 3.66,
+            "y": 0.475,
+            "rotation": 0,
+            "width": 2.2,
+            "depth": 0.9,
+            "relation": "wall",
+            "wall_index": 0
+          },
+          {
+            "id": "tv",
+            "type": "tv",
+            "label": "电视柜",
+            "variant": "固定尺寸",
+            "x": 3.536,
+            "y": 3.95,
+            "rotation": 0,
+            "width": 1.8,
+            "depth": 0.45,
+            "relation": "sofa-facing",
+            "wall_index": 2
+          },
+          {
+            "id": "coffee",
+            "type": "coffee",
+            "label": "茶几",
+            "variant": "固定尺寸",
+            "x": 3.46,
+            "y": 1.645,
+            "rotation": 0,
+            "width": 1.2,
+            "depth": 0.6,
+            "relation": "sofa-front",
+            "wall_index": -1
+          },
+          {
+            "id": "arm2",
+            "type": "arm",
+            "label": "单人沙发",
+            "variant": "固定尺寸",
+            "x": 1.98,
+            "y": 2.045,
+            "rotation": 90,
+            "width": 0.8,
+            "depth": 0.8,
+            "relation": "conversation-side",
+            "wall_index": -1
+          },
+          {
+            "id": "sideboard",
+            "type": "sideboard",
+            "label": "餐边柜",
+            "variant": "固定尺寸",
+            "x": 0.25,
+            "y": 2.28,
+            "rotation": 90,
+            "width": 1.6,
+            "depth": 0.45,
+            "relation": "wall",
+            "wall_index": 3
+          },
+          {
+            "id": "infillCabinet",
+            "type": "infillCabinet",
+            "label": "拓展填缝定制柜",
+            "variant": "定制 1.40m",
+            "x": 0.225,
+            "y": 0.745,
+            "rotation": 90,
+            "width": 1.4,
+            "depth": 0.4,
+            "relation": "custom-infill",
+            "wall_index": 3
+          }
+        ]
+      },
+      {
+        "rank": 7,
+        "score": 95.66,
+        "scores": {
+          "feasible": 100.0,
+          "function": 100.0,
+          "circulation": 100.0,
+          "relation": 100.0,
+          "composition": 94.29,
+          "storage": 68.0,
+          "comfort": 100.0,
+          "daylight": 100.0
+        },
+        "hard_pass": true,
+        "actual_count": 6,
+        "density": 0.2654,
+        "furniture": [
+          {
+            "id": "sofa",
+            "type": "sofa",
+            "label": "沙发",
+            "variant": "固定尺寸",
+            "x": 3.66,
+            "y": 0.475,
+            "rotation": 0,
+            "width": 2.2,
+            "depth": 0.9,
+            "relation": "wall",
+            "wall_index": 0
+          },
+          {
+            "id": "tv",
+            "type": "tv",
+            "label": "电视柜",
+            "variant": "固定尺寸",
+            "x": 3.536,
+            "y": 3.95,
+            "rotation": 0,
+            "width": 1.8,
+            "depth": 0.45,
+            "relation": "sofa-facing",
+            "wall_index": 2
+          },
+          {
+            "id": "coffee",
+            "type": "coffee",
+            "label": "茶几",
+            "variant": "固定尺寸",
+            "x": 3.46,
+            "y": 1.645,
+            "rotation": 0,
+            "width": 1.2,
+            "depth": 0.6,
+            "relation": "sofa-front",
+            "wall_index": -1
+          },
+          {
+            "id": "arm2",
+            "type": "arm",
+            "label": "单人沙发",
+            "variant": "固定尺寸",
+            "x": 3.66,
+            "y": 2.375,
+            "rotation": 0,
+            "width": 0.8,
+            "depth": 0.8,
+            "relation": "conversation-opposite",
+            "wall_index": -1
+          },
+          {
+            "id": "sideboard",
+            "type": "sideboard",
+            "label": "餐边柜",
+            "variant": "固定尺寸",
+            "x": 0.25,
+            "y": 2.1,
+            "rotation": 90,
+            "width": 1.6,
+            "depth": 0.45,
+            "relation": "wall",
+            "wall_index": 3
+          },
+          {
+            "id": "infillCabinet",
+            "type": "infillCabinet",
+            "label": "拓展填缝定制柜",
+            "variant": "定制 1.20m",
+            "x": 0.225,
+            "y": 0.655,
+            "rotation": 90,
+            "width": 1.2,
+            "depth": 0.4,
+            "relation": "custom-infill",
+            "wall_index": 3
+          }
+        ]
+      },
+      {
+        "rank": 8,
+        "score": 95.21,
+        "scores": {
+          "feasible": 100.0,
+          "function": 100.0,
+          "circulation": 100.0,
+          "relation": 100.0,
+          "composition": 88.1,
+          "storage": 75.86,
+          "comfort": 100.0,
+          "daylight": 100.0
+        },
+        "hard_pass": true,
+        "actual_count": 5,
+        "density": 0.2445,
+        "furniture": [
+          {
+            "id": "sofa",
+            "type": "sofa",
+            "label": "沙发",
+            "variant": "固定尺寸",
+            "x": 3.66,
+            "y": 0.475,
+            "rotation": 0,
+            "width": 2.2,
+            "depth": 0.9,
+            "relation": "wall",
+            "wall_index": 0
+          },
+          {
+            "id": "tv",
+            "type": "tv",
+            "label": "电视柜",
+            "variant": "固定尺寸",
+            "x": 3.536,
+            "y": 3.95,
+            "rotation": 0,
+            "width": 1.8,
+            "depth": 0.45,
+            "relation": "sofa-facing",
+            "wall_index": 2
+          },
+          {
+            "id": "coffee",
+            "type": "coffee",
+            "label": "茶几",
+            "variant": "固定尺寸",
+            "x": 3.46,
+            "y": 1.645,
+            "rotation": 0,
+            "width": 1.2,
+            "depth": 0.6,
+            "relation": "sofa-front",
+            "wall_index": -1
+          },
+          {
+            "id": "sideboard",
+            "type": "sideboard",
+            "label": "餐边柜",
+            "variant": "固定尺寸",
+            "x": 0.25,
+            "y": 2.28,
+            "rotation": 90,
+            "width": 1.6,
+            "depth": 0.45,
+            "relation": "wall",
+            "wall_index": 3
+          },
+          {
+            "id": "infillCabinet",
+            "type": "infillCabinet",
+            "label": "拓展填缝定制柜",
+            "variant": "定制 1.75m",
+            "x": 0.937,
+            "y": 0.225,
+            "rotation": 0,
+            "width": 1.75,
+            "depth": 0.4,
+            "relation": "custom-infill",
+            "wall_index": 0
+          }
+        ]
+      }
+    ]
+  }
+}
