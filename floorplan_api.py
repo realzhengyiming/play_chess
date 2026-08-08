@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
+import threading
 import time
 from pathlib import Path
 from urllib.error import HTTPError, URLError
@@ -20,6 +22,9 @@ ROOT = Path(__file__).resolve().parent
 HTML_FILE = ROOT / "bedroom-space-chess-V3.html"
 EDITOR_FILE = ROOT / "furniture-rule-editor.html"
 SAMPLE_DIR = ROOT / "samples"
+CONFIG_DIR = ROOT / "server_config"
+DEFAULT_CONFIG_FILE = CONFIG_DIR / "furniture-config-default.json"
+CURRENT_CONFIG_FILE = CONFIG_DIR / "furniture-config-current.json"
 REMOTE_UPLOAD = "http://82.157.195.92:6699/upload_floorplan_image"
 REMOTE_RECOGNIZE = "http://82.157.195.92:6699/gen_floor_plan_fast"
 
@@ -27,10 +32,33 @@ app = FastAPI(title="空间棋户型识别代理", docs_url=None, redoc_url=None
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "OPTIONS"],
     allow_headers=["*"],
 )
 app.mount("/samples", StaticFiles(directory=SAMPLE_DIR), name="samples")
+_config_lock = threading.Lock()
+
+
+def _read_json(path: Path) -> dict:
+    with path.open("r", encoding="utf-8") as handle:
+        value = json.load(handle)
+    if not isinstance(value, dict):
+        raise ValueError("配置根节点必须是 JSON object")
+    return value
+
+
+def _write_json_atomic(path: Path, value: dict) -> None:
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    with temporary.open("w", encoding="utf-8") as handle:
+        json.dump(value, handle, ensure_ascii=False, indent=2)
+        handle.flush()
+        os.fsync(handle.fileno())
+    temporary.replace(path)
+
+
+def _config_response(value: dict, source: str) -> dict:
+    return {"ok": True, "source": source, "config": value}
 
 
 def _forward(url: str, body: bytes, content_type: str) -> tuple[int, bytes, str]:
@@ -90,6 +118,74 @@ def furniture_rule_editor() -> FileResponse:
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.post("/api/furniture-config/bootstrap")
+async def bootstrap_furniture_config(request: Request) -> JSONResponse:
+    """由配置页安装代码内置基线。
+
+    同一 baselineVersion 不会覆盖任何网页修改；只有代码基线版本升级时才更新
+    default。本地原型可显式携带 activate_default_on_upgrade，让新基线同时成为当前全局配置。
+    """
+    body = await request.json()
+    default_config = body.get("default_config") if isinstance(body, dict) else None
+    if not isinstance(default_config, dict):
+        return JSONResponse({"detail": "缺少 default_config"}, status_code=422)
+    with _config_lock:
+        stored_default = _read_json(DEFAULT_CONFIG_FILE) if DEFAULT_CONFIG_FILE.exists() else None
+        incoming_version = int(default_config.get("baselineVersion") or 0)
+        stored_version = int((stored_default or {}).get("baselineVersion") or 0)
+        upgraded = stored_default is None or incoming_version > stored_version
+        if upgraded:
+            _write_json_atomic(DEFAULT_CONFIG_FILE, default_config)
+        if not CURRENT_CONFIG_FILE.exists() or (
+            upgraded and bool(body.get("activate_default_on_upgrade"))
+        ):
+            _write_json_atomic(CURRENT_CONFIG_FILE, _read_json(DEFAULT_CONFIG_FILE))
+        current = _read_json(CURRENT_CONFIG_FILE)
+    response = _config_response(current, "current")
+    response["baseline_upgraded"] = upgraded
+    response["baseline_version"] = incoming_version if upgraded else stored_version
+    return JSONResponse(response)
+
+
+@app.get("/api/furniture-config")
+def get_furniture_config() -> JSONResponse:
+    with _config_lock:
+        if not CURRENT_CONFIG_FILE.exists():
+            return JSONResponse({"detail": "全局配置尚未初始化"}, status_code=404)
+        current = _read_json(CURRENT_CONFIG_FILE)
+    return JSONResponse(_config_response(current, "current"))
+
+
+@app.get("/api/furniture-config/default")
+def get_default_furniture_config() -> JSONResponse:
+    with _config_lock:
+        if not DEFAULT_CONFIG_FILE.exists():
+            return JSONResponse({"detail": "默认配置尚未初始化"}, status_code=404)
+        default = _read_json(DEFAULT_CONFIG_FILE)
+    return JSONResponse(_config_response(default, "default"))
+
+
+@app.put("/api/furniture-config")
+async def put_furniture_config(request: Request) -> JSONResponse:
+    """覆盖唯一的全局当前配置；不创建版本历史。"""
+    value = await request.json()
+    if not isinstance(value, dict) or not isinstance(value.get("furnitureLibrary"), list):
+        return JSONResponse({"detail": "配置必须包含 furnitureLibrary 数组"}, status_code=422)
+    with _config_lock:
+        _write_json_atomic(CURRENT_CONFIG_FILE, value)
+    return JSONResponse(_config_response(value, "current"))
+
+
+@app.post("/api/furniture-config/restore")
+def restore_furniture_config() -> JSONResponse:
+    with _config_lock:
+        if not DEFAULT_CONFIG_FILE.exists():
+            return JSONResponse({"detail": "默认配置尚未初始化"}, status_code=404)
+        default = _read_json(DEFAULT_CONFIG_FILE)
+        _write_json_atomic(CURRENT_CONFIG_FILE, default)
+    return JSONResponse(_config_response(default, "default"))
 
 
 @app.post("/api/upload")

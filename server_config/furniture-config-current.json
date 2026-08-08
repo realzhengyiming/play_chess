@@ -1,0 +1,8134 @@
+{
+  "schemaVersion": 5,
+  "baselineVersion": 6,
+  "profileName": "全局家具配置",
+  "updatedAt": "2026-08-07T15:59:56.335Z",
+  "richBedroomDefaultsV1": true,
+  "richBedroomDefaultsV2": true,
+  "wallCabinetFirstV1": true,
+  "bedroomCorePriorityV1": true,
+  "livingCorePriorityV1": true,
+  "roomTypes": [
+    {
+      "id": "bedroom",
+      "label": "卧室",
+      "engineEnabled": true
+    },
+    {
+      "id": "living",
+      "label": "客厅",
+      "engineEnabled": true
+    }
+  ],
+  "furnitureLibrary": [
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "bed",
+      "label": "双人床",
+      "category": "核心家具",
+      "role": "睡眠核心",
+      "color": "#2f6da0",
+      "geometry": {
+        "width": 1.5,
+        "depth": 2,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "bed-m1",
+            "label": "双人床 1号",
+            "width": 1.2,
+            "depth": 1.9,
+            "shape": "box"
+          },
+          {
+            "id": "bed-m2",
+            "label": "双人床 2号",
+            "width": 1.5,
+            "depth": 2,
+            "shape": "box"
+          },
+          {
+            "id": "bed-m3",
+            "label": "双人床 3号",
+            "width": 1.8,
+            "depth": 2,
+            "shape": "box"
+          }
+        ]
+      },
+      "quantity": {
+        "min": 1,
+        "max": 1
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 10
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "bed-wall",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 20,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "bed-corner",
+            "enabled": true,
+            "mode": "corner",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "wall-end-corner",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 8,
+            "weight": 1.35,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "maxCandidates": 28,
+        "ruleListVersion": 2,
+        "id": "bed-wall",
+        "enabled": true,
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 20,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": false,
+        "allowCorner": true
+      },
+      "service": {
+        "label": "床尾活动区",
+        "side": "front",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "wardrobe",
+      "label": "衣柜",
+      "category": "核心家具",
+      "role": "衣物收纳",
+      "color": "#9b6a46",
+      "geometry": {
+        "width": 1.8,
+        "depth": 0.6,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 1,
+        "max": 1
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 20
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "wardrobe-open-wall",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 20,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "wardrobe-opposite-bed",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "bed",
+            "relation": "bed-opposite-storage",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.6,
+              "max": 3.2,
+              "step": 0.3
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 12,
+            "weight": 1.45,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "maxCandidates": 32,
+        "ruleListVersion": 2,
+        "id": "wardrobe-open-wall",
+        "enabled": true,
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 20,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": true,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "柜前取用区",
+        "side": "front",
+        "depth": 0.42,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": {
+        "min": 0.9,
+        "max": 3.2,
+        "step": 0.1,
+        "fill": [
+          0.72,
+          0.96
+        ]
+      },
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "desk",
+      "label": "书桌",
+      "category": "工作与梳妆",
+      "role": "工作学习",
+      "color": "#2f8a78",
+      "geometry": {
+        "width": 1.2,
+        "depth": 0.55,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "desk-90",
+            "label": "书桌 0.9 m",
+            "width": 0.9,
+            "depth": 0.55,
+            "shape": "box"
+          },
+          {
+            "id": "desk-120",
+            "label": "书桌 1.2 m",
+            "width": 1.2,
+            "depth": 0.55,
+            "shape": "box"
+          },
+          {
+            "id": "desk-140",
+            "label": "书桌 1.4 m",
+            "width": 1.4,
+            "depth": 0.55,
+            "shape": "box"
+          },
+          {
+            "id": "desk-160",
+            "label": "书桌 1.6 m",
+            "width": 1.6,
+            "depth": 0.55,
+            "shape": "box"
+          }
+        ]
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 30
+      },
+      "candidate": {
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "座椅与工作区",
+        "side": "front",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": true,
+        "allowBodyTypes": [
+          "chair"
+        ],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "chair",
+      "label": "工作椅",
+      "category": "床组与座椅",
+      "role": "工作组",
+      "color": "#59a391",
+      "geometry": {
+        "width": 0.5,
+        "depth": 0.5,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 40
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "chair-desk-front",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "desk",
+            "relation": "desk-front",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.28,
+              "max": 0.42,
+              "step": 0.07
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 8,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "maxCandidates": 8,
+        "ruleListVersion": 2,
+        "id": "chair-desk-front",
+        "enabled": true,
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "desk",
+        "relation": "desk-front",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0.28,
+          "max": 0.42,
+          "step": 0.07
+        },
+        "facing": [
+          "toward"
+        ],
+        "maxSamples": 8,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "工作椅占位",
+        "side": "back",
+        "depth": 0,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "vanity",
+      "label": "梳妆台",
+      "category": "工作与梳妆",
+      "role": "梳妆",
+      "color": "#a66f86",
+      "geometry": {
+        "width": 1,
+        "depth": 0.45,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 50
+      },
+      "candidate": {
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "梳妆操作区",
+        "side": "front",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": true,
+        "allowBodyTypes": [
+          "vanityStool"
+        ],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "vanityStool",
+      "label": "梳妆凳",
+      "category": "床组与座椅",
+      "role": "梳妆组",
+      "color": "#b78aa0",
+      "geometry": {
+        "width": 0.42,
+        "depth": 0.42,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 60
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "stool-vanity-front",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "vanity",
+            "relation": "vanity-seat",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.22,
+              "max": 0.36,
+              "step": 0.07
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 8,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "maxCandidates": 8,
+        "ruleListVersion": 2,
+        "id": "stool-vanity-front",
+        "enabled": true,
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "vanity",
+        "relation": "vanity-seat",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0.22,
+          "max": 0.36,
+          "step": 0.07
+        },
+        "facing": [
+          "toward"
+        ],
+        "maxSamples": 8,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "坐凳后退区",
+        "side": "back",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": true,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "night",
+      "label": "床头柜",
+      "category": "床组与座椅",
+      "role": "床组",
+      "color": "#6a8db2",
+      "geometry": {
+        "width": 0.45,
+        "depth": 0.45,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "night-m1",
+            "label": "床头柜 1号",
+            "width": 0.38,
+            "depth": 0.38,
+            "shape": "box"
+          },
+          {
+            "id": "night-m2",
+            "label": "床头柜 2号",
+            "width": 0.45,
+            "depth": 0.45,
+            "shape": "box"
+          },
+          {
+            "id": "night-m3",
+            "label": "床头柜 3号",
+            "width": 0.5,
+            "depth": 0.48,
+            "shape": "box"
+          }
+        ]
+      },
+      "quantity": {
+        "min": 0,
+        "max": 2
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 2,
+        "weight": 1,
+        "priority": 70
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "night-bed-left",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "bed",
+            "relation": "bed-side",
+            "side": "left",
+            "crossAlign": "back",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.05
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 4,
+            "weight": 1.55,
+            "collisionClearance": 0,
+            "allowFunctionalOverlap": true
+          },
+          {
+            "id": "night-bed-right",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "bed",
+            "relation": "bed-side",
+            "side": "right",
+            "crossAlign": "back",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.05
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 4,
+            "weight": 1.55,
+            "collisionClearance": 0,
+            "allowFunctionalOverlap": true
+          }
+        ],
+        "maxCandidates": 8,
+        "ruleListVersion": 2,
+        "id": "night-bed-left",
+        "enabled": true,
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "bed",
+        "relation": "bed-side",
+        "side": "left",
+        "crossAlign": "back",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.05
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 4,
+        "weight": 1.55,
+        "collisionClearance": 0,
+        "allowFunctionalOverlap": true
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "床头柜取用区",
+        "side": "front",
+        "depth": 0.42,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "bench",
+      "label": "床尾凳",
+      "category": "床组与座椅",
+      "role": "床尾辅助",
+      "color": "#6686a2",
+      "geometry": {
+        "width": 1.1,
+        "depth": 0.4,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "bench-m1",
+            "label": "床尾凳 1号",
+            "width": 0.9,
+            "depth": 0.36,
+            "shape": "box"
+          },
+          {
+            "id": "bench-m2",
+            "label": "床尾凳 2号",
+            "width": 1.1,
+            "depth": 0.4,
+            "shape": "box"
+          },
+          {
+            "id": "bench-m3",
+            "label": "床尾凳 3号",
+            "width": 1.3,
+            "depth": 0.42,
+            "shape": "box"
+          }
+        ]
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 80
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "bench-bed-foot-near",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "bed",
+            "relation": "bed-foot",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.1,
+              "max": 0.15,
+              "step": 0.05
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 4,
+            "weight": 1.42,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": true
+          }
+        ],
+        "maxCandidates": 4,
+        "ruleListVersion": 2,
+        "id": "bench-bed-foot-near",
+        "enabled": true,
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "bed",
+        "relation": "bed-foot",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0.1,
+          "max": 0.15,
+          "step": 0.05
+        },
+        "facing": [
+          "toward"
+        ],
+        "maxSamples": 4,
+        "weight": 1.42,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": true
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "床尾凳外侧落脚区",
+        "side": "front",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": true,
+        "allowBodyTypes": [],
+        "adaptiveFootZone": true,
+        "adaptiveGapThreshold": 0.3,
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "chest",
+      "label": "斗柜",
+      "category": "收纳家具",
+      "role": "叠放收纳",
+      "color": "#a47b58",
+      "geometry": {
+        "width": 1,
+        "depth": 0.45,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 2
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 90
+      },
+      "candidate": {
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "抽屉取用区",
+        "side": "front",
+        "depth": 0.48,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": {
+        "min": 0.7,
+        "max": 1.8,
+        "step": 0.1,
+        "fill": [
+          0.58,
+          0.88
+        ]
+      },
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "shelf",
+      "label": "书柜",
+      "category": "收纳家具",
+      "role": "书物收纳",
+      "color": "#6d796f",
+      "geometry": {
+        "width": 0.9,
+        "depth": 0.35,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 100
+      },
+      "candidate": {
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": true,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "取物站立区",
+        "side": "front",
+        "depth": 0.42,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": {
+        "min": 0.7,
+        "max": 2.4,
+        "step": 0.1,
+        "fill": [
+          0.62,
+          0.92
+        ]
+      },
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "tvbench",
+      "label": "卧室电视柜",
+      "category": "收纳家具",
+      "role": "视听收纳",
+      "color": "#505f69",
+      "geometry": {
+        "width": 1.2,
+        "depth": 0.4,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 110
+      },
+      "candidate": {
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": true,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "设备取用区",
+        "side": "front",
+        "depth": 0.4,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": {
+        "min": 1,
+        "max": 2.6,
+        "step": 0.1,
+        "fill": [
+          0.58,
+          0.9
+        ]
+      },
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "lounge",
+      "label": "休闲椅",
+      "category": "床组与座椅",
+      "role": "阅读休憩",
+      "color": "#6b9888",
+      "geometry": {
+        "width": 0.72,
+        "depth": 0.72,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "lounge-m1",
+            "label": "休闲椅 1号",
+            "width": 0.64,
+            "depth": 0.64,
+            "shape": "box"
+          },
+          {
+            "id": "lounge-m2",
+            "label": "休闲椅 2号",
+            "width": 0.72,
+            "depth": 0.72,
+            "shape": "box"
+          },
+          {
+            "id": "lounge-m3",
+            "label": "休闲椅 3号",
+            "width": 0.8,
+            "depth": 0.8,
+            "shape": "box"
+          }
+        ]
+      },
+      "quantity": {
+        "min": 0,
+        "max": 2
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 120
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "reading-wall",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "reading-wall",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 16,
+            "weight": 1.85,
+            "collisionClearance": 0,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "reading-open-zone",
+            "enabled": false,
+            "mode": "zone",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "reading-open-zone",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 8,
+            "weight": 0.72,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "maxCandidates": 16,
+        "ruleListVersion": 2,
+        "id": "reading-wall",
+        "enabled": true,
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "reading-wall",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 16,
+        "weight": 1.85,
+        "collisionClearance": 0,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": false,
+        "allowCorner": true
+      },
+      "service": {
+        "label": "休闲椅使用区",
+        "side": "front",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "bedroomLoveseat",
+      "label": "卧室小沙发",
+      "category": "休闲会客",
+      "role": "小型会客区",
+      "color": "#c98272",
+      "geometry": {
+        "width": 1.25,
+        "depth": 0.72,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "bedroomLoveseat-m1",
+            "label": "卧室小沙发 1号",
+            "width": 1.1,
+            "depth": 0.68,
+            "shape": "box"
+          },
+          {
+            "id": "bedroomLoveseat-m2",
+            "label": "卧室小沙发 2号",
+            "width": 1.25,
+            "depth": 0.72,
+            "shape": "box"
+          },
+          {
+            "id": "bedroomLoveseat-m3",
+            "label": "卧室小沙发 3号",
+            "width": 1.45,
+            "depth": 0.76,
+            "shape": "box"
+          }
+        ]
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 130
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "loveseat-wall",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1.18,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "loveseat-open-zone",
+            "enabled": true,
+            "mode": "zone",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "bedroom-lounge-zone",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 10,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "maxCandidates": 20,
+        "ruleListVersion": 2,
+        "id": "loveseat-wall",
+        "enabled": true,
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 16,
+        "weight": 1.18,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "小沙发起坐区",
+        "side": "front",
+        "depth": 0.42,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "bedroomTeaTable",
+      "label": "卧室圆几",
+      "category": "休闲会客",
+      "role": "茶歇中心",
+      "color": "#b78b55",
+      "geometry": {
+        "width": 0.56,
+        "depth": 0.56,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "bedroomTeaTable-m1",
+            "label": "卧室圆几 1号",
+            "width": 0.46,
+            "depth": 0.46,
+            "shape": "box"
+          },
+          {
+            "id": "bedroomTeaTable-m2",
+            "label": "卧室圆几 2号",
+            "width": 0.56,
+            "depth": 0.56,
+            "shape": "box"
+          },
+          {
+            "id": "bedroomTeaTable-m3",
+            "label": "卧室圆几 3号",
+            "width": 0.64,
+            "depth": 0.64,
+            "shape": "box"
+          }
+        ]
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 140
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "tea-loveseat-front",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "bedroomLoveseat",
+            "relation": "lounge-table",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.3,
+              "max": 0.55,
+              "step": 0.125
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 8,
+            "weight": 1.25,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "tea-chair-front",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "lounge",
+            "relation": "lounge-table",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.24,
+              "max": 0.46,
+              "step": 0.11
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 8,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "maxCandidates": 16,
+        "ruleListVersion": 2,
+        "id": "tea-loveseat-front",
+        "enabled": true,
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "bedroomLoveseat",
+        "relation": "lounge-table",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0.3,
+          "max": 0.55,
+          "step": 0.125
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 8,
+        "weight": 1.25,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "圆几取用区",
+        "side": "front",
+        "depth": 0.24,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "bedroomDisplay",
+      "label": "卧室展示柜",
+      "category": "沿墙浅柜",
+      "role": "空墙陈列与浅收纳",
+      "color": "#738276",
+      "geometry": {
+        "width": 1.2,
+        "depth": 0.32,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 2
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 150
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "bedroom-display-wall",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 14,
+            "weight": 1.2,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "maxCandidates": 14,
+        "ruleListVersion": 2,
+        "id": "bedroom-display-wall",
+        "enabled": true,
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 14,
+        "weight": 1.2,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": true,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "展示柜取用区",
+        "side": "front",
+        "depth": 0.42,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": {
+        "min": 0.7,
+        "max": 2.4,
+        "step": 0.1,
+        "fill": [
+          0.62,
+          0.94
+        ]
+      },
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "library",
+      "id": "hamper",
+      "label": "洗衣篮",
+      "category": "小件家具",
+      "role": "衣物暂存",
+      "color": "#9b9070",
+      "geometry": {
+        "width": 0.42,
+        "depth": 0.42,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 160
+      },
+      "candidate": {
+        "mode": "corner",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "utility-corner",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "corner",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "utility-corner",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "取放衣物区",
+        "side": "front",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "bedroomInfillCabinet",
+      "label": "卧室定制填缝柜",
+      "category": "拓展填缝定制柜",
+      "role": "末轮空墙补齐",
+      "color": "#526f68",
+      "geometry": {
+        "width": 1.8,
+        "depth": 0.4,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 2
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 170
+      },
+      "candidate": {
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": true,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "定制柜取用区",
+        "side": "front",
+        "depth": 0.45,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": {
+        "min": 0.6,
+        "max": 3,
+        "step": 0.05,
+        "modules": [
+          0.6,
+          0.8,
+          1,
+          1.2,
+          1.5,
+          1.8,
+          2.4,
+          3
+        ],
+        "fill": [
+          0.72,
+          1
+        ]
+      },
+      "infill": true
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "sofa",
+      "label": "沙发",
+      "category": "会客核心",
+      "role": "会客核心",
+      "color": "#be633e",
+      "geometry": {
+        "width": 2.2,
+        "depth": 0.9,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "box",
+            "label": "普通三人沙发",
+            "width": 2.2,
+            "depth": 0.9,
+            "shape": "box"
+          },
+          {
+            "id": "l-left",
+            "label": "左贵妃 L 形沙发",
+            "width": 2.8,
+            "depth": 1.65,
+            "shape": "l-left"
+          },
+          {
+            "id": "l-right",
+            "label": "右贵妃 L 形沙发",
+            "width": 2.8,
+            "depth": 1.65,
+            "shape": "l-right"
+          }
+        ]
+      },
+      "quantity": {
+        "min": 1,
+        "max": 1
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 180
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "sofa-wall",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 16,
+            "weight": 1.25,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "sofa-zone",
+            "enabled": true,
+            "mode": "zone",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "floating-sofa",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "maxCandidates": 28,
+        "ruleListVersion": 2,
+        "id": "sofa-wall",
+        "enabled": true,
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 16,
+        "weight": 1.25,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "沙发起坐区",
+        "side": "front",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "tv",
+      "label": "电视柜",
+      "category": "会客核心",
+      "role": "视听中心",
+      "color": "#34424d",
+      "geometry": {
+        "width": 1.8,
+        "depth": 0.45,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 1,
+        "max": 1
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 190
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "tv-facing-sofa",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "sofa",
+            "relation": "sofa-facing",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 1.55,
+              "max": 3.2,
+              "step": 0.25
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 18,
+            "weight": 1.55,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "tv-open-wall",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "maxCandidates": 30,
+        "ruleListVersion": 2,
+        "id": "tv-facing-sofa",
+        "enabled": true,
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "sofa",
+        "relation": "sofa-facing",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 1.55,
+          "max": 3.2,
+          "step": 0.25
+        },
+        "facing": [
+          "toward"
+        ],
+        "maxSamples": 18,
+        "weight": 1.55,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": true,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "设备与抽屉区",
+        "side": "front",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": true,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "coffee",
+      "label": "茶几",
+      "category": "会客核心",
+      "role": "会客中心",
+      "color": "#bd9252",
+      "geometry": {
+        "width": 1.2,
+        "depth": 0.6,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "coffee-m1",
+            "label": "茶几 1号",
+            "width": 0.9,
+            "depth": 0.5,
+            "shape": "box"
+          },
+          {
+            "id": "coffee-m2",
+            "label": "茶几 2号",
+            "width": 1.2,
+            "depth": 0.6,
+            "shape": "box"
+          },
+          {
+            "id": "coffee-m3",
+            "label": "茶几 3号",
+            "width": 1.4,
+            "depth": 0.7,
+            "shape": "box"
+          }
+        ]
+      },
+      "quantity": {
+        "min": 1,
+        "max": 1
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 200
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "coffee-sofa-front",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "sofa",
+            "relation": "sofa-front",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.4,
+              "max": 0.8,
+              "step": 0.2
+            },
+            "facing": [
+              "toward",
+              "away"
+            ],
+            "maxSamples": 10,
+            "weight": 1.5,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "maxCandidates": 12,
+        "ruleListVersion": 2,
+        "id": "coffee-sofa-front",
+        "enabled": true,
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "sofa",
+        "relation": "sofa-front",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0.4,
+          "max": 0.8,
+          "step": 0.2
+        },
+        "facing": [
+          "toward",
+          "away"
+        ],
+        "maxSamples": 10,
+        "weight": 1.5,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "茶几取用区",
+        "side": "front",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "arm",
+      "label": "单人沙发",
+      "category": "座椅与小件",
+      "role": "围合座位",
+      "color": "#d7895d",
+      "geometry": {
+        "width": 0.8,
+        "depth": 0.8,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "arm-m1",
+            "label": "单人沙发 1号",
+            "width": 0.72,
+            "depth": 0.72,
+            "shape": "box"
+          },
+          {
+            "id": "arm-m2",
+            "label": "单人沙发 2号",
+            "width": 0.8,
+            "depth": 0.8,
+            "shape": "box"
+          },
+          {
+            "id": "arm-m3",
+            "label": "单人沙发 3号",
+            "width": 0.88,
+            "depth": 0.86,
+            "shape": "box"
+          }
+        ]
+      },
+      "quantity": {
+        "min": 0,
+        "max": 4
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 2,
+        "weight": 1,
+        "priority": 210
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "arm-sofa-opposite",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "sofa",
+            "relation": "conversation-opposite",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.7,
+              "max": 1.3,
+              "step": 0.2
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 8,
+            "weight": 1.2,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "arm-sofa-left",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "sofa",
+            "relation": "conversation-side",
+            "side": "left",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.35,
+              "max": 0.85,
+              "step": 0.2
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 8,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "arm-sofa-right",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "sofa",
+            "relation": "conversation-side",
+            "side": "right",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.35,
+              "max": 0.85,
+              "step": 0.2
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 8,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "maxCandidates": 24,
+        "ruleListVersion": 2,
+        "id": "arm-sofa-opposite",
+        "enabled": true,
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "sofa",
+        "relation": "conversation-opposite",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.2
+        },
+        "facing": [
+          "toward"
+        ],
+        "maxSamples": 8,
+        "weight": 1.2,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "单椅起坐区",
+        "side": "back",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "side",
+      "label": "边几",
+      "category": "座椅与小件",
+      "role": "沙发组",
+      "color": "#79927e",
+      "geometry": {
+        "width": 0.5,
+        "depth": 0.5,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "side-m1",
+            "label": "边几 1号",
+            "width": 0.42,
+            "depth": 0.42,
+            "shape": "box"
+          },
+          {
+            "id": "side-m2",
+            "label": "边几 2号",
+            "width": 0.5,
+            "depth": 0.5,
+            "shape": "box"
+          },
+          {
+            "id": "side-m3",
+            "label": "边几 3号",
+            "width": 0.56,
+            "depth": 0.56,
+            "shape": "box"
+          }
+        ]
+      },
+      "quantity": {
+        "min": 0,
+        "max": 2
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 220
+      },
+      "candidate": {
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "sofa",
+        "relation": "sofa-side",
+        "gap": 0.07,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "sofa",
+            "relation": "sofa-side",
+            "side": "left",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.07,
+              "max": 0.07,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "candidate-2",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "sofa",
+            "relation": "sofa-side",
+            "side": "right",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.07,
+              "max": 0.07,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "left",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0.07,
+          "max": 0.07,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "边几取用区",
+        "side": "front",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "ottoman",
+      "label": "脚凳",
+      "category": "座椅与小件",
+      "role": "弹性座位",
+      "color": "#aa7d67",
+      "geometry": {
+        "width": 0.6,
+        "depth": 0.5,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "ottoman-m1",
+            "label": "脚凳 1号",
+            "width": 0.52,
+            "depth": 0.44,
+            "shape": "box"
+          },
+          {
+            "id": "ottoman-m2",
+            "label": "脚凳 2号",
+            "width": 0.6,
+            "depth": 0.5,
+            "shape": "box"
+          },
+          {
+            "id": "ottoman-m3",
+            "label": "脚凳 3号",
+            "width": 0.68,
+            "depth": 0.56,
+            "shape": "box"
+          }
+        ]
+      },
+      "quantity": {
+        "min": 0,
+        "max": 2
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 230
+      },
+      "candidate": {
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "arm",
+        "relation": "seat-ottoman",
+        "gap": 0.34,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "arm",
+            "relation": "seat-ottoman",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.34,
+              "max": 0.34,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0.34,
+          "max": 0.34,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "脚凳使用区",
+        "side": "front",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "diningTable",
+      "label": "餐桌",
+      "category": "客餐家具",
+      "role": "客餐厅用餐",
+      "color": "#8f704d",
+      "geometry": {
+        "width": 1.4,
+        "depth": 0.8,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "diningTable-m1",
+            "label": "餐桌 1号",
+            "width": 1.1,
+            "depth": 0.7,
+            "shape": "box"
+          },
+          {
+            "id": "diningTable-m2",
+            "label": "餐桌 2号",
+            "width": 1.4,
+            "depth": 0.8,
+            "shape": "box"
+          },
+          {
+            "id": "diningTable-m3",
+            "label": "餐桌 3号",
+            "width": 1.6,
+            "depth": 0.85,
+            "shape": "box"
+          }
+        ]
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 240
+      },
+      "candidate": {
+        "mode": "zone",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "dining-zone",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "zone",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "dining-zone",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "餐桌使用区",
+        "side": "front",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "diningChair",
+      "label": "餐椅",
+      "category": "客餐家具",
+      "role": "餐桌组",
+      "color": "#b08a64",
+      "geometry": {
+        "width": 0.46,
+        "depth": 0.5,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 6
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 250
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "dining-front",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "diningTable",
+            "relation": "dining-seat",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.18,
+              "max": 0.38,
+              "step": 0.1
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 6,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "dining-back",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "diningTable",
+            "relation": "dining-seat",
+            "side": "back",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.18,
+              "max": 0.38,
+              "step": 0.1
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 6,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "dining-left",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "diningTable",
+            "relation": "dining-seat",
+            "side": "left",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.18,
+              "max": 0.38,
+              "step": 0.1
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 6,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "dining-right",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "diningTable",
+            "relation": "dining-seat",
+            "side": "right",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.18,
+              "max": 0.38,
+              "step": 0.1
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 6,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "maxCandidates": 24,
+        "ruleListVersion": 2,
+        "id": "dining-front",
+        "enabled": true,
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "diningTable",
+        "relation": "dining-seat",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0.18,
+          "max": 0.38,
+          "step": 0.1
+        },
+        "facing": [
+          "toward"
+        ],
+        "maxSamples": 6,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "餐椅后退区",
+        "side": "back",
+        "depth": 0.42,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "sideboard",
+      "label": "餐边柜",
+      "category": "沿墙柜体",
+      "role": "餐储与台面",
+      "color": "#8b6a4e",
+      "geometry": {
+        "width": 1.6,
+        "depth": 0.45,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 2
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 260
+      },
+      "candidate": {
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "柜前取用区",
+        "side": "front",
+        "depth": 0.5,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": {
+        "min": 1,
+        "max": 3.2,
+        "step": 0.1,
+        "fill": [
+          0.66,
+          0.96
+        ]
+      },
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "bookcase",
+      "label": "书柜 / 矮柜",
+      "category": "沿墙柜体",
+      "role": "沿墙收纳",
+      "color": "#7b6657",
+      "geometry": {
+        "width": 1.2,
+        "depth": 0.35,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 2
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 270
+      },
+      "candidate": {
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": true,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "取书站立区",
+        "side": "front",
+        "depth": 0.42,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": {
+        "min": 0.8,
+        "max": 2.6,
+        "step": 0.1,
+        "fill": [
+          0.62,
+          0.94
+        ]
+      },
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "display",
+      "label": "展示柜",
+      "category": "沿墙柜体",
+      "role": "陈列收纳",
+      "color": "#65736b",
+      "geometry": {
+        "width": 0.9,
+        "depth": 0.38,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 2
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 280
+      },
+      "candidate": {
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": true,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "展示柜取用区",
+        "side": "front",
+        "depth": 0.45,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": {
+        "min": 0.7,
+        "max": 2,
+        "step": 0.1,
+        "fill": [
+          0.56,
+          0.86
+        ]
+      },
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "console",
+      "label": "玄关 / 沙发边柜",
+      "category": "沿墙柜体",
+      "role": "窄型台面",
+      "color": "#927a69",
+      "geometry": {
+        "width": 1.2,
+        "depth": 0.35,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 290
+      },
+      "candidate": {
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "窄柜取用区",
+        "side": "front",
+        "depth": 0.4,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": {
+        "min": 0.8,
+        "max": 2.4,
+        "step": 0.1,
+        "fill": [
+          0.6,
+          0.92
+        ]
+      },
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "floorLamp",
+      "label": "落地灯",
+      "category": "座椅与小件",
+      "role": "座位照明",
+      "color": "#c5a968",
+      "geometry": {
+        "width": 0.36,
+        "depth": 0.36,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 2
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 300
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "lamp-arm-left",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "arm",
+            "relation": "seat-light",
+            "side": "left",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.04,
+              "max": 0.18,
+              "step": 0.07
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 6,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "lamp-arm-right",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "arm",
+            "relation": "seat-light",
+            "side": "right",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.04,
+              "max": 0.18,
+              "step": 0.07
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 6,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "lamp-sofa-left",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "sofa",
+            "relation": "seat-light",
+            "side": "left",
+            "crossAlign": "front",
+            "distance": {
+              "min": 0.04,
+              "max": 0.18,
+              "step": 0.07
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 6,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "lamp-sofa-right",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "sofa",
+            "relation": "seat-light",
+            "side": "right",
+            "crossAlign": "front",
+            "distance": {
+              "min": 0.04,
+              "max": 0.18,
+              "step": 0.07
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 6,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "maxCandidates": 24,
+        "ruleListVersion": 2,
+        "id": "lamp-arm-left",
+        "enabled": true,
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "arm",
+        "relation": "seat-light",
+        "side": "left",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0.04,
+          "max": 0.18,
+          "step": 0.07
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 6,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "灯具维护区",
+        "side": "front",
+        "depth": 0.3,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "plant",
+      "label": "绿植",
+      "category": "座椅与小件",
+      "role": "角落软装",
+      "color": "#5f8b68",
+      "geometry": {
+        "width": 0.42,
+        "depth": 0.42,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 3
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 310
+      },
+      "candidate": {
+        "mode": "corner",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "corner-accent",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "corner",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "corner-accent",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "绿植养护区",
+        "side": "front",
+        "depth": 0.3,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "infillCabinet",
+      "label": "拓展填缝定制柜",
+      "category": "拓展填缝定制柜",
+      "role": "末轮墙面补齐",
+      "color": "#526f68",
+      "geometry": {
+        "width": 2.4,
+        "depth": 0.4,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 2
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 320
+      },
+      "candidate": {
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": true,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "定制柜取用区",
+        "side": "front",
+        "depth": 0.45,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": {
+        "min": 1.1,
+        "max": 5.6,
+        "step": 0.05,
+        "fill": [
+          0.96,
+          1
+        ]
+      },
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "livingRug",
+      "label": "客厅地毯",
+      "category": "地面活动区",
+      "role": "会客区地面衬底",
+      "color": "#d0b780",
+      "geometry": {
+        "width": 2.8,
+        "depth": 2.2,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 330
+      },
+      "candidate": {
+        "mode": "zone",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "zone",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "会客地面衬底",
+        "side": "front",
+        "depth": 0,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "surface": {
+        "layer": "floor",
+        "collision": "ignore",
+        "relativeTo": "sofa",
+        "secondary": "coffee",
+        "padding": {
+          "side": 0.32,
+          "front": 0.72,
+          "back": 0.12
+        }
+      },
+      "run": null,
+      "infill": false
+    }
+  ],
+  "roomAssignments": {
+    "bedroom": [
+      "bed",
+      "night",
+      "wardrobe",
+      "desk",
+      "chair",
+      "bench",
+      "chest",
+      "shelf",
+      "tvbench",
+      "bedroomDisplay",
+      "lounge",
+      "bedroomLoveseat",
+      "bedroomTeaTable",
+      "vanity",
+      "vanityStool",
+      "bedroomInfillCabinet"
+    ],
+    "living": [
+      "sofa",
+      "tv",
+      "coffee",
+      "arm",
+      "side",
+      "floorLamp",
+      "diningTable",
+      "diningChair",
+      "sideboard",
+      "bookcase",
+      "display",
+      "console",
+      "ottoman",
+      "plant",
+      "infillCabinet",
+      "livingRug"
+    ]
+  },
+  "roomSettings": {
+    "bedroom": {
+      "bedroomLoveseat": {
+        "min": 0,
+        "max": 1,
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 120
+      },
+      "bedroomTeaTable": {
+        "min": 0,
+        "max": 1,
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 130
+      },
+      "bedroomDisplay": {
+        "min": 0,
+        "max": 2,
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 100
+      },
+      "bed": {
+        "min": 1,
+        "max": 1,
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 10
+      },
+      "wardrobe": {
+        "min": 1,
+        "max": 1,
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 30
+      },
+      "desk": {
+        "min": 0,
+        "max": 1,
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 40
+      },
+      "chair": {
+        "min": 0,
+        "max": 1,
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 50
+      },
+      "vanity": {
+        "min": 0,
+        "max": 1,
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 140
+      },
+      "vanityStool": {
+        "min": 0,
+        "max": 1,
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 150
+      },
+      "night": {
+        "min": 0,
+        "max": 2,
+        "defaultCount": 2,
+        "weight": 1,
+        "priority": 20
+      },
+      "bench": {
+        "min": 0,
+        "max": 1,
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 60
+      },
+      "chest": {
+        "min": 0,
+        "max": 2,
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 70
+      },
+      "shelf": {
+        "min": 0,
+        "max": 1,
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 80
+      },
+      "tvbench": {
+        "min": 0,
+        "max": 1,
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 90
+      },
+      "lounge": {
+        "min": 0,
+        "max": 2,
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 110
+      },
+      "bedroomInfillCabinet": {
+        "min": 0,
+        "max": 2,
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 160
+      }
+    },
+    "living": {
+      "sofa": {
+        "min": 1,
+        "max": 1,
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 10
+      },
+      "tv": {
+        "min": 1,
+        "max": 1,
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 20
+      },
+      "coffee": {
+        "min": 1,
+        "max": 1,
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 30
+      },
+      "arm": {
+        "min": 0,
+        "max": 4,
+        "defaultCount": 2,
+        "weight": 1,
+        "priority": 40
+      },
+      "side": {
+        "min": 0,
+        "max": 2,
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 50
+      },
+      "ottoman": {
+        "min": 0,
+        "max": 2,
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 130
+      },
+      "diningTable": {
+        "min": 0,
+        "max": 1,
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 70
+      },
+      "diningChair": {
+        "min": 0,
+        "max": 6,
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 80
+      },
+      "sideboard": {
+        "min": 0,
+        "max": 2,
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 90
+      },
+      "bookcase": {
+        "min": 0,
+        "max": 2,
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 100
+      },
+      "display": {
+        "min": 0,
+        "max": 2,
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 110
+      },
+      "console": {
+        "min": 0,
+        "max": 1,
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 120
+      },
+      "floorLamp": {
+        "min": 0,
+        "max": 2,
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 60
+      },
+      "plant": {
+        "min": 0,
+        "max": 3,
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 140
+      },
+      "infillCabinet": {
+        "min": 0,
+        "max": 2,
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 150
+      },
+      "livingRug": {
+        "min": 0,
+        "max": 1,
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 160
+      }
+    }
+  },
+  "furnitureRules": [
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "bed",
+      "label": "双人床",
+      "category": "核心家具",
+      "role": "睡眠核心",
+      "color": "#2f6da0",
+      "geometry": {
+        "width": 1.5,
+        "depth": 2,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "bed-m1",
+            "label": "双人床 1号",
+            "width": 1.2,
+            "depth": 1.9,
+            "shape": "box"
+          },
+          {
+            "id": "bed-m2",
+            "label": "双人床 2号",
+            "width": 1.5,
+            "depth": 2,
+            "shape": "box"
+          },
+          {
+            "id": "bed-m3",
+            "label": "双人床 3号",
+            "width": 1.8,
+            "depth": 2,
+            "shape": "box"
+          }
+        ]
+      },
+      "quantity": {
+        "min": 1,
+        "max": 1
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 10
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "bed-wall",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 20,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "bed-corner",
+            "enabled": true,
+            "mode": "corner",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "wall-end-corner",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 8,
+            "weight": 1.35,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "maxCandidates": 28,
+        "ruleListVersion": 2,
+        "id": "bed-wall",
+        "enabled": true,
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 20,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": false,
+        "allowCorner": true
+      },
+      "service": {
+        "label": "床尾活动区",
+        "side": "front",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "night",
+      "label": "床头柜",
+      "category": "床组与座椅",
+      "role": "床组",
+      "color": "#6a8db2",
+      "geometry": {
+        "width": 0.45,
+        "depth": 0.45,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "night-m1",
+            "label": "床头柜 1号",
+            "width": 0.38,
+            "depth": 0.38,
+            "shape": "box"
+          },
+          {
+            "id": "night-m2",
+            "label": "床头柜 2号",
+            "width": 0.45,
+            "depth": 0.45,
+            "shape": "box"
+          },
+          {
+            "id": "night-m3",
+            "label": "床头柜 3号",
+            "width": 0.5,
+            "depth": 0.48,
+            "shape": "box"
+          }
+        ]
+      },
+      "quantity": {
+        "min": 0,
+        "max": 2
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 2,
+        "weight": 1,
+        "priority": 20
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "night-bed-left",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "bed",
+            "relation": "bed-side",
+            "side": "left",
+            "crossAlign": "back",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.05
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 4,
+            "weight": 1.55,
+            "collisionClearance": 0,
+            "allowFunctionalOverlap": true
+          },
+          {
+            "id": "night-bed-right",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "bed",
+            "relation": "bed-side",
+            "side": "right",
+            "crossAlign": "back",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.05
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 4,
+            "weight": 1.55,
+            "collisionClearance": 0,
+            "allowFunctionalOverlap": true
+          }
+        ],
+        "maxCandidates": 8,
+        "ruleListVersion": 2,
+        "id": "night-bed-left",
+        "enabled": true,
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "bed",
+        "relation": "bed-side",
+        "side": "left",
+        "crossAlign": "back",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.05
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 4,
+        "weight": 1.55,
+        "collisionClearance": 0,
+        "allowFunctionalOverlap": true
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "床头柜取用区",
+        "side": "front",
+        "depth": 0.42,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "wardrobe",
+      "label": "衣柜",
+      "category": "核心家具",
+      "role": "衣物收纳",
+      "color": "#9b6a46",
+      "geometry": {
+        "width": 1.8,
+        "depth": 0.6,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 1,
+        "max": 1
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 30
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "wardrobe-open-wall",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 20,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "wardrobe-opposite-bed",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "bed",
+            "relation": "bed-opposite-storage",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.6,
+              "max": 3.2,
+              "step": 0.3
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 12,
+            "weight": 1.45,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "maxCandidates": 32,
+        "ruleListVersion": 2,
+        "id": "wardrobe-open-wall",
+        "enabled": true,
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 20,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": true,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "柜前取用区",
+        "side": "front",
+        "depth": 0.42,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": {
+        "min": 0.9,
+        "max": 3.2,
+        "step": 0.1,
+        "fill": [
+          0.72,
+          0.96
+        ]
+      },
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "desk",
+      "label": "书桌",
+      "category": "工作与梳妆",
+      "role": "工作学习",
+      "color": "#2f8a78",
+      "geometry": {
+        "width": 1.2,
+        "depth": 0.55,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "desk-90",
+            "label": "书桌 0.9 m",
+            "width": 0.9,
+            "depth": 0.55,
+            "shape": "box"
+          },
+          {
+            "id": "desk-120",
+            "label": "书桌 1.2 m",
+            "width": 1.2,
+            "depth": 0.55,
+            "shape": "box"
+          },
+          {
+            "id": "desk-140",
+            "label": "书桌 1.4 m",
+            "width": 1.4,
+            "depth": 0.55,
+            "shape": "box"
+          },
+          {
+            "id": "desk-160",
+            "label": "书桌 1.6 m",
+            "width": 1.6,
+            "depth": 0.55,
+            "shape": "box"
+          }
+        ]
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 40
+      },
+      "candidate": {
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "座椅与工作区",
+        "side": "front",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": true,
+        "allowBodyTypes": [
+          "chair"
+        ],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "chair",
+      "label": "工作椅",
+      "category": "床组与座椅",
+      "role": "工作组",
+      "color": "#59a391",
+      "geometry": {
+        "width": 0.5,
+        "depth": 0.5,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 50
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "chair-desk-front",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "desk",
+            "relation": "desk-front",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.28,
+              "max": 0.42,
+              "step": 0.07
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 8,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "maxCandidates": 8,
+        "ruleListVersion": 2,
+        "id": "chair-desk-front",
+        "enabled": true,
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "desk",
+        "relation": "desk-front",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0.28,
+          "max": 0.42,
+          "step": 0.07
+        },
+        "facing": [
+          "toward"
+        ],
+        "maxSamples": 8,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "工作椅占位",
+        "side": "back",
+        "depth": 0,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "bench",
+      "label": "床尾凳",
+      "category": "床组与座椅",
+      "role": "床尾辅助",
+      "color": "#6686a2",
+      "geometry": {
+        "width": 1.1,
+        "depth": 0.4,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "bench-m1",
+            "label": "床尾凳 1号",
+            "width": 0.9,
+            "depth": 0.36,
+            "shape": "box"
+          },
+          {
+            "id": "bench-m2",
+            "label": "床尾凳 2号",
+            "width": 1.1,
+            "depth": 0.4,
+            "shape": "box"
+          },
+          {
+            "id": "bench-m3",
+            "label": "床尾凳 3号",
+            "width": 1.3,
+            "depth": 0.42,
+            "shape": "box"
+          }
+        ]
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 60
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "bench-bed-foot-near",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "bed",
+            "relation": "bed-foot",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.1,
+              "max": 0.15,
+              "step": 0.05
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 4,
+            "weight": 1.42,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": true
+          }
+        ],
+        "maxCandidates": 4,
+        "ruleListVersion": 2,
+        "id": "bench-bed-foot-near",
+        "enabled": true,
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "bed",
+        "relation": "bed-foot",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0.1,
+          "max": 0.15,
+          "step": 0.05
+        },
+        "facing": [
+          "toward"
+        ],
+        "maxSamples": 4,
+        "weight": 1.42,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": true
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "床尾凳外侧落脚区",
+        "side": "front",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": true,
+        "allowBodyTypes": [],
+        "adaptiveFootZone": true,
+        "adaptiveGapThreshold": 0.3,
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "chest",
+      "label": "斗柜",
+      "category": "收纳家具",
+      "role": "叠放收纳",
+      "color": "#a47b58",
+      "geometry": {
+        "width": 1,
+        "depth": 0.45,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 2
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 70
+      },
+      "candidate": {
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "抽屉取用区",
+        "side": "front",
+        "depth": 0.48,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": {
+        "min": 0.7,
+        "max": 1.8,
+        "step": 0.1,
+        "fill": [
+          0.58,
+          0.88
+        ]
+      },
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "shelf",
+      "label": "书柜",
+      "category": "收纳家具",
+      "role": "书物收纳",
+      "color": "#6d796f",
+      "geometry": {
+        "width": 0.9,
+        "depth": 0.35,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 80
+      },
+      "candidate": {
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": true,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "取物站立区",
+        "side": "front",
+        "depth": 0.42,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": {
+        "min": 0.7,
+        "max": 2.4,
+        "step": 0.1,
+        "fill": [
+          0.62,
+          0.92
+        ]
+      },
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "tvbench",
+      "label": "卧室电视柜",
+      "category": "收纳家具",
+      "role": "视听收纳",
+      "color": "#505f69",
+      "geometry": {
+        "width": 1.2,
+        "depth": 0.4,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 90
+      },
+      "candidate": {
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": true,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "设备取用区",
+        "side": "front",
+        "depth": 0.4,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": {
+        "min": 1,
+        "max": 2.6,
+        "step": 0.1,
+        "fill": [
+          0.58,
+          0.9
+        ]
+      },
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "bedroomDisplay",
+      "label": "卧室展示柜",
+      "category": "沿墙浅柜",
+      "role": "空墙陈列与浅收纳",
+      "color": "#738276",
+      "geometry": {
+        "width": 1.2,
+        "depth": 0.32,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 2
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 100
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "bedroom-display-wall",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 14,
+            "weight": 1.2,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "maxCandidates": 14,
+        "ruleListVersion": 2,
+        "id": "bedroom-display-wall",
+        "enabled": true,
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 14,
+        "weight": 1.2,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": true,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "展示柜取用区",
+        "side": "front",
+        "depth": 0.42,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": {
+        "min": 0.7,
+        "max": 2.4,
+        "step": 0.1,
+        "fill": [
+          0.62,
+          0.94
+        ]
+      },
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "lounge",
+      "label": "休闲椅",
+      "category": "床组与座椅",
+      "role": "阅读休憩",
+      "color": "#6b9888",
+      "geometry": {
+        "width": 0.72,
+        "depth": 0.72,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "lounge-m1",
+            "label": "休闲椅 1号",
+            "width": 0.64,
+            "depth": 0.64,
+            "shape": "box"
+          },
+          {
+            "id": "lounge-m2",
+            "label": "休闲椅 2号",
+            "width": 0.72,
+            "depth": 0.72,
+            "shape": "box"
+          },
+          {
+            "id": "lounge-m3",
+            "label": "休闲椅 3号",
+            "width": 0.8,
+            "depth": 0.8,
+            "shape": "box"
+          }
+        ]
+      },
+      "quantity": {
+        "min": 0,
+        "max": 2
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 110
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "reading-wall",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "reading-wall",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 16,
+            "weight": 1.85,
+            "collisionClearance": 0,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "reading-open-zone",
+            "enabled": false,
+            "mode": "zone",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "reading-open-zone",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 8,
+            "weight": 0.72,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "maxCandidates": 16,
+        "ruleListVersion": 2,
+        "id": "reading-wall",
+        "enabled": true,
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "reading-wall",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 16,
+        "weight": 1.85,
+        "collisionClearance": 0,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": false,
+        "allowCorner": true
+      },
+      "service": {
+        "label": "休闲椅使用区",
+        "side": "front",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "bedroomLoveseat",
+      "label": "卧室小沙发",
+      "category": "休闲会客",
+      "role": "小型会客区",
+      "color": "#c98272",
+      "geometry": {
+        "width": 1.25,
+        "depth": 0.72,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "bedroomLoveseat-m1",
+            "label": "卧室小沙发 1号",
+            "width": 1.1,
+            "depth": 0.68,
+            "shape": "box"
+          },
+          {
+            "id": "bedroomLoveseat-m2",
+            "label": "卧室小沙发 2号",
+            "width": 1.25,
+            "depth": 0.72,
+            "shape": "box"
+          },
+          {
+            "id": "bedroomLoveseat-m3",
+            "label": "卧室小沙发 3号",
+            "width": 1.45,
+            "depth": 0.76,
+            "shape": "box"
+          }
+        ]
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 120
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "loveseat-wall",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1.18,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "loveseat-open-zone",
+            "enabled": true,
+            "mode": "zone",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "bedroom-lounge-zone",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 10,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "maxCandidates": 20,
+        "ruleListVersion": 2,
+        "id": "loveseat-wall",
+        "enabled": true,
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 16,
+        "weight": 1.18,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "小沙发起坐区",
+        "side": "front",
+        "depth": 0.42,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "bedroomTeaTable",
+      "label": "卧室圆几",
+      "category": "休闲会客",
+      "role": "茶歇中心",
+      "color": "#b78b55",
+      "geometry": {
+        "width": 0.56,
+        "depth": 0.56,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "bedroomTeaTable-m1",
+            "label": "卧室圆几 1号",
+            "width": 0.46,
+            "depth": 0.46,
+            "shape": "box"
+          },
+          {
+            "id": "bedroomTeaTable-m2",
+            "label": "卧室圆几 2号",
+            "width": 0.56,
+            "depth": 0.56,
+            "shape": "box"
+          },
+          {
+            "id": "bedroomTeaTable-m3",
+            "label": "卧室圆几 3号",
+            "width": 0.64,
+            "depth": 0.64,
+            "shape": "box"
+          }
+        ]
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 130
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "tea-loveseat-front",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "bedroomLoveseat",
+            "relation": "lounge-table",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.3,
+              "max": 0.55,
+              "step": 0.125
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 8,
+            "weight": 1.25,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "tea-chair-front",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "lounge",
+            "relation": "lounge-table",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.24,
+              "max": 0.46,
+              "step": 0.11
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 8,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "maxCandidates": 16,
+        "ruleListVersion": 2,
+        "id": "tea-loveseat-front",
+        "enabled": true,
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "bedroomLoveseat",
+        "relation": "lounge-table",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0.3,
+          "max": 0.55,
+          "step": 0.125
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 8,
+        "weight": 1.25,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "圆几取用区",
+        "side": "front",
+        "depth": 0.24,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "vanity",
+      "label": "梳妆台",
+      "category": "工作与梳妆",
+      "role": "梳妆",
+      "color": "#a66f86",
+      "geometry": {
+        "width": 1,
+        "depth": 0.45,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 140
+      },
+      "candidate": {
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "梳妆操作区",
+        "side": "front",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": true,
+        "allowBodyTypes": [
+          "vanityStool"
+        ],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "vanityStool",
+      "label": "梳妆凳",
+      "category": "床组与座椅",
+      "role": "梳妆组",
+      "color": "#b78aa0",
+      "geometry": {
+        "width": 0.42,
+        "depth": 0.42,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 150
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "stool-vanity-front",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "vanity",
+            "relation": "vanity-seat",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.22,
+              "max": 0.36,
+              "step": 0.07
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 8,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "maxCandidates": 8,
+        "ruleListVersion": 2,
+        "id": "stool-vanity-front",
+        "enabled": true,
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "vanity",
+        "relation": "vanity-seat",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0.22,
+          "max": 0.36,
+          "step": 0.07
+        },
+        "facing": [
+          "toward"
+        ],
+        "maxSamples": 8,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "坐凳后退区",
+        "side": "back",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": true,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "bedroomInfillCabinet",
+      "label": "卧室定制填缝柜",
+      "category": "拓展填缝定制柜",
+      "role": "末轮空墙补齐",
+      "color": "#526f68",
+      "geometry": {
+        "width": 1.8,
+        "depth": 0.4,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 2
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 160
+      },
+      "candidate": {
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": true,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "定制柜取用区",
+        "side": "front",
+        "depth": 0.45,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": {
+        "min": 0.6,
+        "max": 3,
+        "step": 0.05,
+        "modules": [
+          0.6,
+          0.8,
+          1,
+          1.2,
+          1.5,
+          1.8,
+          2.4,
+          3
+        ],
+        "fill": [
+          0.72,
+          1
+        ]
+      },
+      "infill": true
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "sofa",
+      "label": "沙发",
+      "category": "会客核心",
+      "role": "会客核心",
+      "color": "#be633e",
+      "geometry": {
+        "width": 2.2,
+        "depth": 0.9,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "box",
+            "label": "普通三人沙发",
+            "width": 2.2,
+            "depth": 0.9,
+            "shape": "box"
+          },
+          {
+            "id": "l-left",
+            "label": "左贵妃 L 形沙发",
+            "width": 2.8,
+            "depth": 1.65,
+            "shape": "l-left"
+          },
+          {
+            "id": "l-right",
+            "label": "右贵妃 L 形沙发",
+            "width": 2.8,
+            "depth": 1.65,
+            "shape": "l-right"
+          }
+        ]
+      },
+      "quantity": {
+        "min": 1,
+        "max": 1
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 10
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "sofa-wall",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 16,
+            "weight": 1.25,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "sofa-zone",
+            "enabled": true,
+            "mode": "zone",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "floating-sofa",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "maxCandidates": 28,
+        "ruleListVersion": 2,
+        "id": "sofa-wall",
+        "enabled": true,
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 16,
+        "weight": 1.25,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "沙发起坐区",
+        "side": "front",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "tv",
+      "label": "电视柜",
+      "category": "会客核心",
+      "role": "视听中心",
+      "color": "#34424d",
+      "geometry": {
+        "width": 1.8,
+        "depth": 0.45,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 1,
+        "max": 1
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 20
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "tv-facing-sofa",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "sofa",
+            "relation": "sofa-facing",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 1.55,
+              "max": 3.2,
+              "step": 0.25
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 18,
+            "weight": 1.55,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "tv-open-wall",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "maxCandidates": 30,
+        "ruleListVersion": 2,
+        "id": "tv-facing-sofa",
+        "enabled": true,
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "sofa",
+        "relation": "sofa-facing",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 1.55,
+          "max": 3.2,
+          "step": 0.25
+        },
+        "facing": [
+          "toward"
+        ],
+        "maxSamples": 18,
+        "weight": 1.55,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": true,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "设备与抽屉区",
+        "side": "front",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": true,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "coffee",
+      "label": "茶几",
+      "category": "会客核心",
+      "role": "会客中心",
+      "color": "#bd9252",
+      "geometry": {
+        "width": 1.2,
+        "depth": 0.6,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "coffee-m1",
+            "label": "茶几 1号",
+            "width": 0.9,
+            "depth": 0.5,
+            "shape": "box"
+          },
+          {
+            "id": "coffee-m2",
+            "label": "茶几 2号",
+            "width": 1.2,
+            "depth": 0.6,
+            "shape": "box"
+          },
+          {
+            "id": "coffee-m3",
+            "label": "茶几 3号",
+            "width": 1.4,
+            "depth": 0.7,
+            "shape": "box"
+          }
+        ]
+      },
+      "quantity": {
+        "min": 1,
+        "max": 1
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 30
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "coffee-sofa-front",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "sofa",
+            "relation": "sofa-front",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.4,
+              "max": 0.8,
+              "step": 0.2
+            },
+            "facing": [
+              "toward",
+              "away"
+            ],
+            "maxSamples": 10,
+            "weight": 1.5,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "maxCandidates": 12,
+        "ruleListVersion": 2,
+        "id": "coffee-sofa-front",
+        "enabled": true,
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "sofa",
+        "relation": "sofa-front",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0.4,
+          "max": 0.8,
+          "step": 0.2
+        },
+        "facing": [
+          "toward",
+          "away"
+        ],
+        "maxSamples": 10,
+        "weight": 1.5,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "茶几取用区",
+        "side": "front",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "arm",
+      "label": "单人沙发",
+      "category": "座椅与小件",
+      "role": "围合座位",
+      "color": "#d7895d",
+      "geometry": {
+        "width": 0.8,
+        "depth": 0.8,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "arm-m1",
+            "label": "单人沙发 1号",
+            "width": 0.72,
+            "depth": 0.72,
+            "shape": "box"
+          },
+          {
+            "id": "arm-m2",
+            "label": "单人沙发 2号",
+            "width": 0.8,
+            "depth": 0.8,
+            "shape": "box"
+          },
+          {
+            "id": "arm-m3",
+            "label": "单人沙发 3号",
+            "width": 0.88,
+            "depth": 0.86,
+            "shape": "box"
+          }
+        ]
+      },
+      "quantity": {
+        "min": 0,
+        "max": 4
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 2,
+        "weight": 1,
+        "priority": 40
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "arm-sofa-opposite",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "sofa",
+            "relation": "conversation-opposite",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.7,
+              "max": 1.3,
+              "step": 0.2
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 8,
+            "weight": 1.2,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "arm-sofa-left",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "sofa",
+            "relation": "conversation-side",
+            "side": "left",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.35,
+              "max": 0.85,
+              "step": 0.2
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 8,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "arm-sofa-right",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "sofa",
+            "relation": "conversation-side",
+            "side": "right",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.35,
+              "max": 0.85,
+              "step": 0.2
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 8,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "maxCandidates": 24,
+        "ruleListVersion": 2,
+        "id": "arm-sofa-opposite",
+        "enabled": true,
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "sofa",
+        "relation": "conversation-opposite",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.2
+        },
+        "facing": [
+          "toward"
+        ],
+        "maxSamples": 8,
+        "weight": 1.2,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "单椅起坐区",
+        "side": "back",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "side",
+      "label": "边几",
+      "category": "座椅与小件",
+      "role": "沙发组",
+      "color": "#79927e",
+      "geometry": {
+        "width": 0.5,
+        "depth": 0.5,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "side-m1",
+            "label": "边几 1号",
+            "width": 0.42,
+            "depth": 0.42,
+            "shape": "box"
+          },
+          {
+            "id": "side-m2",
+            "label": "边几 2号",
+            "width": 0.5,
+            "depth": 0.5,
+            "shape": "box"
+          },
+          {
+            "id": "side-m3",
+            "label": "边几 3号",
+            "width": 0.56,
+            "depth": 0.56,
+            "shape": "box"
+          }
+        ]
+      },
+      "quantity": {
+        "min": 0,
+        "max": 2
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 50
+      },
+      "candidate": {
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "sofa",
+        "relation": "sofa-side",
+        "gap": 0.07,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "sofa",
+            "relation": "sofa-side",
+            "side": "left",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.07,
+              "max": 0.07,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "candidate-2",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "sofa",
+            "relation": "sofa-side",
+            "side": "right",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.07,
+              "max": 0.07,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "left",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0.07,
+          "max": 0.07,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "边几取用区",
+        "side": "front",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "floorLamp",
+      "label": "落地灯",
+      "category": "座椅与小件",
+      "role": "座位照明",
+      "color": "#c5a968",
+      "geometry": {
+        "width": 0.36,
+        "depth": 0.36,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 2
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 60
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "lamp-arm-left",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "arm",
+            "relation": "seat-light",
+            "side": "left",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.04,
+              "max": 0.18,
+              "step": 0.07
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 6,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "lamp-arm-right",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "arm",
+            "relation": "seat-light",
+            "side": "right",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.04,
+              "max": 0.18,
+              "step": 0.07
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 6,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "lamp-sofa-left",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "sofa",
+            "relation": "seat-light",
+            "side": "left",
+            "crossAlign": "front",
+            "distance": {
+              "min": 0.04,
+              "max": 0.18,
+              "step": 0.07
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 6,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "lamp-sofa-right",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "sofa",
+            "relation": "seat-light",
+            "side": "right",
+            "crossAlign": "front",
+            "distance": {
+              "min": 0.04,
+              "max": 0.18,
+              "step": 0.07
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 6,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "maxCandidates": 24,
+        "ruleListVersion": 2,
+        "id": "lamp-arm-left",
+        "enabled": true,
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "arm",
+        "relation": "seat-light",
+        "side": "left",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0.04,
+          "max": 0.18,
+          "step": 0.07
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 6,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "灯具维护区",
+        "side": "front",
+        "depth": 0.3,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "diningTable",
+      "label": "餐桌",
+      "category": "客餐家具",
+      "role": "客餐厅用餐",
+      "color": "#8f704d",
+      "geometry": {
+        "width": 1.4,
+        "depth": 0.8,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "diningTable-m1",
+            "label": "餐桌 1号",
+            "width": 1.1,
+            "depth": 0.7,
+            "shape": "box"
+          },
+          {
+            "id": "diningTable-m2",
+            "label": "餐桌 2号",
+            "width": 1.4,
+            "depth": 0.8,
+            "shape": "box"
+          },
+          {
+            "id": "diningTable-m3",
+            "label": "餐桌 3号",
+            "width": 1.6,
+            "depth": 0.85,
+            "shape": "box"
+          }
+        ]
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 70
+      },
+      "candidate": {
+        "mode": "zone",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "dining-zone",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "zone",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "dining-zone",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "餐桌使用区",
+        "side": "front",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "diningChair",
+      "label": "餐椅",
+      "category": "客餐家具",
+      "role": "餐桌组",
+      "color": "#b08a64",
+      "geometry": {
+        "width": 0.46,
+        "depth": 0.5,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 6
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 80
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "dining-front",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "diningTable",
+            "relation": "dining-seat",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.18,
+              "max": 0.38,
+              "step": 0.1
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 6,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "dining-back",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "diningTable",
+            "relation": "dining-seat",
+            "side": "back",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.18,
+              "max": 0.38,
+              "step": 0.1
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 6,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "dining-left",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "diningTable",
+            "relation": "dining-seat",
+            "side": "left",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.18,
+              "max": 0.38,
+              "step": 0.1
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 6,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
+            "id": "dining-right",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "diningTable",
+            "relation": "dining-seat",
+            "side": "right",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.18,
+              "max": 0.38,
+              "step": 0.1
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 6,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "maxCandidates": 24,
+        "ruleListVersion": 2,
+        "id": "dining-front",
+        "enabled": true,
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "diningTable",
+        "relation": "dining-seat",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0.18,
+          "max": 0.38,
+          "step": 0.1
+        },
+        "facing": [
+          "toward"
+        ],
+        "maxSamples": 6,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "餐椅后退区",
+        "side": "back",
+        "depth": 0.42,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "sideboard",
+      "label": "餐边柜",
+      "category": "沿墙柜体",
+      "role": "餐储与台面",
+      "color": "#8b6a4e",
+      "geometry": {
+        "width": 1.6,
+        "depth": 0.45,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 2
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 90
+      },
+      "candidate": {
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "柜前取用区",
+        "side": "front",
+        "depth": 0.5,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": {
+        "min": 1,
+        "max": 3.2,
+        "step": 0.1,
+        "fill": [
+          0.66,
+          0.96
+        ]
+      },
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "bookcase",
+      "label": "书柜 / 矮柜",
+      "category": "沿墙柜体",
+      "role": "沿墙收纳",
+      "color": "#7b6657",
+      "geometry": {
+        "width": 1.2,
+        "depth": 0.35,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 2
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 100
+      },
+      "candidate": {
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": true,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "取书站立区",
+        "side": "front",
+        "depth": 0.42,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": {
+        "min": 0.8,
+        "max": 2.6,
+        "step": 0.1,
+        "fill": [
+          0.62,
+          0.94
+        ]
+      },
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "display",
+      "label": "展示柜",
+      "category": "沿墙柜体",
+      "role": "陈列收纳",
+      "color": "#65736b",
+      "geometry": {
+        "width": 0.9,
+        "depth": 0.38,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 2
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 110
+      },
+      "candidate": {
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": true,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "展示柜取用区",
+        "side": "front",
+        "depth": 0.45,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": {
+        "min": 0.7,
+        "max": 2,
+        "step": 0.1,
+        "fill": [
+          0.56,
+          0.86
+        ]
+      },
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "console",
+      "label": "玄关 / 沙发边柜",
+      "category": "沿墙柜体",
+      "role": "窄型台面",
+      "color": "#927a69",
+      "geometry": {
+        "width": 1.2,
+        "depth": 0.35,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 120
+      },
+      "candidate": {
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "窄柜取用区",
+        "side": "front",
+        "depth": 0.4,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": {
+        "min": 0.8,
+        "max": 2.4,
+        "step": 0.1,
+        "fill": [
+          0.6,
+          0.92
+        ]
+      },
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "ottoman",
+      "label": "脚凳",
+      "category": "座椅与小件",
+      "role": "弹性座位",
+      "color": "#aa7d67",
+      "geometry": {
+        "width": 0.6,
+        "depth": 0.5,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "ottoman-m1",
+            "label": "脚凳 1号",
+            "width": 0.52,
+            "depth": 0.44,
+            "shape": "box"
+          },
+          {
+            "id": "ottoman-m2",
+            "label": "脚凳 2号",
+            "width": 0.6,
+            "depth": 0.5,
+            "shape": "box"
+          },
+          {
+            "id": "ottoman-m3",
+            "label": "脚凳 3号",
+            "width": 0.68,
+            "depth": 0.56,
+            "shape": "box"
+          }
+        ]
+      },
+      "quantity": {
+        "min": 0,
+        "max": 2
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 130
+      },
+      "candidate": {
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "arm",
+        "relation": "seat-ottoman",
+        "gap": 0.34,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "arm",
+            "relation": "seat-ottoman",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.34,
+              "max": 0.34,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0.34,
+          "max": 0.34,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "脚凳使用区",
+        "side": "front",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "plant",
+      "label": "绿植",
+      "category": "座椅与小件",
+      "role": "角落软装",
+      "color": "#5f8b68",
+      "geometry": {
+        "width": 0.42,
+        "depth": 0.42,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 3
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 140
+      },
+      "candidate": {
+        "mode": "corner",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "corner-accent",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "corner",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "corner-accent",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "绿植养护区",
+        "side": "front",
+        "depth": 0.3,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "infillCabinet",
+      "label": "拓展填缝定制柜",
+      "category": "拓展填缝定制柜",
+      "role": "末轮墙面补齐",
+      "color": "#526f68",
+      "geometry": {
+        "width": 2.4,
+        "depth": 0.4,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 2
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 150
+      },
+      "candidate": {
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": true,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "定制柜取用区",
+        "side": "front",
+        "depth": 0.45,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": {
+        "min": 1.1,
+        "max": 5.6,
+        "step": 0.05,
+        "fill": [
+          0.96,
+          1
+        ]
+      },
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "livingRug",
+      "label": "客厅地毯",
+      "category": "地面活动区",
+      "role": "会客区地面衬底",
+      "color": "#d0b780",
+      "geometry": {
+        "width": 2.8,
+        "depth": 2.2,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 160
+      },
+      "candidate": {
+        "mode": "zone",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "zone",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "会客地面衬底",
+        "side": "front",
+        "depth": 0,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "surface": {
+        "layer": "floor",
+        "collision": "ignore",
+        "relativeTo": "sofa",
+        "secondary": "coffee",
+        "padding": {
+          "side": 0.32,
+          "front": 0.72,
+          "back": 0.12
+        }
+      },
+      "run": null,
+      "infill": false
+    }
+  ]
+}
