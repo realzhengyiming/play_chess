@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+globalThis.RoomChessConfigContract=require('./assets/js/config-contract.js');
 
 const root = __dirname;
 const html = fs.readFileSync(path.join(root, 'furniture-rule-editor.html'), 'utf8');
@@ -14,6 +15,7 @@ new Function(scriptSource)();
 setTimeout(() => {
   const config = globalThis.FurnitureConfigBaseline;
   if (!config?.furnitureLibrary?.length || !config?.furnitureRules?.length) throw new Error('默认配置编译失败');
+  globalThis.RoomChessConfigContract.assertGlobalConfig(config);
   const directory = path.join(root, 'server_config');
   fs.mkdirSync(directory, {recursive:true});
   const payload = `${JSON.stringify(config, null, 2)}\n`;

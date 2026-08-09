@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+const {loadRuntimeConfig}=require('./runtime_config');
+globalThis.RoomChessConfigContract=require('../assets/js/config-contract.js');
 
 const root = path.resolve(__dirname, '..');
 new Function(fs.readFileSync(path.join(root, 'assets/js/space-chess.js'), 'utf8'))();
@@ -17,7 +19,7 @@ const assertSpeed = process.argv.includes('--assert-speed');
 setTimeout(() => {
   const engine = globalThis.RoomChessEngine;
   if (!engine?.prepareRecognizedRooms) throw new Error('页面户型解析函数未导出');
-  const config = JSON.parse(fs.readFileSync(path.join(root, 'server_config/furniture-config-default.json'), 'utf8'));
+  const {config}=loadRuntimeConfig(root);
   const rows = [];
   const failures = [];
   const qualityWarnings = [];

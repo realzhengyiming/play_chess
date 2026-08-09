@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+const {loadRuntimeConfig}=require('./runtime_config');
+globalThis.RoomChessConfigContract=require('../assets/js/config-contract.js');
 
 const root = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'assets/js/space-chess.js'), 'utf8');
@@ -30,8 +32,8 @@ const rounded = value => Number.isFinite(value) ? +value.toFixed(3) : null;
 setTimeout(() => {
   const engine = globalThis.RoomChessEngine;
   if (!engine) throw new Error('RoomChessEngine 未导出');
-  const config = JSON.parse(fs.readFileSync(path.join(root, 'server_config/furniture-config-default.json'), 'utf8'));
-  if (!engine.applyGlobalConfig(config)) throw new Error('默认全局配置加载失败');
+  const {config,configPath}=loadRuntimeConfig(root);
+  if (!engine.applyGlobalConfig(config)) throw new Error(`当前全局配置加载失败：${configPath}`);
   engine.setLayoutDensityMode('rich');
   engine.setCustomCabinetEnabled(true);
 

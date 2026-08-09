@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+const {loadRuntimeConfig}=require('./tests/runtime_config');
+globalThis.RoomChessConfigContract=require('./assets/js/config-contract.js');
 
 const htmlPath = path.join(__dirname, 'bedroom-space-chess-V3.html');
 const html = fs.readFileSync(htmlPath, 'utf8');
@@ -71,8 +73,8 @@ function assertOptionalRepeatedTypeCanSkipAndContinue(solution, beamTree, typeId
 setTimeout(() => {
   const engine = globalThis.RoomChessEngine;
   assert(engine, 'RoomChessEngine 未导出');
-  const serverConfig = JSON.parse(fs.readFileSync(path.join(__dirname, 'server_config', 'furniture-config-default.json'), 'utf8'));
-  assert(engine.applyGlobalConfig(serverConfig), 'FastAPI 默认全局配置加载失败');
+  const {config:serverConfig,configPath}=loadRuntimeConfig(__dirname);
+  assert(engine.applyGlobalConfig(serverConfig), `FastAPI 当前全局配置加载失败：${configPath}`);
   engine.setLayoutDensityMode('rich');
 
   // 户型识别后的尺寸测试必须缩放真实多边形和门窗，而不是只修改右上角数字。

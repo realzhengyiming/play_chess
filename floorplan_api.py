@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import subprocess
 import threading
 import time
 from pathlib import Path
@@ -27,6 +28,7 @@ ASSET_DIR = ROOT / "assets"
 CONFIG_DIR = ROOT / "server_config"
 DEFAULT_CONFIG_FILE = CONFIG_DIR / "furniture-config-default.json"
 CURRENT_CONFIG_FILE = CONFIG_DIR / "furniture-config-current.json"
+CONFIG_VALIDATOR_FILE = ROOT / "scripts" / "validate_global_config.js"
 REMOTE_UPLOAD = "http://82.157.195.92:6699/upload_floorplan_image"
 REMOTE_RECOGNIZE = "http://82.157.195.92:6699/gen_floor_plan_fast"
 
@@ -62,6 +64,24 @@ def _write_json_atomic(path: Path, value: dict) -> None:
 
 def _config_response(value: dict, source: str) -> dict:
     return {"ok": True, "source": source, "config": value}
+
+
+def _validate_global_config(value: dict) -> None:
+    """使用浏览器和测试共用的唯一配置契约，不在 Python 复制布局规则。"""
+    try:
+        completed = subprocess.run(
+            ["node", str(CONFIG_VALIDATOR_FILE)],
+            input=json.dumps(value, ensure_ascii=False),
+            capture_output=True,
+            check=False,
+            text=True,
+            timeout=10,
+        )
+    except (FileNotFoundError, subprocess.TimeoutExpired) as error:
+        raise RuntimeError(f"无法执行全局配置契约：{error}") from error
+    if completed.returncode != 0:
+        detail = completed.stderr.strip() or completed.stdout.strip() or "未知配置错误"
+        raise ValueError(detail)
 
 
 def _forward(url: str, body: bytes, content_type: str) -> tuple[int, bytes, str]:
@@ -140,6 +160,10 @@ async def bootstrap_furniture_config(request: Request) -> JSONResponse:
     default_config = body.get("default_config") if isinstance(body, dict) else None
     if not isinstance(default_config, dict):
         return JSONResponse({"detail": "缺少 default_config"}, status_code=422)
+    try:
+        _validate_global_config(default_config)
+    except (ValueError, RuntimeError) as error:
+        return JSONResponse({"detail": f"全局配置契约失败：{error}"}, status_code=422)
     with _config_lock:
         stored_default = _read_json(DEFAULT_CONFIG_FILE) if DEFAULT_CONFIG_FILE.exists() else None
         incoming_version = int(default_config.get("baselineVersion") or 0)
@@ -164,6 +188,10 @@ def get_furniture_config() -> JSONResponse:
         if not CURRENT_CONFIG_FILE.exists():
             return JSONResponse({"detail": "全局配置尚未初始化"}, status_code=404)
         current = _read_json(CURRENT_CONFIG_FILE)
+    try:
+        _validate_global_config(current)
+    except (ValueError, RuntimeError) as error:
+        return JSONResponse({"detail": f"当前全局配置无效：{error}"}, status_code=500)
     return JSONResponse(_config_response(current, "current"))
 
 
@@ -173,6 +201,10 @@ def get_default_furniture_config() -> JSONResponse:
         if not DEFAULT_CONFIG_FILE.exists():
             return JSONResponse({"detail": "默认配置尚未初始化"}, status_code=404)
         default = _read_json(DEFAULT_CONFIG_FILE)
+    try:
+        _validate_global_config(default)
+    except (ValueError, RuntimeError) as error:
+        return JSONResponse({"detail": f"默认配置无效：{error}"}, status_code=500)
     return JSONResponse(_config_response(default, "default"))
 
 
@@ -180,8 +212,12 @@ def get_default_furniture_config() -> JSONResponse:
 async def put_furniture_config(request: Request) -> JSONResponse:
     """覆盖唯一的全局当前配置；不创建版本历史。"""
     value = await request.json()
-    if not isinstance(value, dict) or not isinstance(value.get("furnitureLibrary"), list):
-        return JSONResponse({"detail": "配置必须包含 furnitureLibrary 数组"}, status_code=422)
+    if not isinstance(value, dict):
+        return JSONResponse({"detail": "配置必须是 JSON object"}, status_code=422)
+    try:
+        _validate_global_config(value)
+    except (ValueError, RuntimeError) as error:
+        return JSONResponse({"detail": f"全局配置契约失败：{error}"}, status_code=422)
     with _config_lock:
         _write_json_atomic(CURRENT_CONFIG_FILE, value)
     return JSONResponse(_config_response(value, "current"))
@@ -193,6 +229,10 @@ def restore_furniture_config() -> JSONResponse:
         if not DEFAULT_CONFIG_FILE.exists():
             return JSONResponse({"detail": "默认配置尚未初始化"}, status_code=404)
         default = _read_json(DEFAULT_CONFIG_FILE)
+        try:
+            _validate_global_config(default)
+        except (ValueError, RuntimeError) as error:
+            return JSONResponse({"detail": f"默认配置无效：{error}"}, status_code=500)
         _write_json_atomic(CURRENT_CONFIG_FILE, default)
     return JSONResponse(_config_response(default, "default"))
 

@@ -268,6 +268,8 @@
       return {schemaVersion:8,baselineVersion:BASELINE_VERSION,profileName:'全局家具配置',updatedAt:new Date().toISOString(),richBedroomDefaultsV1:true,richBedroomDefaultsV2:true,wallCabinetFirstV1:true,bedroomCorePriorityV1:true,livingCorePriorityV1:true,livingGroupDependencyV2:true,bedroomGroupDependencyV3:true,designQualityRules:clone(globalDesignQualityRules),layoutConstraints:clone(globalLayoutConstraints),roomTypes:clone(profile?.roomTypes||DEFAULT_ROOM_TYPES),furnitureLibrary:clone(catalog),roomAssignments:clone(profile?.roomAssignments||{}),roomSettings:clone(profile?.roomSettings||{}),furnitureRules:compiledCatalog(profile)};
     }
     function applyGlobalConfigPayload(parsed){
+      if(!globalThis.RoomChessConfigContract)throw new Error('全局配置契约模块未加载');
+      globalThis.RoomChessConfigContract.assertGlobalConfig(parsed);
       const rows=parsed?.furnitureLibrary||parsed?.furnitureRules;if(!Array.isArray(rows)||!rows.length)throw new Error('服务端配置缺少 furnitureLibrary');
       if(!parsed.designQualityRules||!parsed.layoutConstraints)throw new Error('服务端配置缺少 designQualityRules 或 layoutConstraints；拒绝套用 JS 默认值');
       const profile=normalizeProfile({...parsed,id:'global-profile',name:'全局配置',catalog:normalizeCatalog(rows),roomTypes:Array.isArray(parsed.roomTypes)?parsed.roomTypes:DEFAULT_ROOM_TYPES,roomAssignments:parsed.roomAssignments,roomSettings:parsed.roomSettings,updatedAt:parsed.updatedAt||new Date().toISOString()});
@@ -283,7 +285,7 @@
     }
     function scheduleGlobalSave(){
       if(!serverReady)return;clearTimeout(remoteSaveTimer);remoteSaveTimer=setTimeout(async()=>{
-        try{const response=await fetch(GLOBAL_CONFIG_API,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(globalConfigPayload())});const payload=await response.json();if(!response.ok)throw new Error(payload.detail||`HTTP ${response.status}`);status.className='status ok';status.textContent=`已保存到 FastAPI 全局配置 ${new Date().toLocaleTimeString('zh-CN',{hour12:false})}`;}
+        try{const nextConfig=globalConfigPayload();globalThis.RoomChessConfigContract.assertGlobalConfig(nextConfig);const response=await fetch(GLOBAL_CONFIG_API,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(nextConfig)});const payload=await response.json();if(!response.ok)throw new Error(payload.detail||`HTTP ${response.status}`);status.className='status ok';status.textContent=`已保存到 FastAPI 全局配置 ${new Date().toLocaleTimeString('zh-CN',{hour12:false})}`;}
         catch(error){status.className='status error';status.textContent=`全局配置保存失败：${error.message}`;}
       },320);
     }

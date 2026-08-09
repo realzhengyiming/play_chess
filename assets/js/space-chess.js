@@ -127,6 +127,8 @@
     }
     function applyGlobalConfig(config){
       if(!config||typeof config!=='object')throw new Error('全局配置为空');
+      if(!globalThis.RoomChessConfigContract)throw new Error('全局配置契约模块未加载');
+      globalThis.RoomChessConfigContract.assertGlobalConfig(config);
       if(!applyDesignQualityRules(config.designQualityRules))throw new Error('缺少 designQualityRules');
       applyLayoutConstraints(config.layoutConstraints);
       const catalog=config.furnitureRules||config.furnitureLibrary;

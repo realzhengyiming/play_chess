@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+const {loadRuntimeConfig}=require('./tests/runtime_config');
+globalThis.RoomChessConfigContract=require('./assets/js/config-contract.js');
 
 const html = fs.readFileSync(path.join(__dirname, 'bedroom-space-chess-V3.html'), 'utf8');
 const scriptSource = (() => {
@@ -24,8 +26,8 @@ const countTypes = solution => {
 
 setTimeout(() => {
   const engine = globalThis.RoomChessEngine;
-  const baseline = JSON.parse(fs.readFileSync(path.join(__dirname, 'server_config', 'furniture-config-default.json'), 'utf8'));
-  if (!engine.applyGlobalConfig(baseline)) fail('默认配置加载失败');
+  const {config:baseline,configPath}=loadRuntimeConfig(__dirname);
+  if (!engine.applyGlobalConfig(baseline)) fail(`当前配置加载失败：${configPath}`);
   engine.setLayoutDensityMode('rich');
   engine.setCustomCabinetEnabled(true);
 

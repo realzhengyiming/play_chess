@@ -108,10 +108,13 @@ uvicorn floorplan_api:app --host 127.0.0.1 --port 8765 --reload
 ```powershell
 node test_layout_baseline.js
 node test_layout_stress.js
-node tests/layout_quality_benchmark.js
+node tests/config_contract_test.js
+node tests/layout_quality_benchmark.js --assert-quality
 node tests/recognized_room_suite.js --assert-quality --assert-speed
 python -m py_compile floorplan_api.py
 ```
+
+上述回归默认读取实际生效的 `furniture-config-current.json`。如需验证另一份配置，显式设置 `ROOM_CHESS_CONFIG=/absolute/path/to/config.json`，测试不会再悄悄改用 default。
 
 两阶段改进目标见 [`docs/codex-layout-goal.md`](docs/codex-layout-goal.md)，设计距离与资料来源见 [`docs/design-rules-sources.md`](docs/design-rules-sources.md)。
 
@@ -139,5 +142,6 @@ python -m py_compile floorplan_api.py
 - HTML 只保留语义结构与资源引用，不再把大段 CSS/JavaScript 写回页面。
 - 默认配置与当前全局配置职责分离，不创建隐藏的浏览器配置副本。
 - 新增约束优先配置化；确实属于通用几何/搜索能力时才写入引擎函数。
+- 规则归属与迁移边界见 [`docs/layout-rule-ownership.md`](docs/layout-rule-ownership.md)。
 - 性能优化以减少候选数、批量栅格判断、分层去重和合理 Beam 宽度为主。
 - 每次修改算法后保留终止原因和搜索树记录，避免只看到“分支消失”。
