@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>空间棋 · 模块生长实验场</title>
+  <style>
+    :root{--ink:#14231e;--muted:#68736e;--paper:#f4f1e9;--card:#fffdf9;--line:#d8ddd6;--green:#087260;--mint:#dff1ea;--orange:#ff5b3d;--gold:#c9933a;--blue:#3376a9;--shadow:0 18px 45px rgba(28,45,38,.10)}
+    *{box-sizing:border-box}body{margin:0;color:var(--ink);font-family:Inter,"Microsoft YaHei",system-ui,sans-serif;background:radial-gradient(circle at 0 0,#fae8df 0,transparent 30%),radial-gradient(circle at 100% 0,#e6efe8 0,transparent 34%),var(--paper)}
+    button,input,select{font:inherit}button{cursor:pointer}.shell{width:min(1760px,calc(100% - 36px));margin:0 auto;padding:28px 0 42px}
+    header{display:flex;align-items:flex-end;justify-content:space-between;gap:30px;margin-bottom:18px}.eyebrow{font-size:12px;font-weight:900;letter-spacing:.2em;color:var(--green)}h1{font-size:clamp(34px,4vw,62px);line-height:.95;margin:10px 0 0;letter-spacing:-.06em}.intro{max-width:620px;color:#59645f;line-height:1.7;font-size:14px}
+    .toolbar{display:grid;grid-template-columns:auto auto auto 1fr auto;gap:12px;align-items:center;padding:14px 16px;background:rgba(255,255,255,.86);border:1px solid #e0e3dc;border-radius:20px;box-shadow:var(--shadow);position:sticky;top:8px;z-index:20;backdrop-filter:blur(16px)}
+    .seg{display:flex;padding:4px;background:#edf0eb;border-radius:13px}.seg button,.phase-btn{border:0;background:transparent;color:#65716b;font-weight:800;padding:9px 13px;border-radius:10px;white-space:nowrap}.seg button.active,.phase-btn.active{background:var(--ink);color:white;box-shadow:0 5px 12px rgba(20,35,30,.14)}
+    .measure{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--line);border-radius:13px;background:#fff}.measure label{font-size:12px;color:#65716b;font-weight:800}.measure input[type=number]{width:64px;border:0;outline:0;font-weight:900;color:var(--ink)}.measure input[type=range]{width:105px;accent-color:var(--orange)}
+    .run{border:0;border-radius:13px;padding:12px 18px;font-weight:900;color:white;background:var(--orange);box-shadow:0 8px 18px rgba(255,91,61,.25)}
+    .layout{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:18px;margin-top:18px}.stage-card,.panel{background:rgba(255,255,255,.90);border:1px solid #e1e4dd;border-radius:22px;box-shadow:var(--shadow);overflow:hidden}.stage-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;padding:18px 20px;border-bottom:1px solid var(--line)}.stage-head h2,.panel h2{font-size:17px;margin:0 0 5px}.stage-head p,.panel p{font-size:12px;color:var(--muted);margin:0;line-height:1.6}.badge{padding:8px 12px;border-radius:999px;background:#e8f4ef;color:var(--green);font-weight:900;font-size:12px}
+    .canvas-wrap{height:min(680px,calc(100vh - 235px));min-height:510px;position:relative;background:#fbfaf5;overflow:hidden}canvas{width:100%;height:100%;display:block}.canvas-note{position:absolute;left:18px;top:16px;padding:8px 11px;border-radius:999px;background:rgba(255,255,255,.92);border:1px solid #e4e5df;font-size:12px;font-weight:800;box-shadow:0 5px 16px rgba(20,35,30,.08)}
+    .legend{position:absolute;right:16px;bottom:14px;display:flex;gap:10px;flex-wrap:wrap;max-width:440px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.92);border:1px solid #e2e4dd;font-size:11px}.legend i{display:inline-block;width:12px;height:8px;border-radius:3px;margin-right:4px}.legend .hard{background:#3376a9}.legend .soft{background:rgba(8,114,96,.12);border:1px dashed #087260}.legend .shared{background:rgba(201,147,58,.14);border:1px dashed #c9933a}.legend .repair{background:#4b5e58}
+    .phasebar{display:flex;align-items:center;gap:7px;padding:13px 16px;border-top:1px solid var(--line);overflow:auto}.phase-btn{background:#f0f2ee;border:1px solid transparent}.phase-btn small{display:block;font-size:9px;font-weight:700;opacity:.72;margin-top:2px}
+    .side{display:flex;flex-direction:column;gap:18px}.panel{padding:17px}.metrics{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:13px}.metric{padding:11px;border-radius:14px;background:#f1f3ef}.metric b{display:block;font-size:23px;letter-spacing:-.04em}.metric span{font-size:10px;color:var(--muted);font-weight:800}
+    .module-list{display:flex;flex-direction:column;gap:8px;margin-top:13px}.module-row{border:1px solid var(--line);border-radius:14px;padding:11px 12px;background:#fff}.module-top{display:flex;align-items:center;justify-content:space-between;gap:8px}.module-top strong{font-size:13px}.module-size{font-size:10px;font-weight:900;border-radius:999px;padding:4px 7px;color:white}.module-row small{display:block;color:var(--muted);margin-top:5px;line-height:1.45}.module-row .bar{height:4px;background:#eceeea;border-radius:4px;margin-top:8px;overflow:hidden}.module-row .bar i{display:block;height:100%;border-radius:4px}
+    .log{margin-top:12px;max-height:210px;overflow:auto;padding-left:20px;color:#5f6964;font-size:11px;line-height:1.6}.options{display:grid;gap:9px;margin-top:13px}.check{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:12px;background:#f1f3ef;font-size:12px;font-weight:750}.check input{accent-color:var(--green)}
+    .explain{padding:15px 17px;margin-top:18px;border:1px solid #dfe3dc;background:rgba(255,255,255,.72);border-radius:18px;color:#53605a;font-size:12px;line-height:1.75}.explain strong{color:var(--ink)}
+    @media(max-width:1080px){.toolbar{grid-template-columns:1fr 1fr}.toolbar .seg{grid-column:1/-1}.layout{grid-template-columns:1fr}.side{display:grid;grid-template-columns:1fr 1fr}.canvas-wrap{height:620px}.run{justify-self:end}}
+    @media(max-width:680px){.shell{width:min(100% - 18px,1760px);padding-top:16px}header{display:block}.intro{margin-top:14px}.toolbar{position:static;grid-template-columns:1fr}.measure{justify-content:space-between}.side{display:block}.panel{margin-bottom:12px}.canvas-wrap{height:500px;min-height:440px}.phasebar{padding:10px}.phase-btn{font-size:11px}}
+  </style>
+</head>
+<body>
+<main class="shell">
+  <header>
+    <div><div class="eyebrow">ROOM / CHESS ENGINE · MACRO MODULE LAB</div><h1>模块生长实验场</h1></div>
+    <div class="intro">独立验证“先下模块大棋，再展开家具小棋”。模块边界不是硬隔断：家具展开后通过影响场羽化、水漫分区、空墙补全与局部收缝重新混合。</div>
+  </header>
+
+  <section class="toolbar">
+    <div class="seg" id="presets"><button data-preset="compact">小卧室</button><button class="active" data-preset="standard">标准卧室</button><button data-preset="large">大卧室</button></div>
+    <div class="measure"><label>宽</label><input id="widthRange" type="range" min="2.7" max="7.0" step="0.1" value="3.6"><input id="widthInput" type="number" min="2.7" max="7" step="0.1" value="3.6"><b>m</b></div>
+    <div class="measure"><label>深</label><input id="depthRange" type="range" min="3.0" max="7.0" step="0.1" value="4.2"><input id="depthInput" type="number" min="3" max="7" step="0.1" value="4.2"><b>m</b></div>
+    <div class="seg" id="density"><button data-density="compact">克制</button><button class="active" data-density="balanced">均衡</button><button data-density="rich">丰满</button></div>
+    <button class="run" id="autoPlay">▶ 自动演示</button>
+  </section>
+
+  <section class="layout">
+    <article class="stage-card">
+      <div class="stage-head"><div><h2 id="phaseTitle">① 模块大棋</h2><p id="phaseDesc">先确定睡眠、收纳、办公与休闲的大致空间意图。</p></div><span class="badge" id="roomBadge">15.1㎡ · 3.6×4.2m</span></div>
+      <div class="canvas-wrap"><canvas id="board"></canvas><div class="canvas-note" id="canvasNote">模块按空间自动选择 S / M / L</div><div class="legend"><span><i class="hard"></i>家具实体</span><span><i class="soft"></i>弹性生长区</span><span><i class="shared"></i>共享/使用区</span><span><i class="repair"></i>补缝家具</span></div></div>
+      <div class="phasebar" id="phasebar">
+        <button class="phase-btn active" data-phase="1">① 大棋<small>模块落位</small></button>
+        <button class="phase-btn" data-phase="2">② 拆棋<small>家具展开</small></button>
+        <button class="phase-btn" data-phase="3">③ 羽化<small>边界混合</small></button>
+        <button class="phase-btn" data-phase="4">④ 水漫<small>反向填空</small></button>
+        <button class="phase-btn" data-phase="5">⑤ 收缝<small>最终方案</small></button>
+      </div>
+    </article>
+
+    <aside class="side">
+      <section class="panel"><h2>鲁棒性指标</h2><p>每次修改房间尺寸都会重新选择模块规格并完整重排。</p><div class="metrics">
+        <div class="metric"><b id="metricFurniture">0</b><span>落地家具</span></div><div class="metric"><b id="metricModules">0</b><span>完整模块</span></div>
+        <div class="metric"><b id="metricFill">0%</b><span>有效饱满度</span></div><div class="metric"><b id="metricWall">0%</b><span>有效墙面利用</span></div>
+        <div class="metric"><b id="metricGap">0㎡</b><span>未解释空区</span></div><div class="metric"><b id="metricTime">0ms</b><span>本轮计算</span></div>
+      </div></section>
+      <section class="panel"><h2>模块选择结果</h2><p>模块是可展开的大棋，不是固定矩形房间分区。</p><div class="module-list" id="moduleList"></div></section>
+      <section class="panel"><h2>实验开关</h2><div class="options">
+        <label class="check"><input id="showZones" type="checkbox">显示使用区与弹性区</label>
+        <label class="check"><input id="showGrid" type="checkbox" checked>显示 0.1m Bitset 网格</label>
+        <label class="check"><input id="enableRepair" type="checkbox" checked>启用空墙补柜与收缝</label>
+        <label class="check"><input id="enableActivity" type="checkbox" checked>启用剩余空间活动簇</label>
+      </div><ol class="log" id="log"></ol></section>
+    </aside>
+  </section>
+  <div class="explain"><strong>实验边界：</strong>当前只验证矩形卧室和内置家具数据，不读取主页面配置，也不写入服务端。模块层只保留少量 S/M/L 候选；内部家具仍用同一张全局网格检查。尺寸变化后如果大模块不能展开，会自动降级或释放该模块。</div>
+</main>
+
+<script>
+(() => {
+  'use strict';
+  const $=id=>document.getElementById(id), clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), round=(v,n=2)=>Number(v.toFixed(n));
+  const ui={board:$('board'),widthRange:$('widthRange'),widthInput:$('widthInput'),depthRange:$('depthRange'),depthInput:$('depthInput'),roomBadge:$('roomBadge'),phaseTitle:$('phaseTitle'),phaseDesc:$('phaseDesc'),canvasNote:$('canvasNote'),moduleList:$('moduleList'),log:$('log'),showZones:$('showZones'),showGrid:$('showGrid'),enableRepair:$('enableRepair'),enableActivity:$('enableActivity'),autoPlay:$('autoPlay'),metricFurniture:$('metricFurniture'),metricModules:$('metricModules'),metricFill:$('metricFill'),metricWall:$('metricWall'),metricGap:$('metricGap'),metricTime:$('metricTime')};
+  const PHASES={1:['① 模块大棋','先确定睡眠、收纳、办公与休闲的大致空间意图。'],2:['② 模块拆棋','模块展开成真实家具，全部回到同一张全局棋盘。'],3:['③ 边界羽化','影响场穿过模块软边界，关系、墙面和通行共同决定归属。'],4:['④ 水漫填空','从剩余空墙和连通空区反向寻找可补充的家具簇。'],5:['⑤ 局部收缝','切换模数、吸附墙端并用连续柜收口，得到最终方案。']};
+  const COLORS={sleep:'#3376a9',storage:'#a4724c',work:'#2d8a77',lounge:'#bd8b43',dressing:'#ad718a',display:'#67796d',reading:'#708ba1',media:'#485966',activity:'#c57962',repair:'#4b5e58'};
+  const SIZE_RANK={S:1,M:2,L:3};
+  let phase=1,density='balanced',debounceTimer=null,playTimer=null,layout=null;
+  const presets={compact:[2.9,3.4],standard:[3.6,4.2],large:[5.4,5.2]};
+
+  const rect=(x,y,w,d,extra={})=>({x,y,w,d,...extra});
+  const overlap=(a,b,pad=0)=>Math.abs(a.x-b.x)<(a.w+b.w)/2+pad&&Math.abs(a.y-b.y)<(a.d+b.d)/2+pad;
+  // 允许墙边家具精确贴到 0 边界；仅用微小浮点容差阻止真实越界。
+  const inside=(r,W,D,m=-.002)=>r.x-r.w/2>=m&&r.y-r.d/2>=m&&r.x+r.w/2<=W-m&&r.y+r.d/2<=D-m;
+  function doorZone(W,D){return rect(.55,D-.45,.95,.92,{kind:'door'});}
+  function windowSpan(W){return {a:W/2-.65,b:W/2+.65};}
+  function localToRoom(wall,t,v,W,D){
+    if(wall==='top')return{x:t,y:v};if(wall==='right')return{x:W-v,y:t};if(wall==='bottom')return{x:W-t,y:D-v};return{x:v,y:D-t};
+  }
+  function localRectToRoom(row,wall,t,W,D,moduleId,color,phaseAdded=2){
+    const p=localToRoom(wall,t+row.u,row.v,W,D),vertical=wall==='left'||wall==='right';
+    return rect(p.x,p.y,vertical?row.d:row.w,vertical?row.w:row.d,{...row,moduleId,color,wall,phaseAdded});
+  }
+  function wallLength(wall,W,D){return wall==='top'||wall==='bottom'?W:D;}
+  function moduleTemplate(type,size){
+    if(type==='sleep'){
+      const bedW=size==='S'?1.2:size==='M'?1.5:1.8,bedD=2,nightW=size==='S'?.38:size==='M'?.45:.5,nights=size==='S'?1:2,bedOffset=nights===1?nightW/2:0,rows=[{label:size==='S'?'单人床':'双人床',type:'bed',u:bedOffset,v:bedD/2,w:bedW,d:bedD}];
+      if(nights>=1)rows.push({label:'床头柜',type:'night',u:nights===1?-bedW/2:-(bedW+nightW)/2,v:nightW/2,w:nightW,d:nightW});
+      if(nights===2)rows.push({label:'床头柜',type:'night',u:(bedW+nightW)/2,v:nightW/2,w:nightW,d:nightW});
+      if(size==='L')rows.push({label:'床尾凳',type:'bench',u:0,v:bedD+.12+.21,w:Math.min(1.35,bedW*.78),d:.42});
+      const span=bedW+nightW*nights,depth=bedD+(size==='L'?1.15:.65);
+      return{type,size,label:'主睡眠区',span,depth,rows,zones:[{label:'床侧/床尾共享区',u:0,v:bedD+.30,w:Math.max(bedW,span-.15),d:size==='L'?1.05:.62,zone:'shared'}]};
+    }
+    if(type==='storage'){
+      const width=size==='S'?1.2:size==='M'?1.8:2.4,depth=.58;
+      return{type,size,label:'衣物收纳区',span:width,depth:1.15,rows:[{label:size==='L'?'连续衣柜':'衣柜',type:'wardrobe',u:0,v:depth/2,w:width,d:depth}],zones:[{label:'柜前共享区',u:0,v:depth+.30,w:width,d:.58,zone:'shared'}]};
+    }
+    if(type==='work'){
+      const width=size==='S'?.9:size==='M'?1.2:1.5;
+      return{type,size,label:'轻办公区',span:width,depth:1.45,rows:[{label:`书桌 ${width.toFixed(1)}m`,type:'desk',u:0,v:.29,w:width,d:.58},{label:'工作椅',type:'chair',u:0,v:.93,w:.48,d:.48}],zones:[{label:'座椅后退区',u:0,v:1.18,w:Math.max(.75,width*.72),d:.50,zone:'shared'}]};
+    }
+    if(type==='dressing'){
+      const width=size==='S'?.8:size==='M'?1.1:1.4;
+      return{type,size,label:'梳妆整理区',span:width,depth:1.30,rows:[{label:`梳妆台 ${width.toFixed(1)}m`,type:'vanity',u:0,v:.24,w:width,d:.48},{label:'梳妆凳',type:'vanityStool',u:0,v:.82,w:.42,d:.42}],zones:[{label:'梳妆使用区',u:0,v:.92,w:Math.max(.68,width*.72),d:.58,zone:'shared'}]};
+    }
+    if(type==='display'){
+      const width=size==='S'?1.0:size==='M'?1.55:2.2;
+      return{type,size,label:'沿墙展示区',span:width,depth:.92,rows:[{label:`展示柜 ${width.toFixed(1)}m`,type:'displayCabinet',u:0,v:.19,w:width,d:.38}],zones:[{label:'展示停留区',u:0,v:.62,w:width,d:.46,zone:'soft'}]};
+    }
+    if(type==='reading'){
+      const width=size==='S'?1.25:size==='M'?1.75:2.25;
+      return{type,size,label:'阅读角',span:width,depth:1.62,rows:[{label:`矮书柜 ${width.toFixed(1)}m`,type:'bookcase',u:0,v:.18,w:width,d:.36},{label:'阅读椅',type:'readingChair',u:-width*.20,v:.94,w:.66,d:.68},{label:'边几',type:'side',u:width*.27,v:.94,w:.40,d:.40}],zones:[{label:'阅读活动区',u:0,v:1.12,w:Math.max(1.05,width*.82),d:.82,zone:'soft'}]};
+    }
+    if(type==='media'){
+      const width=size==='S'?1.2:size==='M'?1.8:2.4,sofaW=size==='S'?1.05:size==='M'?1.35:1.7;
+      return{type,size,label:'卧室影音区',span:width,depth:2.38,rows:[{label:`电视矮柜 ${width.toFixed(1)}m`,type:'tvBench',u:0,v:.20,w:width,d:.40},{label:'小沙发',type:'loveseat',u:0,v:1.66,w:sofaW,d:.72},{label:'小茶几',type:'tea',u:0,v:1.05,w:.58,d:.44}],zones:[{label:'观看活动区',u:0,v:1.23,w:Math.max(1.15,sofaW),d:1.22,zone:'soft'}]};
+    }
+    if(type==='activity'){
+      const env=size==='S'?[1.15,1.05]:size==='M'?[1.65,1.35]:[2.20,1.65],rows=[{label:'小茶几',type:'activityTable',u:0,v:env[1]/2,w:size==='L'?.62:.48,d:size==='L'?.52:.42,round:true},{label:'坐垫',type:'ottoman',u:-env[0]*.31,v:env[1]/2,w:.46,d:.46,round:true}];
+      if(size!=='S')rows.push({label:'小椅子',type:'activityChair',u:env[0]*.31,v:env[1]/2,w:.58,d:.58});
+      if(size==='L')rows.push({label:'坐垫',type:'ottoman',u:0,v:env[1]*.18,w:.44,d:.44,round:true});
+      return{type,size,label:'自由活动簇',span:env[0],depth:env[1],rows,zones:[{label:'弹性活动区',u:0,v:env[1]/2,w:env[0],d:env[1],zone:'soft'}]};
+    }
+    const env=size==='S'?[1.25,1.15]:size==='M'?[1.75,1.45]:[2.35,1.75],rows=[];
+    if(size==='S'){rows.push({label:'休闲椅',type:'lounge',u:-.26,v:.55,w:.68,d:.68},{label:'边几',type:'side',u:.42,v:.56,w:.42,d:.42});}
+    if(size==='M'){rows.push({label:'小沙发',type:'loveseat',u:0,v:.38,w:1.25,d:.72},{label:'小茶几',type:'tea',u:0,v:1.02,w:.56,d:.48});}
+    if(size==='L'){rows.push({label:'小沙发',type:'loveseat',u:0,v:.38,w:1.35,d:.72},{label:'小茶几',type:'tea',u:0,v:1.05,w:.72,d:.48},{label:'休闲椅',type:'lounge',u:-.82,v:1.05,w:.62,d:.62},{label:'坐垫',type:'ottoman',u:.78,v:1.07,w:.46,d:.46});}
+    return{type,size,label:'床尾休闲区',span:env[0],depth:env[1],rows,zones:[{label:'活动共享区',u:0,v:env[1]/2,w:env[0],d:env[1],zone:'soft'}]};
+  }
+
+  function bodyLegal(rows,items,W,D){
+    const door=doorZone(W,D);return rows.every(r=>inside(r,W,D)&&!overlap(r,door,.02)&&items.every(other=>!overlap(r,other,.025)));
+  }
+  function placeWallModule(type,sizes,state,opts={}){
+    const {W,D,items,modules}=state,step=.10;let best=null;
+    for(const size of sizes){const tpl=moduleTemplate(type,size);for(const wall of ['top','right','bottom','left']){
+      if(opts.walls&&!opts.walls.includes(wall))continue;const len=wallLength(wall,W,D);if(tpl.span>len-.06||tpl.depth>(wall==='top'||wall==='bottom'?D:W)-.04)continue;
+      for(let t=tpl.span/2+.02;t<=len-tpl.span/2-.02;t+=step){
+        const rows=tpl.rows.map(row=>localRectToRoom(row,wall,t,W,D,type,COLORS[type]));if(!bodyLegal(rows,items,W,D))continue;
+        if(opts.avoidWindow&&wall==='top'){const span=windowSpan(W);if(rows.some(r=>r.x+r.w/2>span.a&&r.x-r.w/2<span.b&&r.y-r.d/2<.08))continue;}
+        const p=localToRoom(wall,t,tpl.depth/2,W,D),moduleRect=rect(p.x,p.y,wall==='left'||wall==='right'?tpl.depth:tpl.span,wall==='left'||wall==='right'?tpl.span:tpl.depth);
+        if(!inside(moduleRect,W,D))continue;
+        const door=doorZone(W,D),distance=Math.hypot(p.x-door.x,p.y-door.y),endGap=Math.min(t-tpl.span/2,len-(t+tpl.span/2));
+        const sizePreference=(sizes.length-sizes.indexOf(size))*25;
+        let score=SIZE_RANK[size]*18+sizePreference+distance*2-Math.min(12,endGap*4);
+        if(type==='sleep'){if(wall==='bottom')score-=35;if(wall==='top'){const win=windowSpan(W);if(t+tpl.span/2>win.a&&t-tpl.span/2<win.b)score-=9;}score+=wall==='top'?5:0;}
+        if(type==='storage')score+=endGap<.08?12:0;if(type==='work'&&wall==='top')score+=8;
+        if(opts.preferOpposite&&modules.find(m=>m.type===opts.preferOpposite)?.wall===wall)score-=10;
+        if(!best||score>best.score)best={score,tpl,wall,t,rows,moduleRect};
+      }
+    }}
+    if(!best)return null;const zones=best.tpl.zones.map(z=>localRectToRoom(z,best.wall,best.t,W,D,type,COLORS[type]));
+    const module={id:`${type}-${modules.length+1}`,type,size:best.tpl.size,label:best.tpl.label,wall:best.wall,hull:{...best.moduleRect},items:best.rows,zones,color:COLORS[type],completeness:1};
+    module.items.forEach(item=>item.moduleId=module.id);module.zones.forEach(zone=>zone.moduleId=module.id);items.push(...module.items);modules.push(module);return module;
+  }
+  function placeOpenModule(type,sizes,state){
+    const {W,D,items,modules}=state;let best=null;
+    for(const size of sizes){const tpl=moduleTemplate(type,size);for(let x=tpl.span/2+.08;x<=W-tpl.span/2-.08;x+=.16)for(let y=tpl.depth/2+.08;y<=D-tpl.depth/2-.08;y+=.16){
+      const rows=tpl.rows.map(row=>rect(x+row.u,y-tpl.depth/2+row.v,row.w,row.d,{...row,moduleId:type,color:COLORS[type],phaseAdded:2}));if(!bodyLegal(rows,items,W,D))continue;
+      const hull=rect(x,y,tpl.span,tpl.depth),door=doorZone(W,D);if(overlap(hull,door,.10))continue;
+      const sizePreference=(sizes.length-sizes.indexOf(size))*25,centerBonus=10-Math.hypot(x-W/2,y-D/2)*1.6,score=SIZE_RANK[size]*19+sizePreference+centerBonus;
+      if(!best||score>best.score)best={score,tpl,rows,hull};
+    }}
+    if(!best)return null;const id=`${type}-${modules.length+1}`,zones=[{...best.hull,label:best.tpl.zones[0]?.label||'活动共享区',zone:'soft',moduleId:id,color:COLORS[type]}];best.rows.forEach(r=>r.moduleId=id);items.push(...best.rows);const module={id,type,size:best.tpl.size,label:best.tpl.label,wall:null,hull:best.hull,items:best.rows,zones,color:COLORS[type],completeness:1};modules.push(module);return module;
+  }
+
+  function placeRepairCabinets(state,maxCount){
+    const additions=[];for(let count=0;count<maxCount;count++){
+      const before=state.modules.length,module=placeWallModule('storage',['L','M','S'],state,{avoidWindow:true});if(!module||state.modules.length===before)break;
+      module.type='repair';module.label='空墙连续柜';module.color=COLORS.repair;module.items.forEach(i=>{i.color=COLORS.repair;i.label='定制收口柜';i.phaseAdded=5;i.repair=true});module.zones.forEach(i=>{i.color=COLORS.repair;i.phaseAdded=5});additions.push(module);
+    }return additions;
+  }
+  function tryActivityFill(state){
+    const {W,D,items}=state,candidates=[];for(let x=.48;x<W-.48;x+=.16)for(let y=.48;y<D-.48;y+=.16){const seat=rect(x,y,.62,.62,{label:'小椅子',type:'activityChair',color:'#79a292',phaseAdded:4,repair:true});if(!bodyLegal([seat],items,W,D))continue;const clearance=Math.min(...items.map(i=>Math.max(0,Math.hypot(x-i.x,y-i.y)-(Math.max(i.w,i.d)+.62)/2)),9);candidates.push({seat,score:clearance-Math.hypot(x-W/2,y-D/2)*.10});}
+    candidates.sort((a,b)=>b.score-a.score);const chosen=candidates[0];if(!chosen)return null;items.push(chosen.seat);
+    const tables=[];for(const dx of [-.55,.55])for(const dy of [-.55,.55]){const table=rect(chosen.seat.x+dx,chosen.seat.y+dy,.42,.42,{label:'小边几',type:'activityTable',color:'#c3914d',phaseAdded:4,repair:true,round:true});if(bodyLegal([table],items,W,D))tables.push(table);}if(tables[0])items.push(tables[0]);return chosen.seat;
+  }
+
+  function desiredSizes(area,short,type){
+    let rank=(area>=22&&short>=3.8)?'L':area>=12&&short>=3.1?'M':'S';if(density==='rich'&&rank==='M'&&area>=16)rank='L';if(density==='compact'&&rank==='L')rank='M';
+    const order=rank==='L'?['L','M','S']:rank==='M'?['M','S','L']:['S','M'];if(type==='lounge'&&area<13)return[];return order;
+  }
+  function generate(){
+    const started=performance.now(),W=clamp(Number(ui.widthInput.value)||3.6,2.7,7),D=clamp(Number(ui.depthInput.value)||4.2,3,7),area=W*D,short=Math.min(W,D),state={W,D,area,items:[],modules:[],logs:[]};
+    state.logs.push(`房间 ${W.toFixed(1)}×${D.toFixed(1)}m，先尝试与面积和短边匹配的模块规格。`);
+    const densityDelta=density==='rich'?1:density==='compact'?-1:0,targetModules=clamp(2+Math.floor(Math.max(0,area-8)/4)+densityDelta,2,10);
+    state.targetModules=targetModules;state.logs.push(`面积映射得到 ${targetModules} 个功能模块目标；从 9 类内置模块原型中增量选取，不只放大原模块。`);
+    const sleep=placeWallModule('sleep',desiredSizes(area,short,'sleep'),state);state.logs.push(sleep?`主睡眠区选择 ${sleep.size} 型，先落床组锚点。`:'主睡眠区没有合法位置。');
+    const storage=placeWallModule('storage',desiredSizes(area,short,'storage'),state,{avoidWindow:true,preferOpposite:'sleep'});state.logs.push(storage?`收纳区选择 ${storage.size} 型并精确贴墙。`:'收纳区释放：剩余墙段不足。');
+    const openTarget=targetModules>=9?3:targetModules>=6?2:targetModules>=4?1:0;
+    const wallSlots=Math.max(0,targetModules-state.modules.length-openTarget);
+    const wallPlan=[
+      ['work',9.5,'轻办公区'],['dressing',14,'梳妆整理区'],['display',18,'沿墙展示区'],['reading',23,'阅读角'],
+      ['media',31,'卧室影音区'],['storage',27,'第二收纳区'],['display',36,'第二展示区'],['reading',42,'第二阅读角']
+    ];
+    let wallAdded=0;
+    for(const [type,minArea,label] of wallPlan){
+      if(wallAdded>=wallSlots||area<minArea)continue;
+      const module=placeWallModule(type,desiredSizes(area,short,type),state,{avoidWindow:type==='storage'||type==='display',preferOpposite:'sleep'});
+      if(module){wallAdded++;state.logs.push(`${label}以 ${module.size} 型加入，当前 ${state.modules.length}/${targetModules} 个模块。`);}
+    }
+    const openPlan=[['lounge',12,'床尾休闲区'],['activity',20,'自由活动簇'],['lounge',37,'第二休闲簇']];
+    if(ui.enableActivity.checked){for(const [type,minArea,label] of openPlan){if(state.modules.length>=targetModules||area<minArea)continue;const module=placeOpenModule(type,desiredSizes(area,short,type),state);if(module)state.logs.push(`${label}从剩余连通空区生长为 ${module.size} 型。`);}}
+    // 完整大模块落不下时，以 S 型沿墙展示/活动簇补齐数量梯度；每次仍经过同一碰撞与门区检查。
+    const fallbackFactories=[
+      ()=>placeWallModule('display',['S'],state,{avoidWindow:true}),
+      ()=>ui.enableActivity.checked?placeOpenModule('activity',['S'],state):null,
+      ()=>placeWallModule('storage',['S'],state,{avoidWindow:true}),
+      ()=>ui.enableActivity.checked?placeOpenModule('lounge',['S'],state):null
+    ];
+    for(let pass=0;state.modules.length<targetModules&&pass<2;pass++)for(const create of fallbackFactories){if(state.modules.length>=targetModules)break;const module=create();if(module)state.logs.push(`${module.label}以 S 型补入，用于维持面积增长时的模块数量梯度。`);}
+    // 某些狭长房间无法容纳完整模块时，允许水漫阶段补一个轻量活动对，避免目标数量变成硬约束。
+    if(ui.enableActivity.checked&&area>=12&&state.modules.length<targetModules){const fill=tryActivityFill(state);if(fill)state.logs.push('完整模块受限，水漫扫描补入小椅子＋边几作为轻量活动对。');}
+    if(ui.enableRepair.checked){const repairCount=area>=28?2:area>=13?1:0,repairs=placeRepairCabinets(state,repairCount);if(repairs.length)state.logs.push(`空墙收口阶段增加 ${repairs.length} 组可变长柜体。`);}
+    const bodyArea=state.items.reduce((s,i)=>s+i.w*i.d,0),zoneArea=state.modules.flatMap(m=>m.zones).reduce((s,z)=>s+z.w*z.d,0),wallBodies=state.items.filter(i=>i.wall).reduce((s,i)=>s+(i.wall==='top'||i.wall==='bottom'?i.w:i.d),0),perimeter=2*(W+D)-.9-1.3;
+    state.metrics={furniture:state.items.filter(i=>!i.zone).length,modules:state.modules.filter(m=>m.type!=='repair').length,fill:clamp((bodyArea+zoneArea*.28)/area*100,0,100),wall:clamp(wallBodies/perimeter*100,0,100),gap:Math.max(0,area-bodyArea-zoneArea*.42),time:performance.now()-started};layout=state;renderAll();
+  }
+
+  function draw(){
+    if(!layout)return;const canvas=ui.board,box=canvas.getBoundingClientRect(),dpr=Math.min(2,devicePixelRatio||1);canvas.width=Math.floor(box.width*dpr);canvas.height=Math.floor(box.height*dpr);const ctx=canvas.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);const width=box.width,height=box.height;ctx.clearRect(0,0,width,height);ctx.fillStyle='#fbfaf5';ctx.fillRect(0,0,width,height);
+    const pad=55,scale=Math.min((width-pad*2)/layout.W,(height-pad*2)/layout.D),ox=(width-layout.W*scale)/2,oy=(height-layout.D*scale)/2,toPx=r=>({x:ox+(r.x-r.w/2)*scale,y:oy+(r.y-r.d/2)*scale,w:r.w*scale,h:r.d*scale});
+    if(ui.showGrid.checked){ctx.strokeStyle='rgba(27,62,51,.07)';ctx.lineWidth=.6;for(let x=0;x<=layout.W+.01;x+=.1){ctx.beginPath();ctx.moveTo(ox+x*scale,oy);ctx.lineTo(ox+x*scale,oy+layout.D*scale);ctx.stroke()}for(let y=0;y<=layout.D+.01;y+=.1){ctx.beginPath();ctx.moveTo(ox,oy+y*scale);ctx.lineTo(ox+layout.W*scale,oy+y*scale);ctx.stroke()}for(let x=0;x<=layout.W+.01;x+=1){ctx.strokeStyle='rgba(27,62,51,.17)';ctx.beginPath();ctx.moveTo(ox+x*scale,oy);ctx.lineTo(ox+x*scale,oy+layout.D*scale);ctx.stroke()}for(let y=0;y<=layout.D+.01;y+=1){ctx.beginPath();ctx.moveTo(ox,oy+y*scale);ctx.lineTo(ox+layout.W*scale,oy+y*scale);ctx.stroke()}}
+    if(phase===3||phase===4)drawInfluence(ctx,scale,ox,oy);
+    ctx.strokeStyle='#1e2e28';ctx.lineWidth=4;ctx.strokeRect(ox,oy,layout.W*scale,layout.D*scale);
+    const win=windowSpan(layout.W);ctx.strokeStyle='#36a7bb';ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(ox+win.a*scale,oy);ctx.lineTo(ox+win.b*scale,oy);ctx.stroke();
+    const door=doorZone(layout.W,layout.D),hingeX=ox+.08*scale,hingeY=oy+layout.D*scale;ctx.strokeStyle='#ff5b3d';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(hingeX,hingeY);ctx.lineTo(hingeX+.9*scale,hingeY);ctx.stroke();ctx.setLineDash([5,4]);ctx.beginPath();ctx.arc(hingeX,hingeY,.9*scale,-Math.PI/2,0);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#d8472e';ctx.font='800 11px system-ui';ctx.fillText('门 0.9m',hingeX+.45*scale,hingeY-8);
+    if(phase===1){for(const m of layout.modules.filter(m=>m.type!=='repair'))drawModuleHull(ctx,m,toPx(m.hull));}
+    if(ui.showZones.checked&&phase>=2){for(const m of layout.modules)for(const z of m.zones){if((z.phaseAdded||2)>phase)continue;const r=toPx(z);ctx.fillStyle=z.zone==='soft'?'rgba(8,114,96,.05)':'rgba(201,147,58,.055)';ctx.strokeStyle=z.zone==='soft'?'rgba(8,114,96,.58)':'rgba(201,147,58,.62)';ctx.lineWidth=1.3;ctx.setLineDash([5,4]);ctx.fillRect(r.x,r.y,r.w,r.h);ctx.strokeRect(r.x,r.y,r.w,r.h);ctx.setLineDash([]);}}
+    if(phase>=2){for(const item of layout.items){if((item.phaseAdded||2)>phase)continue;drawItem(ctx,item,toPx(item));}}
+    ctx.fillStyle='#5c6862';ctx.font='800 11px system-ui';ctx.textAlign='center';ctx.fillText(`${layout.W.toFixed(1)} m`,ox+layout.W*scale/2,oy-14);ctx.save();ctx.translate(ox+layout.W*scale+18,oy+layout.D*scale/2);ctx.rotate(Math.PI/2);ctx.fillText(`${layout.D.toFixed(1)} m`,0,0);ctx.restore();
+  }
+  function drawModuleHull(ctx,m,r){ctx.fillStyle=m.color+'18';ctx.strokeStyle=m.color;ctx.lineWidth=2;ctx.setLineDash([8,5]);ctx.fillRect(r.x,r.y,r.w,r.h);ctx.strokeRect(r.x,r.y,r.w,r.h);ctx.setLineDash([]);ctx.fillStyle=m.color;ctx.font='900 13px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(`${m.label} · ${m.size}`,r.x+r.w/2,r.y+r.h/2-6);ctx.font='700 9px system-ui';ctx.fillText(`${m.items.length} 件家具 · 可展开`,r.x+r.w/2,r.y+r.h/2+11)}
+  function drawItem(ctx,item,r){ctx.fillStyle=item.color||'#777';ctx.strokeStyle=item.repair?'#ff5b3d':'rgba(20,35,30,.62)';ctx.lineWidth=item.repair?2.4:1.2;ctx.beginPath();if(item.round){ctx.arc(r.x+r.w/2,r.y+r.h/2,Math.min(r.w,r.h)/2,0,Math.PI*2);ctx.fill();ctx.stroke()}else{ctx.roundRect(r.x,r.y,r.w,r.h,Math.min(8,r.w*.12,r.h*.12));ctx.fill();ctx.stroke()}if(r.w>34&&r.h>22){ctx.fillStyle='white';ctx.font=`800 ${Math.max(8,Math.min(12,r.h*.17))}px system-ui`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(item.label,r.x+r.w/2,r.y+r.h/2)}}
+  function drawInfluence(ctx,scale,ox,oy){const step=.13,centers=layout.modules.filter(m=>m.type!=='repair').map(m=>({x:m.hull.x,y:m.hull.y,color:m.color}));if(!centers.length)return;ctx.save();for(let x=step/2;x<layout.W;x+=step)for(let y=step/2;y<layout.D;y+=step){if(layout.items.some(i=>Math.abs(x-i.x)<i.w/2&&Math.abs(y-i.y)<i.d/2))continue;const ranked=centers.map(c=>({...c,v:1/(.15+Math.hypot(x-c.x,y-c.y))})).sort((a,b)=>b.v-a.v),a=ranked[0],b=ranked[1],mix=b?b.v/(a.v+b.v):0,alpha=.035+.075*(1-mix);ctx.fillStyle=hexAlpha(a.color,alpha);ctx.fillRect(ox+(x-step/2)*scale,oy+(y-step/2)*scale,step*scale+.4,step*scale+.4)}ctx.restore();}
+  function hexAlpha(hex,a){const n=parseInt(hex.slice(1),16);return`rgba(${n>>16},${n>>8&255},${n&255},${a})`}
+  function renderAll(){if(!layout)return;const [title,desc]=PHASES[phase];ui.phaseTitle.textContent=title;ui.phaseDesc.textContent=desc;ui.roomBadge.textContent=`${layout.area.toFixed(1)}㎡ · ${layout.W.toFixed(1)}×${layout.D.toFixed(1)}m`;ui.canvasNote.textContent=phase===1?'模块按空间自动选择 S / M / L':phase===2?'家具回到同一张全局棋盘':phase===3?'颜色交界处即羽化共享边界':phase===4?'从最大剩余空区反向补入轻家具':'连续柜与模数负责最后收口';document.querySelectorAll('.phase-btn').forEach(b=>b.classList.toggle('active',Number(b.dataset.phase)===phase));
+    ui.metricFurniture.textContent=layout.metrics.furniture;ui.metricModules.textContent=`${layout.metrics.modules}/${layout.targetModules}`;ui.metricFill.textContent=`${layout.metrics.fill.toFixed(0)}%`;ui.metricWall.textContent=`${layout.metrics.wall.toFixed(0)}%`;ui.metricGap.textContent=`${layout.metrics.gap.toFixed(1)}㎡`;ui.metricTime.textContent=`${layout.metrics.time.toFixed(1)}ms`;
+    ui.moduleList.innerHTML=layout.modules.map(m=>`<div class="module-row"><div class="module-top"><strong>${m.label}</strong><span class="module-size" style="background:${m.color}">${m.type==='repair'?'收口':m.size}</span></div><small>${m.items.map(i=>i.label).join('＋')}<br>${m.wall?`沿${({top:'上',right:'右',bottom:'下',left:'左'})[m.wall]}墙落位`:'由剩余连通空区生成'}</small><div class="bar"><i style="width:${m.type==='repair'?100:SIZE_RANK[m.size]/3*100}%;background:${m.color}"></i></div></div>`).join('');ui.log.innerHTML=layout.logs.map(row=>`<li>${row}</li>`).join('');draw();
+  }
+  function syncDimension(source,target){target.value=source.value;clearTimeout(debounceTimer);debounceTimer=setTimeout(generate,80)}
+  ui.widthRange.addEventListener('input',()=>syncDimension(ui.widthRange,ui.widthInput));ui.widthInput.addEventListener('input',()=>syncDimension(ui.widthInput,ui.widthRange));ui.depthRange.addEventListener('input',()=>syncDimension(ui.depthRange,ui.depthInput));ui.depthInput.addEventListener('input',()=>syncDimension(ui.depthInput,ui.depthRange));
+  $('presets').addEventListener('click',e=>{const b=e.target.closest('[data-preset]');if(!b)return;document.querySelectorAll('[data-preset]').forEach(x=>x.classList.toggle('active',x===b));const [w,d]=presets[b.dataset.preset];ui.widthRange.value=ui.widthInput.value=w;ui.depthRange.value=ui.depthInput.value=d;generate()});
+  $('density').addEventListener('click',e=>{const b=e.target.closest('[data-density]');if(!b)return;density=b.dataset.density;document.querySelectorAll('[data-density]').forEach(x=>x.classList.toggle('active',x===b));generate()});
+  $('phasebar').addEventListener('click',e=>{const b=e.target.closest('[data-phase]');if(!b)return;phase=Number(b.dataset.phase);renderAll()});
+  [ui.showZones,ui.showGrid].forEach(input=>input.addEventListener('change',draw));[ui.enableRepair,ui.enableActivity].forEach(input=>input.addEventListener('change',generate));
+  ui.autoPlay.addEventListener('click',()=>{clearInterval(playTimer);phase=1;renderAll();ui.autoPlay.textContent='演示中…';playTimer=setInterval(()=>{phase++;if(phase>5){clearInterval(playTimer);ui.autoPlay.textContent='▶ 自动演示';phase=5}renderAll()},720)});
+  globalThis.__moduleGrowthLab={
+    setRoom(width,depth){ui.widthInput.value=ui.widthRange.value=width;ui.depthInput.value=ui.depthRange.value=depth;generate();return this.snapshot();},
+    setDensity(value){density=value;generate();return this.snapshot();},
+    setPhase(value){phase=clamp(Number(value)||1,1,5);renderAll();return this.snapshot();},
+    snapshot(){return layout?{width:layout.W,depth:layout.D,area:layout.area,targetModules:layout.targetModules,metrics:{...layout.metrics},modules:layout.modules.map(m=>({type:m.type,size:m.size,label:m.label,items:m.items.length})),items:layout.items.map(i=>({type:i.type,label:i.label,w:i.w,d:i.d,phaseAdded:i.phaseAdded||2}))}:null;}
+  };
+  new ResizeObserver(draw).observe(ui.board.parentElement);generate();
+})();
+</script>
+</body>
+</html>

@@ -3,9 +3,13 @@ const path = require('path');
 
 const root = __dirname;
 const html = fs.readFileSync(path.join(root, 'furniture-rule-editor.html'), 'utf8');
-const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)];
-if (!scripts.length) throw new Error('没有找到家具配置中心脚本');
-new Function(scripts[0][1])();
+const external = html.match(/<script[^>]+src=["']([^"']*furniture-rule-editor\.js)["'][^>]*><\/script>/i);
+const inline = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)][0];
+const scriptSource = external
+  ? fs.readFileSync(path.resolve(root, external[1]), 'utf8')
+  : inline?.[1];
+if (!scriptSource) throw new Error('没有找到家具配置中心脚本');
+new Function(scriptSource)();
 
 setTimeout(() => {
   const config = globalThis.FurnitureConfigBaseline;

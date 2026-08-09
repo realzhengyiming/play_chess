@@ -21,7 +21,9 @@ from fastapi.staticfiles import StaticFiles
 ROOT = Path(__file__).resolve().parent
 HTML_FILE = ROOT / "bedroom-space-chess-V3.html"
 EDITOR_FILE = ROOT / "furniture-rule-editor.html"
+MODULE_GROWTH_FILE = ROOT / "module-growth-prototype.html"
 SAMPLE_DIR = ROOT / "samples"
+ASSET_DIR = ROOT / "assets"
 CONFIG_DIR = ROOT / "server_config"
 DEFAULT_CONFIG_FILE = CONFIG_DIR / "furniture-config-default.json"
 CURRENT_CONFIG_FILE = CONFIG_DIR / "furniture-config-current.json"
@@ -36,6 +38,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.mount("/samples", StaticFiles(directory=SAMPLE_DIR), name="samples")
+app.mount("/assets", StaticFiles(directory=ASSET_DIR), name="assets")
 _config_lock = threading.Lock()
 
 
@@ -113,6 +116,12 @@ def main_page() -> FileResponse:
 @app.get("/furniture-rule-editor.html")
 def furniture_rule_editor() -> FileResponse:
     return FileResponse(EDITOR_FILE, media_type="text/html; charset=utf-8")
+
+
+@app.get("/module-growth-prototype.html")
+def module_growth_prototype() -> FileResponse:
+    """独立的模块生长实验页；不读取或修改主页面配置。"""
+    return FileResponse(MODULE_GROWTH_FILE, media_type="text/html; charset=utf-8")
 
 
 @app.get("/health")

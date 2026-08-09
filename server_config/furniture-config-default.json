@@ -1,13 +1,22 @@
 {
-  "schemaVersion": 5,
-  "baselineVersion": 6,
+  "schemaVersion": 7,
+  "baselineVersion": 10,
   "profileName": "全局家具配置",
-  "updatedAt": "2026-08-07T15:59:56.335Z",
+  "updatedAt": "2026-08-08T11:12:30.196Z",
   "richBedroomDefaultsV1": true,
   "richBedroomDefaultsV2": true,
   "wallCabinetFirstV1": true,
   "bedroomCorePriorityV1": true,
   "livingCorePriorityV1": true,
+  "livingGroupDependencyV2": true,
+  "bedroomGroupDependencyV3": true,
+  "designQualityRules": {
+    "version": 1,
+    "weights": {"function": 0.25, "ground": 0.25, "wall": 0.2, "relation": 0.15, "circulation": 0.15},
+    "floor": {"gridStep": 0.24, "humanRadius": 0.23, "pocketMinArea": 0.08, "pocketMaxArea": 1.45, "severeUnreachableRatio": 0.055, "severeNarrowRatio": 0.12, "balanceIdeal": 0.13, "balanceSevere": 0.28, "largestOpenMin": 0.12, "largestOpenMax": 0.44},
+    "wall": {"installGapMax": 0.08, "severeGapMin": 0.08, "severeGapMax": 0.42, "awkwardGapMax": 0.68, "usefulBayMin": 0.7},
+    "gates": {"minGround": 58, "minWall": 50, "minModules": 65, "severeDefectCap": 64, "weakFieldCap": 78}
+  },
   "roomTypes": [
     {
       "id": "bedroom",
@@ -92,7 +101,17 @@
             "maxSamples": 20,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           },
           {
             "id": "bed-corner",
@@ -117,7 +136,17 @@
             "maxSamples": 8,
             "weight": 1.35,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "maxCandidates": 28,
@@ -144,7 +173,17 @@
         "maxSamples": 20,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "wall",
@@ -208,35 +247,20 @@
             "facing": [
               "parallel"
             ],
-            "maxSamples": 20,
+            "maxSamples": 32,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
-          },
-          {
-            "id": "wardrobe-opposite-bed",
-            "enabled": true,
-            "mode": "relation",
-            "rotations": [
-              0,
-              90
-            ],
-            "relativeTo": "bed",
-            "relation": "bed-opposite-storage",
-            "side": "front",
-            "crossAlign": "center",
-            "distance": {
-              "min": 0.6,
-              "max": 3.2,
-              "step": 0.3
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
             },
-            "facing": [
-              "toward"
-            ],
-            "maxSamples": 12,
-            "weight": 1.45,
-            "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "maxCandidates": 32,
@@ -260,10 +284,20 @@
         "facing": [
           "parallel"
         ],
-        "maxSamples": 20,
+        "maxSamples": 32,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "wall",
@@ -376,7 +410,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "ruleListVersion": 2,
@@ -396,7 +440,17 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "wall",
@@ -408,7 +462,7 @@
         "side": "front",
         "depth": 0.6,
         "spanExtra": 0,
-        "hard": true,
+        "hard": false,
         "allowBodyTypes": [
           "chair"
         ],
@@ -455,20 +509,30 @@
             "side": "front",
             "crossAlign": "center",
             "distance": {
-              "min": 0.28,
-              "max": 0.42,
-              "step": 0.07
+              "min": 0.03,
+              "max": 0.07,
+              "step": 0.02
             },
             "facing": [
               "toward"
             ],
-            "maxSamples": 8,
-            "weight": 1,
-            "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "maxSamples": 6,
+            "weight": 1.25,
+            "collisionClearance": 0.015,
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
-        "maxCandidates": 8,
+        "maxCandidates": 6,
         "ruleListVersion": 2,
         "id": "chair-desk-front",
         "enabled": true,
@@ -482,17 +546,27 @@
         "side": "front",
         "crossAlign": "center",
         "distance": {
-          "min": 0.28,
-          "max": 0.42,
-          "step": 0.07
+          "min": 0.03,
+          "max": 0.07,
+          "step": 0.02
         },
         "facing": [
           "toward"
         ],
-        "maxSamples": 8,
-        "weight": 1,
-        "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "maxSamples": 6,
+        "weight": 1.25,
+        "collisionClearance": 0.015,
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "none",
@@ -567,7 +641,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "ruleListVersion": 2,
@@ -587,7 +671,17 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "wall",
@@ -599,7 +693,7 @@
         "side": "front",
         "depth": 0.6,
         "spanExtra": 0,
-        "hard": true,
+        "hard": false,
         "allowBodyTypes": [
           "vanityStool"
         ],
@@ -656,7 +750,17 @@
             "maxSamples": 8,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "maxCandidates": 8,
@@ -683,7 +787,17 @@
         "maxSamples": 8,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "none",
@@ -773,7 +887,17 @@
             "maxSamples": 4,
             "weight": 1.55,
             "collisionClearance": 0,
-            "allowFunctionalOverlap": true
+            "allowFunctionalOverlap": true,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           },
           {
             "id": "night-bed-right",
@@ -798,7 +922,17 @@
             "maxSamples": 4,
             "weight": 1.55,
             "collisionClearance": 0,
-            "allowFunctionalOverlap": true
+            "allowFunctionalOverlap": true,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "maxCandidates": 8,
@@ -825,7 +959,17 @@
         "maxSamples": 4,
         "weight": 1.55,
         "collisionClearance": 0,
-        "allowFunctionalOverlap": true
+        "allowFunctionalOverlap": true,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "none",
@@ -942,7 +1086,17 @@
         "maxSamples": 4,
         "weight": 1.42,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": true
+        "allowFunctionalOverlap": true,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": null,
+            "lateralSide": null,
+            "frontAlign": null
+          }
+        },
+        "lShapeCrossAlign": null,
+        "excludeForLShape": null,
+        "avoidChaiseSide": null
       },
       "placement": {
         "requiredAnchor": "none",
@@ -950,12 +1104,13 @@
         "allowCorner": false
       },
       "service": {
-        "label": "床尾凳外侧落脚区",
+        "label": "床尾凳共享落脚区",
         "side": "front",
-        "depth": 0.6,
+        "depth": 0.42,
         "spanExtra": 0,
-        "hard": true,
+        "hard": false,
         "allowBodyTypes": [],
+        "sharedCirculation": true,
         "adaptiveFootZone": true,
         "adaptiveGapThreshold": 0.3,
         "alignStart": false
@@ -1019,7 +1174,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "ruleListVersion": 2,
@@ -1039,7 +1204,17 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "wall",
@@ -1122,7 +1297,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "ruleListVersion": 2,
@@ -1142,7 +1327,17 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "wall",
@@ -1193,17 +1388,44 @@
         "priority": 110
       },
       "candidate": {
-        "mode": "wall",
-        "rotations": [
-          0,
-          90
-        ],
-        "relativeTo": "",
-        "relation": "",
-        "gap": 0,
         "rules": [
           {
-            "id": "candidate-1",
+            "id": "tvbench-loveseat-facing",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "bedroomLoveseat",
+            "relation": "bedroom-media-facing",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 1,
+              "max": 2.8,
+              "step": 0.25
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 18,
+            "weight": 1.55,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "body-center"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
+          },
+          {
+            "id": "tvbench-wall",
             "enabled": true,
             "mode": "wall",
             "rotations": [
@@ -1222,30 +1444,57 @@
             "facing": [
               "parallel"
             ],
-            "maxSamples": 12,
+            "maxSamples": 40,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
+        "maxCandidates": 56,
         "ruleListVersion": 2,
-        "maxCandidates": 32,
-        "id": "candidate-1",
+        "id": "tvbench-loveseat-facing",
         "enabled": true,
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "bedroomLoveseat",
+        "relation": "bedroom-media-facing",
         "side": "front",
         "crossAlign": "center",
         "distance": {
-          "min": 0,
-          "max": 0,
-          "step": 0.2
+          "min": 1,
+          "max": 2.8,
+          "step": 0.25
         },
         "facing": [
-          "parallel"
+          "toward"
         ],
-        "maxSamples": 12,
-        "weight": 1,
+        "maxSamples": 18,
+        "weight": 1.55,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "body-center"
+          }
+        },
+        "lShapeCrossAlign": "body-center",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "wall",
@@ -1321,15 +1570,15 @@
       "candidate": {
         "rules": [
           {
-            "id": "reading-wall",
+            "id": "reading-corner",
             "enabled": true,
-            "mode": "wall",
+            "mode": "corner",
             "rotations": [
               0,
               90
             ],
             "relativeTo": "",
-            "relation": "reading-wall",
+            "relation": "reading-corner",
             "side": "front",
             "crossAlign": "center",
             "distance": {
@@ -1340,14 +1589,24 @@
             "facing": [
               "parallel"
             ],
-            "maxSamples": 16,
-            "weight": 1.85,
-            "collisionClearance": 0,
-            "allowFunctionalOverlap": false
+            "maxSamples": 4,
+            "weight": 1.1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           },
           {
             "id": "reading-open-zone",
-            "enabled": false,
+            "enabled": true,
             "mode": "zone",
             "rotations": [
               0,
@@ -1365,23 +1624,33 @@
             "facing": [
               "parallel"
             ],
-            "maxSamples": 8,
-            "weight": 0.72,
+            "maxSamples": 10,
+            "weight": 1.18,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
-        "maxCandidates": 16,
+        "maxCandidates": 14,
         "ruleListVersion": 2,
-        "id": "reading-wall",
+        "id": "reading-corner",
         "enabled": true,
-        "mode": "wall",
+        "mode": "corner",
         "rotations": [
           0,
           90
         ],
         "relativeTo": "",
-        "relation": "reading-wall",
+        "relation": "reading-corner",
         "side": "front",
         "crossAlign": "center",
         "distance": {
@@ -1392,15 +1661,25 @@
         "facing": [
           "parallel"
         ],
-        "maxSamples": 16,
-        "weight": 1.85,
-        "collisionClearance": 0,
-        "allowFunctionalOverlap": false
+        "maxSamples": 4,
+        "weight": 1.1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
-        "requiredAnchor": "wall",
+        "requiredAnchor": "none",
         "avoidWindow": false,
-        "allowCorner": true
+        "allowCorner": false
       },
       "service": {
         "label": "休闲椅使用区",
@@ -1485,7 +1764,17 @@
             "maxSamples": 12,
             "weight": 1.18,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           },
           {
             "id": "loveseat-open-zone",
@@ -1510,7 +1799,17 @@
             "maxSamples": 10,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "maxCandidates": 20,
@@ -1534,10 +1833,20 @@
         "facing": [
           "parallel"
         ],
-        "maxSamples": 16,
+        "maxSamples": 12,
         "weight": 1.18,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "none",
@@ -1627,7 +1936,17 @@
             "maxSamples": 8,
             "weight": 1.25,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           },
           {
             "id": "tea-chair-front",
@@ -1652,7 +1971,17 @@
             "maxSamples": 8,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "maxCandidates": 16,
@@ -1679,7 +2008,17 @@
         "maxSamples": 8,
         "weight": 1.25,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "none",
@@ -1746,7 +2085,17 @@
             "maxSamples": 14,
             "weight": 1.2,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "maxCandidates": 14,
@@ -1773,7 +2122,17 @@
         "maxSamples": 14,
         "weight": 1.2,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "wall",
@@ -1856,7 +2215,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "ruleListVersion": 2,
@@ -1876,7 +2245,17 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "none",
@@ -1910,7 +2289,7 @@
       },
       "quantity": {
         "min": 0,
-        "max": 2
+        "max": 4
       },
       "accessTarget": true,
       "preferences": {
@@ -1951,7 +2330,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "ruleListVersion": 2,
@@ -1971,7 +2360,17 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "wall",
@@ -2004,7 +2403,11 @@
         "fill": [
           0.72,
           1
-        ]
+        ],
+        "maxByWalls": true,
+        "maxPerWall": 1,
+        "wallCountCap": 4,
+        "areaPerCabinet": 8
       },
       "infill": true
     },
@@ -2079,7 +2482,17 @@
             "maxSamples": 16,
             "weight": 1.25,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           },
           {
             "id": "sofa-zone",
@@ -2104,7 +2517,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "maxCandidates": 28,
@@ -2131,7 +2554,17 @@
         "maxSamples": 16,
         "weight": 1.25,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "none",
@@ -2198,7 +2631,17 @@
             "maxSamples": 18,
             "weight": 1.55,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "body-center"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           },
           {
             "id": "tv-open-wall",
@@ -2223,7 +2666,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "maxCandidates": 30,
@@ -2250,7 +2703,17 @@
         "maxSamples": 18,
         "weight": 1.55,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "body-center"
+          }
+        },
+        "lShapeCrossAlign": "body-center",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "wall",
@@ -2341,7 +2804,17 @@
             "maxSamples": 10,
             "weight": 1.5,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "main-seat"
+              }
+            },
+            "lShapeCrossAlign": "main-seat",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "maxCandidates": 12,
@@ -2369,7 +2842,17 @@
         "maxSamples": 10,
         "weight": 1.5,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "main-seat"
+          }
+        },
+        "lShapeCrossAlign": "main-seat",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "none",
@@ -2459,60 +2942,60 @@
             "maxSamples": 8,
             "weight": 1.2,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": false,
+                "lateralSide": "any",
+                "frontAlign": "body-center"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": true,
+            "avoidChaiseSide": false
           },
           {
-            "id": "arm-sofa-left",
+            "id": "arm-side-front",
             "enabled": true,
             "mode": "relation",
             "rotations": [
               0,
               90
             ],
-            "relativeTo": "sofa",
-            "relation": "conversation-side",
-            "side": "left",
+            "relativeTo": "side",
+            "relation": "sofa-side-chair-chain",
+            "side": "front",
             "crossAlign": "center",
             "distance": {
-              "min": 0.35,
-              "max": 0.85,
-              "step": 0.2
+              "min": 0.04,
+              "max": 0.16,
+              "step": 0.06
             },
             "facing": [
-              "toward"
+              "parallel"
             ],
-            "maxSamples": 8,
-            "weight": 1,
+            "maxSamples": 10,
+            "weight": 1.9,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
-          },
-          {
-            "id": "arm-sofa-right",
-            "enabled": true,
-            "mode": "relation",
-            "rotations": [
-              0,
-              90
-            ],
-            "relativeTo": "sofa",
-            "relation": "conversation-side",
-            "side": "right",
-            "crossAlign": "center",
-            "distance": {
-              "min": 0.35,
-              "max": 0.85,
-              "step": 0.2
+            "allowFunctionalOverlap": true,
+            "compoundConstraint": {
+              "ancestorRelativeTo": "sofa",
+              "side": "front",
+              "gap": 0.04
             },
-            "facing": [
-              "toward"
-            ],
-            "maxSamples": 8,
-            "weight": 1,
-            "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
-        "maxCandidates": 24,
+        "maxCandidates": 20,
         "ruleListVersion": 2,
         "id": "arm-sofa-opposite",
         "enabled": true,
@@ -2536,7 +3019,17 @@
         "maxSamples": 8,
         "weight": 1.2,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": false,
+            "lateralSide": "any",
+            "frontAlign": "body-center"
+          }
+        },
+        "lShapeCrossAlign": "body-center",
+        "excludeForLShape": true,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "none",
@@ -2634,7 +3127,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "non-chaise",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": true
           },
           {
             "id": "candidate-2",
@@ -2659,7 +3162,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "non-chaise",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": true
           }
         ],
         "ruleListVersion": 2,
@@ -2679,7 +3192,17 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "non-chaise",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": true
       },
       "placement": {
         "requiredAnchor": "none",
@@ -2777,7 +3300,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "ruleListVersion": 2,
@@ -2797,7 +3330,17 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "none",
@@ -2895,7 +3438,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "ruleListVersion": 2,
@@ -2915,7 +3468,17 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "none",
@@ -2982,7 +3545,17 @@
             "maxSamples": 6,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           },
           {
             "id": "dining-back",
@@ -3007,7 +3580,17 @@
             "maxSamples": 6,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           },
           {
             "id": "dining-left",
@@ -3032,7 +3615,17 @@
             "maxSamples": 6,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           },
           {
             "id": "dining-right",
@@ -3057,7 +3650,17 @@
             "maxSamples": 6,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "maxCandidates": 24,
@@ -3084,7 +3687,17 @@
         "maxSamples": 6,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "none",
@@ -3159,7 +3772,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "ruleListVersion": 2,
@@ -3179,7 +3802,17 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "wall",
@@ -3262,7 +3895,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "ruleListVersion": 2,
@@ -3282,7 +3925,17 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "wall",
@@ -3365,7 +4018,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "ruleListVersion": 2,
@@ -3385,7 +4048,17 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "wall",
@@ -3468,7 +4141,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "ruleListVersion": 2,
@@ -3488,7 +4171,17 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "wall",
@@ -3563,7 +4256,17 @@
             "maxSamples": 6,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           },
           {
             "id": "lamp-arm-right",
@@ -3588,7 +4291,17 @@
             "maxSamples": 6,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           },
           {
             "id": "lamp-sofa-left",
@@ -3613,7 +4326,17 @@
             "maxSamples": 6,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           },
           {
             "id": "lamp-sofa-right",
@@ -3638,7 +4361,17 @@
             "maxSamples": 6,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "maxCandidates": 24,
@@ -3665,7 +4398,17 @@
         "maxSamples": 6,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "none",
@@ -3740,7 +4483,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "ruleListVersion": 2,
@@ -3760,7 +4513,17 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "none",
@@ -3794,7 +4557,7 @@
       },
       "quantity": {
         "min": 0,
-        "max": 2
+        "max": 5
       },
       "accessTarget": true,
       "preferences": {
@@ -3835,7 +4598,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "ruleListVersion": 2,
@@ -3855,7 +4628,17 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "wall",
@@ -3878,9 +4661,13 @@
         "fill": [
           0.96,
           1
-        ]
+        ],
+        "maxByWalls": true,
+        "maxPerWall": 1,
+        "wallCountCap": 5,
+        "areaPerCabinet": 12
       },
-      "infill": false
+      "infill": true
     },
     {
       "schemaVersion": 1,
@@ -3938,7 +4725,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "ruleListVersion": 2,
@@ -3958,7 +4755,17 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "none",
@@ -3993,17 +4800,17 @@
     "bedroom": [
       "bed",
       "night",
+      "bedroomLoveseat",
+      "bedroomTeaTable",
+      "tvbench",
+      "bench",
       "wardrobe",
       "desk",
       "chair",
-      "bench",
       "chest",
       "shelf",
-      "tvbench",
       "bedroomDisplay",
       "lounge",
-      "bedroomLoveseat",
-      "bedroomTeaTable",
       "vanity",
       "vanityStool",
       "bedroomInfillCabinet"
@@ -4012,8 +4819,8 @@
       "sofa",
       "tv",
       "coffee",
-      "arm",
       "side",
+      "arm",
       "floorLamp",
       "diningTable",
       "diningChair",
@@ -4034,21 +4841,21 @@
         "max": 1,
         "defaultCount": 0,
         "weight": 1,
-        "priority": 120
+        "priority": 30
       },
       "bedroomTeaTable": {
         "min": 0,
         "max": 1,
         "defaultCount": 0,
         "weight": 1,
-        "priority": 130
+        "priority": 40
       },
       "bedroomDisplay": {
         "min": 0,
         "max": 2,
         "defaultCount": 0,
         "weight": 1,
-        "priority": 100
+        "priority": 120
       },
       "bed": {
         "min": 1,
@@ -4062,21 +4869,21 @@
         "max": 1,
         "defaultCount": 1,
         "weight": 1,
-        "priority": 30
+        "priority": 70
       },
       "desk": {
         "min": 0,
         "max": 1,
         "defaultCount": 1,
         "weight": 1,
-        "priority": 40
+        "priority": 80
       },
       "chair": {
         "min": 0,
         "max": 1,
         "defaultCount": 1,
         "weight": 1,
-        "priority": 50
+        "priority": 90
       },
       "vanity": {
         "min": 0,
@@ -4111,32 +4918,32 @@
         "max": 2,
         "defaultCount": 0,
         "weight": 1,
-        "priority": 70
+        "priority": 100
       },
       "shelf": {
         "min": 0,
         "max": 1,
         "defaultCount": 0,
         "weight": 1,
-        "priority": 80
+        "priority": 110
       },
       "tvbench": {
         "min": 0,
         "max": 1,
         "defaultCount": 0,
         "weight": 1,
-        "priority": 90
+        "priority": 50
       },
       "lounge": {
         "min": 0,
         "max": 2,
         "defaultCount": 0,
         "weight": 1,
-        "priority": 110
+        "priority": 130
       },
       "bedroomInfillCabinet": {
         "min": 0,
-        "max": 2,
+        "max": 4,
         "defaultCount": 1,
         "weight": 1,
         "priority": 160
@@ -4169,14 +4976,14 @@
         "max": 4,
         "defaultCount": 2,
         "weight": 1,
-        "priority": 40
+        "priority": 50
       },
       "side": {
         "min": 0,
         "max": 2,
         "defaultCount": 1,
         "weight": 1,
-        "priority": 50
+        "priority": 40
       },
       "ottoman": {
         "min": 0,
@@ -4243,7 +5050,7 @@
       },
       "infillCabinet": {
         "min": 0,
-        "max": 2,
+        "max": 5,
         "defaultCount": 1,
         "weight": 1,
         "priority": 150
@@ -4329,7 +5136,17 @@
             "maxSamples": 20,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           },
           {
             "id": "bed-corner",
@@ -4354,7 +5171,17 @@
             "maxSamples": 8,
             "weight": 1.35,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "maxCandidates": 28,
@@ -4381,7 +5208,17 @@
         "maxSamples": 20,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "wall",
@@ -4471,7 +5308,17 @@
             "maxSamples": 4,
             "weight": 1.55,
             "collisionClearance": 0,
-            "allowFunctionalOverlap": true
+            "allowFunctionalOverlap": true,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           },
           {
             "id": "night-bed-right",
@@ -4496,7 +5343,17 @@
             "maxSamples": 4,
             "weight": 1.55,
             "collisionClearance": 0,
-            "allowFunctionalOverlap": true
+            "allowFunctionalOverlap": true,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "maxCandidates": 8,
@@ -4523,7 +5380,17 @@
         "maxSamples": 4,
         "weight": 1.55,
         "collisionClearance": 0,
-        "allowFunctionalOverlap": true
+        "allowFunctionalOverlap": true,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "none",
@@ -4545,169 +5412,35 @@
     {
       "schemaVersion": 1,
       "program": "bedroom",
-      "id": "wardrobe",
-      "label": "衣柜",
-      "category": "核心家具",
-      "role": "衣物收纳",
-      "color": "#9b6a46",
+      "id": "bedroomLoveseat",
+      "label": "卧室小沙发",
+      "category": "休闲会客",
+      "role": "小型会客区",
+      "color": "#c98272",
       "geometry": {
-        "width": 1.8,
-        "depth": 0.6,
-        "shape": "box"
-      },
-      "quantity": {
-        "min": 1,
-        "max": 1
-      },
-      "accessTarget": true,
-      "preferences": {
-        "defaultCount": 1,
-        "weight": 1,
-        "priority": 30
-      },
-      "candidate": {
-        "rules": [
-          {
-            "id": "wardrobe-open-wall",
-            "enabled": true,
-            "mode": "wall",
-            "rotations": [
-              0,
-              90
-            ],
-            "relativeTo": "",
-            "relation": "",
-            "side": "front",
-            "crossAlign": "center",
-            "distance": {
-              "min": 0,
-              "max": 0,
-              "step": 0.2
-            },
-            "facing": [
-              "parallel"
-            ],
-            "maxSamples": 20,
-            "weight": 1,
-            "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
-          },
-          {
-            "id": "wardrobe-opposite-bed",
-            "enabled": true,
-            "mode": "relation",
-            "rotations": [
-              0,
-              90
-            ],
-            "relativeTo": "bed",
-            "relation": "bed-opposite-storage",
-            "side": "front",
-            "crossAlign": "center",
-            "distance": {
-              "min": 0.6,
-              "max": 3.2,
-              "step": 0.3
-            },
-            "facing": [
-              "toward"
-            ],
-            "maxSamples": 12,
-            "weight": 1.45,
-            "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
-          }
-        ],
-        "maxCandidates": 32,
-        "ruleListVersion": 2,
-        "id": "wardrobe-open-wall",
-        "enabled": true,
-        "mode": "wall",
-        "rotations": [
-          0,
-          90
-        ],
-        "relativeTo": "",
-        "relation": "",
-        "side": "front",
-        "crossAlign": "center",
-        "distance": {
-          "min": 0,
-          "max": 0,
-          "step": 0.2
-        },
-        "facing": [
-          "parallel"
-        ],
-        "maxSamples": 20,
-        "weight": 1,
-        "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
-      },
-      "placement": {
-        "requiredAnchor": "wall",
-        "avoidWindow": true,
-        "allowCorner": false
-      },
-      "service": {
-        "label": "柜前取用区",
-        "side": "front",
-        "depth": 0.42,
-        "spanExtra": 0,
-        "hard": false,
-        "allowBodyTypes": [],
-        "alignStart": false
-      },
-      "run": {
-        "min": 0.9,
-        "max": 3.2,
-        "step": 0.1,
-        "fill": [
-          0.72,
-          0.96
-        ]
-      },
-      "infill": false
-    },
-    {
-      "schemaVersion": 1,
-      "program": "bedroom",
-      "id": "desk",
-      "label": "书桌",
-      "category": "工作与梳妆",
-      "role": "工作学习",
-      "color": "#2f8a78",
-      "geometry": {
-        "width": 1.2,
-        "depth": 0.55,
+        "width": 1.25,
+        "depth": 0.72,
         "shape": "box",
         "variants": [
           {
-            "id": "desk-90",
-            "label": "书桌 0.9 m",
-            "width": 0.9,
-            "depth": 0.55,
+            "id": "bedroomLoveseat-m1",
+            "label": "卧室小沙发 1号",
+            "width": 1.1,
+            "depth": 0.68,
             "shape": "box"
           },
           {
-            "id": "desk-120",
-            "label": "书桌 1.2 m",
-            "width": 1.2,
-            "depth": 0.55,
+            "id": "bedroomLoveseat-m2",
+            "label": "卧室小沙发 2号",
+            "width": 1.25,
+            "depth": 0.72,
             "shape": "box"
           },
           {
-            "id": "desk-140",
-            "label": "书桌 1.4 m",
-            "width": 1.4,
-            "depth": 0.55,
-            "shape": "box"
-          },
-          {
-            "id": "desk-160",
-            "label": "书桌 1.6 m",
-            "width": 1.6,
-            "depth": 0.55,
+            "id": "bedroomLoveseat-m3",
+            "label": "卧室小沙发 3号",
+            "width": 1.45,
+            "depth": 0.76,
             "shape": "box"
           }
         ]
@@ -4716,24 +5449,16 @@
         "min": 0,
         "max": 1
       },
-      "accessTarget": true,
+      "accessTarget": false,
       "preferences": {
-        "defaultCount": 1,
+        "defaultCount": 0,
         "weight": 1,
-        "priority": 40
+        "priority": 30
       },
       "candidate": {
-        "mode": "wall",
-        "rotations": [
-          0,
-          90
-        ],
-        "relativeTo": "",
-        "relation": "",
-        "gap": 0,
         "rules": [
           {
-            "id": "candidate-1",
+            "id": "loveseat-wall",
             "enabled": true,
             "mode": "wall",
             "rotations": [
@@ -4753,15 +5478,67 @@
               "parallel"
             ],
             "maxSamples": 12,
+            "weight": 1.18,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
+          },
+          {
+            "id": "loveseat-open-zone",
+            "enabled": true,
+            "mode": "zone",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "bedroom-lounge-zone",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 10,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
+        "maxCandidates": 20,
         "ruleListVersion": 2,
-        "maxCandidates": 32,
-        "id": "candidate-1",
+        "id": "loveseat-wall",
         "enabled": true,
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
         "side": "front",
         "crossAlign": "center",
         "distance": {
@@ -4773,24 +5550,32 @@
           "parallel"
         ],
         "maxSamples": 12,
-        "weight": 1,
+        "weight": 1.18,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
-        "requiredAnchor": "wall",
+        "requiredAnchor": "none",
         "avoidWindow": false,
         "allowCorner": false
       },
       "service": {
-        "label": "座椅与工作区",
+        "label": "小沙发起坐区",
         "side": "front",
-        "depth": 0.6,
+        "depth": 0.42,
         "spanExtra": 0,
-        "hard": true,
-        "allowBodyTypes": [
-          "chair"
-        ],
+        "hard": false,
+        "allowBodyTypes": [],
         "alignStart": false
       },
       "run": null,
@@ -4799,15 +5584,38 @@
     {
       "schemaVersion": 1,
       "program": "bedroom",
-      "id": "chair",
-      "label": "工作椅",
-      "category": "床组与座椅",
-      "role": "工作组",
-      "color": "#59a391",
+      "id": "bedroomTeaTable",
+      "label": "卧室圆几",
+      "category": "休闲会客",
+      "role": "茶歇中心",
+      "color": "#b78b55",
       "geometry": {
-        "width": 0.5,
-        "depth": 0.5,
-        "shape": "box"
+        "width": 0.56,
+        "depth": 0.56,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "bedroomTeaTable-m1",
+            "label": "卧室圆几 1号",
+            "width": 0.46,
+            "depth": 0.46,
+            "shape": "box"
+          },
+          {
+            "id": "bedroomTeaTable-m2",
+            "label": "卧室圆几 2号",
+            "width": 0.56,
+            "depth": 0.56,
+            "shape": "box"
+          },
+          {
+            "id": "bedroomTeaTable-m3",
+            "label": "卧室圆几 3号",
+            "width": 0.64,
+            "depth": 0.64,
+            "shape": "box"
+          }
+        ]
       },
       "quantity": {
         "min": 0,
@@ -4815,63 +5623,118 @@
       },
       "accessTarget": false,
       "preferences": {
-        "defaultCount": 1,
+        "defaultCount": 0,
         "weight": 1,
-        "priority": 50
+        "priority": 40
       },
       "candidate": {
         "rules": [
           {
-            "id": "chair-desk-front",
+            "id": "tea-loveseat-front",
             "enabled": true,
             "mode": "relation",
             "rotations": [
               0,
               90
             ],
-            "relativeTo": "desk",
-            "relation": "desk-front",
+            "relativeTo": "bedroomLoveseat",
+            "relation": "lounge-table",
             "side": "front",
             "crossAlign": "center",
             "distance": {
-              "min": 0.28,
-              "max": 0.42,
-              "step": 0.07
+              "min": 0.3,
+              "max": 0.55,
+              "step": 0.125
             },
             "facing": [
-              "toward"
+              "parallel"
+            ],
+            "maxSamples": 8,
+            "weight": 1.25,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
+          },
+          {
+            "id": "tea-chair-front",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "lounge",
+            "relation": "lounge-table",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.24,
+              "max": 0.46,
+              "step": 0.11
+            },
+            "facing": [
+              "parallel"
             ],
             "maxSamples": 8,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
-        "maxCandidates": 8,
+        "maxCandidates": 16,
         "ruleListVersion": 2,
-        "id": "chair-desk-front",
+        "id": "tea-loveseat-front",
         "enabled": true,
         "mode": "relation",
         "rotations": [
           0,
           90
         ],
-        "relativeTo": "desk",
-        "relation": "desk-front",
+        "relativeTo": "bedroomLoveseat",
+        "relation": "lounge-table",
         "side": "front",
         "crossAlign": "center",
         "distance": {
-          "min": 0.28,
-          "max": 0.42,
-          "step": 0.07
+          "min": 0.3,
+          "max": 0.55,
+          "step": 0.125
         },
         "facing": [
-          "toward"
+          "parallel"
         ],
         "maxSamples": 8,
-        "weight": 1,
+        "weight": 1.25,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "none",
@@ -4879,15 +5742,172 @@
         "allowCorner": false
       },
       "service": {
-        "label": "工作椅占位",
-        "side": "back",
-        "depth": 0,
+        "label": "圆几取用区",
+        "side": "front",
+        "depth": 0.24,
         "spanExtra": 0,
         "hard": false,
         "allowBodyTypes": [],
         "alignStart": false
       },
       "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "tvbench",
+      "label": "卧室电视柜",
+      "category": "收纳家具",
+      "role": "视听收纳",
+      "color": "#505f69",
+      "geometry": {
+        "width": 1.2,
+        "depth": 0.4,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 50
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "tvbench-loveseat-facing",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "bedroomLoveseat",
+            "relation": "bedroom-media-facing",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 1,
+              "max": 2.8,
+              "step": 0.25
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 18,
+            "weight": 1.55,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "body-center"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
+          },
+          {
+            "id": "tvbench-wall",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 40,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
+          }
+        ],
+        "maxCandidates": 56,
+        "ruleListVersion": 2,
+        "id": "tvbench-loveseat-facing",
+        "enabled": true,
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "bedroomLoveseat",
+        "relation": "bedroom-media-facing",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 1,
+          "max": 2.8,
+          "step": 0.25
+        },
+        "facing": [
+          "toward"
+        ],
+        "maxSamples": 18,
+        "weight": 1.55,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "body-center"
+          }
+        },
+        "lShapeCrossAlign": "body-center",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": true,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "设备取用区",
+        "side": "front",
+        "depth": 0.4,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": {
+        "min": 1,
+        "max": 2.6,
+        "step": 0.1,
+        "fill": [
+          0.58,
+          0.9
+        ]
+      },
       "infill": false
     },
     {
@@ -4988,7 +6008,17 @@
         "maxSamples": 4,
         "weight": 1.42,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": true
+        "allowFunctionalOverlap": true,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": null,
+            "lateralSide": null,
+            "frontAlign": null
+          }
+        },
+        "lShapeCrossAlign": null,
+        "excludeForLShape": null,
+        "avoidChaiseSide": null
       },
       "placement": {
         "requiredAnchor": "none",
@@ -4996,12 +6026,13 @@
         "allowCorner": false
       },
       "service": {
-        "label": "床尾凳外侧落脚区",
+        "label": "床尾凳共享落脚区",
         "side": "front",
-        "depth": 0.6,
+        "depth": 0.42,
         "spanExtra": 0,
-        "hard": true,
+        "hard": false,
         "allowBodyTypes": [],
+        "sharedCirculation": true,
         "adaptiveFootZone": true,
         "adaptiveGapThreshold": 0.3,
         "alignStart": false
@@ -5012,25 +6043,177 @@
     {
       "schemaVersion": 1,
       "program": "bedroom",
-      "id": "chest",
-      "label": "斗柜",
-      "category": "收纳家具",
-      "role": "叠放收纳",
-      "color": "#a47b58",
+      "id": "wardrobe",
+      "label": "衣柜",
+      "category": "核心家具",
+      "role": "衣物收纳",
+      "color": "#9b6a46",
       "geometry": {
-        "width": 1,
-        "depth": 0.45,
+        "width": 1.8,
+        "depth": 0.6,
         "shape": "box"
       },
       "quantity": {
-        "min": 0,
-        "max": 2
+        "min": 1,
+        "max": 1
       },
       "accessTarget": true,
       "preferences": {
-        "defaultCount": 0,
+        "defaultCount": 1,
         "weight": 1,
         "priority": 70
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "wardrobe-open-wall",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 32,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
+          }
+        ],
+        "maxCandidates": 32,
+        "ruleListVersion": 2,
+        "id": "wardrobe-open-wall",
+        "enabled": true,
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 32,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": true,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "柜前取用区",
+        "side": "front",
+        "depth": 0.42,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": {
+        "min": 0.9,
+        "max": 3.2,
+        "step": 0.1,
+        "fill": [
+          0.72,
+          0.96
+        ]
+      },
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "desk",
+      "label": "书桌",
+      "category": "工作与梳妆",
+      "role": "工作学习",
+      "color": "#2f8a78",
+      "geometry": {
+        "width": 1.2,
+        "depth": 0.55,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "desk-90",
+            "label": "书桌 0.9 m",
+            "width": 0.9,
+            "depth": 0.55,
+            "shape": "box"
+          },
+          {
+            "id": "desk-120",
+            "label": "书桌 1.2 m",
+            "width": 1.2,
+            "depth": 0.55,
+            "shape": "box"
+          },
+          {
+            "id": "desk-140",
+            "label": "书桌 1.4 m",
+            "width": 1.4,
+            "depth": 0.55,
+            "shape": "box"
+          },
+          {
+            "id": "desk-160",
+            "label": "书桌 1.6 m",
+            "width": 1.6,
+            "depth": 0.55,
+            "shape": "box"
+          }
+        ]
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 80
       },
       "candidate": {
         "mode": "wall",
@@ -5065,7 +6248,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "ruleListVersion": 2,
@@ -5085,7 +6278,248 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
+      },
+      "placement": {
+        "requiredAnchor": "wall",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "座椅与工作区",
+        "side": "front",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [
+          "chair"
+        ],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "chair",
+      "label": "工作椅",
+      "category": "床组与座椅",
+      "role": "工作组",
+      "color": "#59a391",
+      "geometry": {
+        "width": 0.5,
+        "depth": 0.5,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 90
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "chair-desk-front",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "desk",
+            "relation": "desk-front",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.03,
+              "max": 0.07,
+              "step": 0.02
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 6,
+            "weight": 1.25,
+            "collisionClearance": 0.015,
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
+          }
+        ],
+        "maxCandidates": 6,
+        "ruleListVersion": 2,
+        "id": "chair-desk-front",
+        "enabled": true,
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "desk",
+        "relation": "desk-front",
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0.03,
+          "max": 0.07,
+          "step": 0.02
+        },
+        "facing": [
+          "toward"
+        ],
+        "maxSamples": 6,
+        "weight": 1.25,
+        "collisionClearance": 0.015,
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "工作椅占位",
+        "side": "back",
+        "depth": 0,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "chest",
+      "label": "斗柜",
+      "category": "收纳家具",
+      "role": "叠放收纳",
+      "color": "#a47b58",
+      "geometry": {
+        "width": 1,
+        "depth": 0.45,
+        "shape": "box"
+      },
+      "quantity": {
+        "min": 0,
+        "max": 2
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 100
+      },
+      "candidate": {
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "wall",
@@ -5133,7 +6567,7 @@
       "preferences": {
         "defaultCount": 0,
         "weight": 1,
-        "priority": 80
+        "priority": 110
       },
       "candidate": {
         "mode": "wall",
@@ -5168,7 +6602,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "ruleListVersion": 2,
@@ -5188,7 +6632,17 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "wall",
@@ -5218,109 +6672,6 @@
     {
       "schemaVersion": 1,
       "program": "bedroom",
-      "id": "tvbench",
-      "label": "卧室电视柜",
-      "category": "收纳家具",
-      "role": "视听收纳",
-      "color": "#505f69",
-      "geometry": {
-        "width": 1.2,
-        "depth": 0.4,
-        "shape": "box"
-      },
-      "quantity": {
-        "min": 0,
-        "max": 1
-      },
-      "accessTarget": true,
-      "preferences": {
-        "defaultCount": 0,
-        "weight": 1,
-        "priority": 90
-      },
-      "candidate": {
-        "mode": "wall",
-        "rotations": [
-          0,
-          90
-        ],
-        "relativeTo": "",
-        "relation": "",
-        "gap": 0,
-        "rules": [
-          {
-            "id": "candidate-1",
-            "enabled": true,
-            "mode": "wall",
-            "rotations": [
-              0,
-              90
-            ],
-            "relativeTo": "",
-            "relation": "",
-            "side": "front",
-            "crossAlign": "center",
-            "distance": {
-              "min": 0,
-              "max": 0,
-              "step": 0.2
-            },
-            "facing": [
-              "parallel"
-            ],
-            "maxSamples": 12,
-            "weight": 1,
-            "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
-          }
-        ],
-        "ruleListVersion": 2,
-        "maxCandidates": 32,
-        "id": "candidate-1",
-        "enabled": true,
-        "side": "front",
-        "crossAlign": "center",
-        "distance": {
-          "min": 0,
-          "max": 0,
-          "step": 0.2
-        },
-        "facing": [
-          "parallel"
-        ],
-        "maxSamples": 12,
-        "weight": 1,
-        "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
-      },
-      "placement": {
-        "requiredAnchor": "wall",
-        "avoidWindow": true,
-        "allowCorner": false
-      },
-      "service": {
-        "label": "设备取用区",
-        "side": "front",
-        "depth": 0.4,
-        "spanExtra": 0,
-        "hard": false,
-        "allowBodyTypes": [],
-        "alignStart": false
-      },
-      "run": {
-        "min": 1,
-        "max": 2.6,
-        "step": 0.1,
-        "fill": [
-          0.58,
-          0.9
-        ]
-      },
-      "infill": false
-    },
-    {
-      "schemaVersion": 1,
-      "program": "bedroom",
       "id": "bedroomDisplay",
       "label": "卧室展示柜",
       "category": "沿墙浅柜",
@@ -5339,7 +6690,7 @@
       "preferences": {
         "defaultCount": 0,
         "weight": 1,
-        "priority": 100
+        "priority": 120
       },
       "candidate": {
         "rules": [
@@ -5366,7 +6717,17 @@
             "maxSamples": 14,
             "weight": 1.2,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "maxCandidates": 14,
@@ -5393,7 +6754,17 @@
         "maxSamples": 14,
         "weight": 1.2,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "wall",
@@ -5464,20 +6835,20 @@
       "preferences": {
         "defaultCount": 0,
         "weight": 1,
-        "priority": 110
+        "priority": 130
       },
       "candidate": {
         "rules": [
           {
-            "id": "reading-wall",
+            "id": "reading-corner",
             "enabled": true,
-            "mode": "wall",
+            "mode": "corner",
             "rotations": [
               0,
               90
             ],
             "relativeTo": "",
-            "relation": "reading-wall",
+            "relation": "reading-corner",
             "side": "front",
             "crossAlign": "center",
             "distance": {
@@ -5488,14 +6859,24 @@
             "facing": [
               "parallel"
             ],
-            "maxSamples": 16,
-            "weight": 1.85,
-            "collisionClearance": 0,
-            "allowFunctionalOverlap": false
+            "maxSamples": 4,
+            "weight": 1.1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           },
           {
             "id": "reading-open-zone",
-            "enabled": false,
+            "enabled": true,
             "mode": "zone",
             "rotations": [
               0,
@@ -5513,23 +6894,33 @@
             "facing": [
               "parallel"
             ],
-            "maxSamples": 8,
-            "weight": 0.72,
+            "maxSamples": 10,
+            "weight": 1.18,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
-        "maxCandidates": 16,
+        "maxCandidates": 14,
         "ruleListVersion": 2,
-        "id": "reading-wall",
+        "id": "reading-corner",
         "enabled": true,
-        "mode": "wall",
+        "mode": "corner",
         "rotations": [
           0,
           90
         ],
         "relativeTo": "",
-        "relation": "reading-wall",
+        "relation": "reading-corner",
         "side": "front",
         "crossAlign": "center",
         "distance": {
@@ -5540,304 +6931,30 @@
         "facing": [
           "parallel"
         ],
-        "maxSamples": 16,
-        "weight": 1.85,
-        "collisionClearance": 0,
-        "allowFunctionalOverlap": false
+        "maxSamples": 4,
+        "weight": 1.1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
-        "requiredAnchor": "wall",
+        "requiredAnchor": "none",
         "avoidWindow": false,
-        "allowCorner": true
+        "allowCorner": false
       },
       "service": {
         "label": "休闲椅使用区",
         "side": "front",
         "depth": 0.6,
-        "spanExtra": 0,
-        "hard": false,
-        "allowBodyTypes": [],
-        "alignStart": false
-      },
-      "run": null,
-      "infill": false
-    },
-    {
-      "schemaVersion": 1,
-      "program": "bedroom",
-      "id": "bedroomLoveseat",
-      "label": "卧室小沙发",
-      "category": "休闲会客",
-      "role": "小型会客区",
-      "color": "#c98272",
-      "geometry": {
-        "width": 1.25,
-        "depth": 0.72,
-        "shape": "box",
-        "variants": [
-          {
-            "id": "bedroomLoveseat-m1",
-            "label": "卧室小沙发 1号",
-            "width": 1.1,
-            "depth": 0.68,
-            "shape": "box"
-          },
-          {
-            "id": "bedroomLoveseat-m2",
-            "label": "卧室小沙发 2号",
-            "width": 1.25,
-            "depth": 0.72,
-            "shape": "box"
-          },
-          {
-            "id": "bedroomLoveseat-m3",
-            "label": "卧室小沙发 3号",
-            "width": 1.45,
-            "depth": 0.76,
-            "shape": "box"
-          }
-        ]
-      },
-      "quantity": {
-        "min": 0,
-        "max": 1
-      },
-      "accessTarget": false,
-      "preferences": {
-        "defaultCount": 0,
-        "weight": 1,
-        "priority": 120
-      },
-      "candidate": {
-        "rules": [
-          {
-            "id": "loveseat-wall",
-            "enabled": true,
-            "mode": "wall",
-            "rotations": [
-              0,
-              90
-            ],
-            "relativeTo": "",
-            "relation": "",
-            "side": "front",
-            "crossAlign": "center",
-            "distance": {
-              "min": 0,
-              "max": 0,
-              "step": 0.2
-            },
-            "facing": [
-              "parallel"
-            ],
-            "maxSamples": 12,
-            "weight": 1.18,
-            "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
-          },
-          {
-            "id": "loveseat-open-zone",
-            "enabled": true,
-            "mode": "zone",
-            "rotations": [
-              0,
-              90
-            ],
-            "relativeTo": "",
-            "relation": "bedroom-lounge-zone",
-            "side": "front",
-            "crossAlign": "center",
-            "distance": {
-              "min": 0,
-              "max": 0,
-              "step": 0.2
-            },
-            "facing": [
-              "parallel"
-            ],
-            "maxSamples": 10,
-            "weight": 1,
-            "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
-          }
-        ],
-        "maxCandidates": 20,
-        "ruleListVersion": 2,
-        "id": "loveseat-wall",
-        "enabled": true,
-        "mode": "wall",
-        "rotations": [
-          0,
-          90
-        ],
-        "relativeTo": "",
-        "relation": "",
-        "side": "front",
-        "crossAlign": "center",
-        "distance": {
-          "min": 0,
-          "max": 0,
-          "step": 0.2
-        },
-        "facing": [
-          "parallel"
-        ],
-        "maxSamples": 16,
-        "weight": 1.18,
-        "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
-      },
-      "placement": {
-        "requiredAnchor": "none",
-        "avoidWindow": false,
-        "allowCorner": false
-      },
-      "service": {
-        "label": "小沙发起坐区",
-        "side": "front",
-        "depth": 0.42,
-        "spanExtra": 0,
-        "hard": false,
-        "allowBodyTypes": [],
-        "alignStart": false
-      },
-      "run": null,
-      "infill": false
-    },
-    {
-      "schemaVersion": 1,
-      "program": "bedroom",
-      "id": "bedroomTeaTable",
-      "label": "卧室圆几",
-      "category": "休闲会客",
-      "role": "茶歇中心",
-      "color": "#b78b55",
-      "geometry": {
-        "width": 0.56,
-        "depth": 0.56,
-        "shape": "box",
-        "variants": [
-          {
-            "id": "bedroomTeaTable-m1",
-            "label": "卧室圆几 1号",
-            "width": 0.46,
-            "depth": 0.46,
-            "shape": "box"
-          },
-          {
-            "id": "bedroomTeaTable-m2",
-            "label": "卧室圆几 2号",
-            "width": 0.56,
-            "depth": 0.56,
-            "shape": "box"
-          },
-          {
-            "id": "bedroomTeaTable-m3",
-            "label": "卧室圆几 3号",
-            "width": 0.64,
-            "depth": 0.64,
-            "shape": "box"
-          }
-        ]
-      },
-      "quantity": {
-        "min": 0,
-        "max": 1
-      },
-      "accessTarget": false,
-      "preferences": {
-        "defaultCount": 0,
-        "weight": 1,
-        "priority": 130
-      },
-      "candidate": {
-        "rules": [
-          {
-            "id": "tea-loveseat-front",
-            "enabled": true,
-            "mode": "relation",
-            "rotations": [
-              0,
-              90
-            ],
-            "relativeTo": "bedroomLoveseat",
-            "relation": "lounge-table",
-            "side": "front",
-            "crossAlign": "center",
-            "distance": {
-              "min": 0.3,
-              "max": 0.55,
-              "step": 0.125
-            },
-            "facing": [
-              "parallel"
-            ],
-            "maxSamples": 8,
-            "weight": 1.25,
-            "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
-          },
-          {
-            "id": "tea-chair-front",
-            "enabled": true,
-            "mode": "relation",
-            "rotations": [
-              0,
-              90
-            ],
-            "relativeTo": "lounge",
-            "relation": "lounge-table",
-            "side": "front",
-            "crossAlign": "center",
-            "distance": {
-              "min": 0.24,
-              "max": 0.46,
-              "step": 0.11
-            },
-            "facing": [
-              "parallel"
-            ],
-            "maxSamples": 8,
-            "weight": 1,
-            "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
-          }
-        ],
-        "maxCandidates": 16,
-        "ruleListVersion": 2,
-        "id": "tea-loveseat-front",
-        "enabled": true,
-        "mode": "relation",
-        "rotations": [
-          0,
-          90
-        ],
-        "relativeTo": "bedroomLoveseat",
-        "relation": "lounge-table",
-        "side": "front",
-        "crossAlign": "center",
-        "distance": {
-          "min": 0.3,
-          "max": 0.55,
-          "step": 0.125
-        },
-        "facing": [
-          "parallel"
-        ],
-        "maxSamples": 8,
-        "weight": 1.25,
-        "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
-      },
-      "placement": {
-        "requiredAnchor": "none",
-        "avoidWindow": false,
-        "allowCorner": false
-      },
-      "service": {
-        "label": "圆几取用区",
-        "side": "front",
-        "depth": 0.24,
         "spanExtra": 0,
         "hard": false,
         "allowBodyTypes": [],
@@ -5902,7 +7019,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "ruleListVersion": 2,
@@ -5922,7 +7049,17 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "wall",
@@ -5934,7 +7071,7 @@
         "side": "front",
         "depth": 0.6,
         "spanExtra": 0,
-        "hard": true,
+        "hard": false,
         "allowBodyTypes": [
           "vanityStool"
         ],
@@ -5991,7 +7128,17 @@
             "maxSamples": 8,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "maxCandidates": 8,
@@ -6018,7 +7165,17 @@
         "maxSamples": 8,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "none",
@@ -6052,7 +7209,7 @@
       },
       "quantity": {
         "min": 0,
-        "max": 2
+        "max": 4
       },
       "accessTarget": true,
       "preferences": {
@@ -6093,7 +7250,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "ruleListVersion": 2,
@@ -6113,7 +7280,17 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "wall",
@@ -6146,7 +7323,11 @@
         "fill": [
           0.72,
           1
-        ]
+        ],
+        "maxByWalls": true,
+        "maxPerWall": 1,
+        "wallCountCap": 4,
+        "areaPerCabinet": 8
       },
       "infill": true
     },
@@ -6221,7 +7402,17 @@
             "maxSamples": 16,
             "weight": 1.25,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           },
           {
             "id": "sofa-zone",
@@ -6246,7 +7437,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "maxCandidates": 28,
@@ -6273,7 +7474,17 @@
         "maxSamples": 16,
         "weight": 1.25,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "none",
@@ -6340,7 +7551,17 @@
             "maxSamples": 18,
             "weight": 1.55,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "body-center"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           },
           {
             "id": "tv-open-wall",
@@ -6365,7 +7586,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "maxCandidates": 30,
@@ -6392,7 +7623,17 @@
         "maxSamples": 18,
         "weight": 1.55,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "body-center"
+          }
+        },
+        "lShapeCrossAlign": "body-center",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "wall",
@@ -6483,7 +7724,17 @@
             "maxSamples": 10,
             "weight": 1.5,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "main-seat"
+              }
+            },
+            "lShapeCrossAlign": "main-seat",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "maxCandidates": 12,
@@ -6511,7 +7762,17 @@
         "maxSamples": 10,
         "weight": 1.5,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "main-seat"
+          }
+        },
+        "lShapeCrossAlign": "main-seat",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "none",
@@ -6520,6 +7781,179 @@
       },
       "service": {
         "label": "茶几取用区",
+        "side": "front",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "side",
+      "label": "边几",
+      "category": "座椅与小件",
+      "role": "沙发组",
+      "color": "#79927e",
+      "geometry": {
+        "width": 0.5,
+        "depth": 0.5,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "side-m1",
+            "label": "边几 1号",
+            "width": 0.42,
+            "depth": 0.42,
+            "shape": "box"
+          },
+          {
+            "id": "side-m2",
+            "label": "边几 2号",
+            "width": 0.5,
+            "depth": 0.5,
+            "shape": "box"
+          },
+          {
+            "id": "side-m3",
+            "label": "边几 3号",
+            "width": 0.56,
+            "depth": 0.56,
+            "shape": "box"
+          }
+        ]
+      },
+      "quantity": {
+        "min": 0,
+        "max": 2
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 40
+      },
+      "candidate": {
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "sofa",
+        "relation": "sofa-side",
+        "gap": 0.07,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "sofa",
+            "relation": "sofa-side",
+            "side": "left",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.07,
+              "max": 0.07,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "non-chaise",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": true
+          },
+          {
+            "id": "candidate-2",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "sofa",
+            "relation": "sofa-side",
+            "side": "right",
+            "crossAlign": "center",
+            "distance": {
+              "min": 0.07,
+              "max": 0.07,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "non-chaise",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": true
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "left",
+        "crossAlign": "center",
+        "distance": {
+          "min": 0.07,
+          "max": 0.07,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "non-chaise",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": true
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "label": "边几取用区",
         "side": "front",
         "depth": 0.6,
         "spanExtra": 0,
@@ -6574,7 +8008,7 @@
       "preferences": {
         "defaultCount": 2,
         "weight": 1,
-        "priority": 40
+        "priority": 50
       },
       "candidate": {
         "rules": [
@@ -6601,60 +8035,60 @@
             "maxSamples": 8,
             "weight": 1.2,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": false,
+                "lateralSide": "any",
+                "frontAlign": "body-center"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": true,
+            "avoidChaiseSide": false
           },
           {
-            "id": "arm-sofa-left",
+            "id": "arm-side-front",
             "enabled": true,
             "mode": "relation",
             "rotations": [
               0,
               90
             ],
-            "relativeTo": "sofa",
-            "relation": "conversation-side",
-            "side": "left",
+            "relativeTo": "side",
+            "relation": "sofa-side-chair-chain",
+            "side": "front",
             "crossAlign": "center",
             "distance": {
-              "min": 0.35,
-              "max": 0.85,
-              "step": 0.2
+              "min": 0.04,
+              "max": 0.16,
+              "step": 0.06
             },
             "facing": [
-              "toward"
+              "parallel"
             ],
-            "maxSamples": 8,
-            "weight": 1,
+            "maxSamples": 10,
+            "weight": 1.9,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
-          },
-          {
-            "id": "arm-sofa-right",
-            "enabled": true,
-            "mode": "relation",
-            "rotations": [
-              0,
-              90
-            ],
-            "relativeTo": "sofa",
-            "relation": "conversation-side",
-            "side": "right",
-            "crossAlign": "center",
-            "distance": {
-              "min": 0.35,
-              "max": 0.85,
-              "step": 0.2
+            "allowFunctionalOverlap": true,
+            "compoundConstraint": {
+              "ancestorRelativeTo": "sofa",
+              "side": "front",
+              "gap": 0.04
             },
-            "facing": [
-              "toward"
-            ],
-            "maxSamples": 8,
-            "weight": 1,
-            "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
-        "maxCandidates": 24,
+        "maxCandidates": 20,
         "ruleListVersion": 2,
         "id": "arm-sofa-opposite",
         "enabled": true,
@@ -6678,7 +8112,17 @@
         "maxSamples": 8,
         "weight": 1.2,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": false,
+            "lateralSide": "any",
+            "frontAlign": "body-center"
+          }
+        },
+        "lShapeCrossAlign": "body-center",
+        "excludeForLShape": true,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "none",
@@ -6688,149 +8132,6 @@
       "service": {
         "label": "单椅起坐区",
         "side": "back",
-        "depth": 0.6,
-        "spanExtra": 0,
-        "hard": false,
-        "allowBodyTypes": [],
-        "alignStart": false
-      },
-      "run": null,
-      "infill": false
-    },
-    {
-      "schemaVersion": 1,
-      "program": "living",
-      "id": "side",
-      "label": "边几",
-      "category": "座椅与小件",
-      "role": "沙发组",
-      "color": "#79927e",
-      "geometry": {
-        "width": 0.5,
-        "depth": 0.5,
-        "shape": "box",
-        "variants": [
-          {
-            "id": "side-m1",
-            "label": "边几 1号",
-            "width": 0.42,
-            "depth": 0.42,
-            "shape": "box"
-          },
-          {
-            "id": "side-m2",
-            "label": "边几 2号",
-            "width": 0.5,
-            "depth": 0.5,
-            "shape": "box"
-          },
-          {
-            "id": "side-m3",
-            "label": "边几 3号",
-            "width": 0.56,
-            "depth": 0.56,
-            "shape": "box"
-          }
-        ]
-      },
-      "quantity": {
-        "min": 0,
-        "max": 2
-      },
-      "accessTarget": false,
-      "preferences": {
-        "defaultCount": 1,
-        "weight": 1,
-        "priority": 50
-      },
-      "candidate": {
-        "mode": "relation",
-        "rotations": [
-          0,
-          90
-        ],
-        "relativeTo": "sofa",
-        "relation": "sofa-side",
-        "gap": 0.07,
-        "rules": [
-          {
-            "id": "candidate-1",
-            "enabled": true,
-            "mode": "relation",
-            "rotations": [
-              0,
-              90
-            ],
-            "relativeTo": "sofa",
-            "relation": "sofa-side",
-            "side": "left",
-            "crossAlign": "center",
-            "distance": {
-              "min": 0.07,
-              "max": 0.07,
-              "step": 0.2
-            },
-            "facing": [
-              "parallel"
-            ],
-            "maxSamples": 12,
-            "weight": 1,
-            "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
-          },
-          {
-            "id": "candidate-2",
-            "enabled": true,
-            "mode": "relation",
-            "rotations": [
-              0,
-              90
-            ],
-            "relativeTo": "sofa",
-            "relation": "sofa-side",
-            "side": "right",
-            "crossAlign": "center",
-            "distance": {
-              "min": 0.07,
-              "max": 0.07,
-              "step": 0.2
-            },
-            "facing": [
-              "parallel"
-            ],
-            "maxSamples": 12,
-            "weight": 1,
-            "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
-          }
-        ],
-        "ruleListVersion": 2,
-        "maxCandidates": 32,
-        "id": "candidate-1",
-        "enabled": true,
-        "side": "left",
-        "crossAlign": "center",
-        "distance": {
-          "min": 0.07,
-          "max": 0.07,
-          "step": 0.2
-        },
-        "facing": [
-          "parallel"
-        ],
-        "maxSamples": 12,
-        "weight": 1,
-        "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
-      },
-      "placement": {
-        "requiredAnchor": "none",
-        "avoidWindow": false,
-        "allowCorner": false
-      },
-      "service": {
-        "label": "边几取用区",
-        "side": "front",
         "depth": 0.6,
         "spanExtra": 0,
         "hard": false,
@@ -6888,7 +8189,17 @@
             "maxSamples": 6,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           },
           {
             "id": "lamp-arm-right",
@@ -6913,7 +8224,17 @@
             "maxSamples": 6,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           },
           {
             "id": "lamp-sofa-left",
@@ -6938,7 +8259,17 @@
             "maxSamples": 6,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           },
           {
             "id": "lamp-sofa-right",
@@ -6963,7 +8294,17 @@
             "maxSamples": 6,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "maxCandidates": 24,
@@ -6990,7 +8331,17 @@
         "maxSamples": 6,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "none",
@@ -7088,7 +8439,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "ruleListVersion": 2,
@@ -7108,7 +8469,17 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "none",
@@ -7175,7 +8546,17 @@
             "maxSamples": 6,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           },
           {
             "id": "dining-back",
@@ -7200,7 +8581,17 @@
             "maxSamples": 6,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           },
           {
             "id": "dining-left",
@@ -7225,7 +8616,17 @@
             "maxSamples": 6,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           },
           {
             "id": "dining-right",
@@ -7250,7 +8651,17 @@
             "maxSamples": 6,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "maxCandidates": 24,
@@ -7277,7 +8688,17 @@
         "maxSamples": 6,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "none",
@@ -7352,7 +8773,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "ruleListVersion": 2,
@@ -7372,7 +8803,17 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "wall",
@@ -7455,7 +8896,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "ruleListVersion": 2,
@@ -7475,7 +8926,17 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "wall",
@@ -7558,7 +9019,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "ruleListVersion": 2,
@@ -7578,7 +9049,17 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "wall",
@@ -7661,7 +9142,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "ruleListVersion": 2,
@@ -7681,7 +9172,17 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "wall",
@@ -7787,7 +9288,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "ruleListVersion": 2,
@@ -7807,7 +9318,17 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "none",
@@ -7882,7 +9403,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "ruleListVersion": 2,
@@ -7902,7 +9433,17 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "none",
@@ -7936,7 +9477,7 @@
       },
       "quantity": {
         "min": 0,
-        "max": 2
+        "max": 5
       },
       "accessTarget": true,
       "preferences": {
@@ -7977,7 +9518,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "ruleListVersion": 2,
@@ -7997,7 +9548,17 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "wall",
@@ -8020,9 +9581,13 @@
         "fill": [
           0.96,
           1
-        ]
+        ],
+        "maxByWalls": true,
+        "maxPerWall": 1,
+        "wallCountCap": 5,
+        "areaPerCabinet": 12
       },
-      "infill": false
+      "infill": true
     },
     {
       "schemaVersion": 1,
@@ -8080,7 +9645,17 @@
             "maxSamples": 12,
             "weight": 1,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
           }
         ],
         "ruleListVersion": 2,
@@ -8100,7 +9675,17 @@
         "maxSamples": 12,
         "weight": 1,
         "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
       },
       "placement": {
         "requiredAnchor": "none",
