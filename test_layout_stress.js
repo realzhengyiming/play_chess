@@ -61,7 +61,7 @@ setTimeout(() => {
       const chair = solution.inventoryItems.find(item => item.typeId === 'chair' && solution.poses[item.id]);
       if (solution.poses[chair.id].relation !== 'desk-front') fail(`${label}: 工作椅没有朝向书桌`);
       const gap=solution.poses[chair.id].relationGap;
-      if(gap<.029||gap>.071)fail(`${label}: 工作椅没有紧靠桌面 (${gap} m)`);
+      if(Math.abs(gap)>1e-6)fail(`${label}: 工作椅没有紧靠桌面 (${gap} m)`);
     }
     if (counts.diningTable && (counts.diningChair || 0) < 2) fail(`${label}: 餐桌没有成组餐椅`);
     if (programId === 'bedroom') {

@@ -101,6 +101,8 @@
       }
       if(!isObject(rule?.placement))errors.push(`${prefix}.placement 必须是对象`);
       if(!isObject(rule?.service)||!finite(rule.service.depth)||Number(rule.service.depth)<0)errors.push(`${prefix}.service.depth 必须是非负数`);
+      if(typeof rule?.service?.hard!=='boolean')errors.push(`${prefix}.service.hard 必须是布尔值`);
+      if(typeof rule?.service?.sharedCirculation!=='boolean')errors.push(`${prefix}.service.sharedCirculation 必须是布尔值`);
     }
     for(const programId of PROGRAM_IDS)if(!rules.some(rule=>rule.program===programId&&Number(rule.quantity?.min)>0))errors.push(`${programId} 至少需要一件 quantity.min > 0 的核心家具`);
 

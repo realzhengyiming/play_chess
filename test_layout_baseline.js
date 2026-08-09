@@ -89,7 +89,9 @@ setTimeout(() => {
     {programId:'bedroom', width:3.2, depth:4.7, required:{bed:1,wardrobe:1,night:2,desk:1,chair:1}, minPlaced:7, enrich:['bedroomLoveseat','lounge','bench','bedroomDisplay','bedroomInfillCabinet']},
     // 13.68㎡在床尾凳改为“10–15cm 缝 + 外侧 0.42m 共享落脚区”后，
     // 不再强迫每个解都塞入床尾凳；较大的 4.2×4.5 房间仍必须覆盖该语义。
-    {programId:'bedroom', width:3.6, depth:3.8, required:{bed:1,wardrobe:1,night:2,desk:1,chair:1}, minPlaced:7},
+    // 紧贴桌边后，13.68㎡房间可放下完整梳妆组；与其强制第二个床头柜，
+    // 更应验证“一床头柜 + 工作组 + 梳妆组”的真实功能丰富度。
+    {programId:'bedroom', width:3.6, depth:3.8, required:{bed:1,wardrobe:1,night:1,desk:1,chair:1,vanity:1,vanityStool:1}, minPlaced:8},
     // 填缝柜已改为搜索完成后的墙面补全，不再计入 Beam 的硬家具落地数。
     {programId:'bedroom', width:4.2, depth:4.5, required:{bed:1,wardrobe:1,night:2,desk:1,chair:1,bench:1}, minPlaced:7},
     {programId:'living', width:4.2, depth:3.8, required:{sofa:1,tv:1,coffee:1,arm:1}, minPlaced:6},
@@ -117,6 +119,14 @@ setTimeout(() => {
         assert(benchPose.relation==='bed-foot'&&benchPose.relationGap>=.095&&benchPose.relationGap<=.155,`${label}: 床尾凳未按 10–15cm 床尾关系摆放`);
         assert(zone?.depth>=.41&&/共享落脚区/.test(zone.label),`${label}: 床尾凳外侧没有保留约 0.42m 共享落脚区`);
       }
+      const chairItem=solution.inventoryItems?.find(item=>item.typeId==='chair'&&solution.poses[item.id]);
+      if(chairItem)assert(solution.poses[chairItem.id].relation==='desk-front'&&Math.abs(solution.poses[chairItem.id].relationGap||0)<1e-6,`${label}: 工作椅没有紧靠书桌`);
+      const stoolItem=solution.inventoryItems?.find(item=>item.typeId==='vanityStool'&&solution.poses[item.id]);
+      if(stoolItem){
+        const stoolPose=solution.poses[stoolItem.id],zone=engine.functionalZones(stoolItem,stoolPose)[0];
+        assert(stoolPose.relation==='vanity-seat'&&Math.abs(stoolPose.relationGap||0)<1e-6,`${label}: 梳妆凳没有紧靠梳妆台`);
+        assert(zone?.hard===false&&zone?.sharedCirculation===true&&zone?.depth>=.59,`${label}: 梳妆凳后方没有作为共享通行区`);
+      }
       for(const item of solution.inventoryItems?.filter(item=>item.typeId==='lounge'&&solution.poses[item.id])||[]){
         assert(solution.poses[item.id].anchor==='wall',`${label}: 硬家具休闲椅没有贴墙`);
       }
@@ -125,6 +135,9 @@ setTimeout(() => {
     const postLayoutFurniture=(solution.decorItems||[]).filter(item=>item.collision==='post-layout').length;
     assert(Object.values(counts).reduce((sum, value) => sum + value, 0)+postLayoutFurniture >= testCase.minPlaced, `${label}: 实际落地家具过少 ${JSON.stringify(counts)} + 末轮柜 ${postLayoutFurniture}`);
     if (counts.diningTable) assert((counts.diningChair || 0) >= 2, `${label}: 出现有餐桌无至少两把餐椅的不完整餐组`);
+    for(const item of solution.inventoryItems?.filter(item=>item.typeId==='diningChair'&&solution.poses[item.id])||[])assert(Math.abs(solution.poses[item.id].relationGap||0)<1e-6,`${label}: 餐椅没有紧靠餐桌`);
+    const coffeeItem=solution.inventoryItems?.find(item=>item.typeId==='coffee'&&solution.poses[item.id]);
+    if(coffeeItem){const gap=solution.poses[coffeeItem.id].relationGap;assert(gap>=.299&&gap<=.401,`${label}: 茶几没有使用 0.30–0.40m 紧凑距离 (${gap})`)}
     if ((counts.infillCabinet || 0) >= 2) {
       const infillWalls = solution.inventoryItems
         .filter(item => item.typeId === 'infillCabinet' && solution.poses[item.id])

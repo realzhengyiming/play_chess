@@ -1823,7 +1823,7 @@
         // 家具明确声明的服务区（例如沙发与茶几之间、餐桌与餐椅之间）是坐姿/操作
         // 空间，不要求成为 0.50m 穿行通道。只从“孤岛面积”中扣掉这些有功能归属
         // 的格子；没有任何功能归属的墙角、凹槽和家具背后空地仍然是硬孤岛。
-        const claimedRects=poses.flatMap(([id,pose])=>ITEM_BY_ID[id]?functionalZones(ITEM_BY_ID[id],pose).map(zone=>zone.rect):[]);
+        const claimedRects=poses.flatMap(([id,pose])=>ITEM_BY_ID[id]?functionalZones(ITEM_BY_ID[id],pose).filter(zone=>!zone.sharedCirculation).map(zone=>zone.rect):[]);
         const claimed=claimedRects.length?rasterDenseRects(claimedRects,context,0):new Uint32Array(context.words);
         let targetCount=0,reachableTargets=0,hardTargetCount=0,reachableHardTargets=0;const targetStatus={};
         for(const [id,pose] of poses) {
@@ -1909,7 +1909,8 @@
         const forward=dot(delta,sofaPose.normal||{x:0,y:1});
         const lateral=Math.abs(dot(delta,sofaPose.wallDir||{x:1,y:0}));
         const gap=forward-sofa.d/2-coffee.d/2;
-        coffeeGapScore=bandScore(gap,.34,.55,.32);
+        const preferred=DESIGN_GRAMMAR.living?.pairs?.sofaCoffee||{},min=Number(preferred.gap?.[0]??.35),max=Number(preferred.gap?.[1]??.40),tolerance=Number(preferred.tolerance)||.12;
+        coffeeGapScore=bandScore(gap,min,max,tolerance);
         const aligned=clamp(1-lateral/Math.max(.65,sofa.w*.42),0,1);
         coffeeScore=coffeeGapScore*.62+aligned*.38;
       }
@@ -4250,6 +4251,9 @@
         canvas.width=Math.floor(width*dpr);canvas.height=Math.floor(height*dpr);
       }
       ctx.setTransform(dpr,0,0,dpr,0,0);
+      // 页面初次加载或切换房间时，ResizeObserver 可能早于 scene 编译完成触发。
+      // 此时只清空旧帧，等正常编译流程再次调用，避免读取空场景宽深。
+      if(!scene){ctx.clearRect(0,0,width,height);return;}
       updateCandidateBadge();
       drawBoard(width,height);
     }
