@@ -4091,7 +4091,9 @@
       const poses={},trace=[{poses:{},partialScore:0,lastMove:null,depth:0,beamSize:1}];
       itemIds.forEach((id,index)=>{
         const item=ITEM_BY_ID[id],pose=solution.poses[id],treeNode=pathByItem.get(id);poses[id]=pose;
-        const fallback=searchTrace.find(row=>row.lastMove?.itemId===id&&poseIdentity(row.lastMove.pose)===poseIdentity(pose));
+        // 可选家具的搜索轨迹可能记录 skip 分支；skip 只有 `{skip:true}`，没有坐标，
+        // 不能拿它和最终真实落子做 poseIdentity 比较。
+        const fallback=searchTrace.find(row=>row.lastMove?.itemId===id&&!row.lastMove?.pose?.skip&&poseIdentity(row.lastMove.pose)===poseIdentity(pose));
         const merit=Number(treeNode?.merit??fallback?.lastMove?.merit??candidateStaticScore(item,pose,{poses:Object.fromEntries(Object.entries(poses).filter(([key])=>key!==id))},scene))||0;
         trace.push({poses:{...poses},partialScore:Number(treeNode?.score??fallback?.partialScore??0)||0,lastMove:{itemId:id,pose,merit},depth:index+1,beamSize:searchTrace[index+1]?.beamSize||0});
       });
