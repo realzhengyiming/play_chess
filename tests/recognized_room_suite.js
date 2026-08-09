@@ -62,6 +62,8 @@ setTimeout(() => {
       const itemById=new Map(engine.getFurniture().map(item=>[item.id,item]));
       const placedTypeCount=typeId=>Object.keys(solution.poses||{}).filter(id=>itemById.get(id)?.typeId===typeId).length;
       const wallDetails=solution.evaluation.diagnostics.wallDetails||{},groundDetails=solution.evaluation.diagnostics.ground||{};
+      const roomAspect=Math.max(room.width/Math.max(room.depth,.001),room.depth/Math.max(room.width,.001));
+      const hotelBedroom=programId==='bedroom'&&room.area>=15&&roomAspect>=1.65;
       rows.push({
         room:label, area:+room.area.toFixed(1), ms:+result.totalTimeMs.toFixed(1), attempts:result.attempts, nodes:result.totalNodes, placed,
         score:solution.evaluation.total, daylight:breakdown.daylight, deskWin:deskWindowDistance==null?'-':+deskWindowDistance.toFixed(2),
@@ -72,6 +74,8 @@ setTimeout(() => {
       });
       if (!solution.evaluation.qualityPass) qualityWarnings.push(`${label}: 未通过质量门槛`);
       if(programId==='bedroom'&&room.area>=15&&deskWindowDistance!=null&&deskWindowDistance>2.3)failures.push(`${label}: 书桌距窗 ${deskWindowDistance.toFixed(2)}m，超过 2.30m`);
+      if(hotelBedroom&&placedTypeCount('tvbench')<1)failures.push(`${label}: 长条卧室缺少酒店式床尾电视柜`);
+      if(hotelBedroom&&(solution.evaluation.diagnostics.largestEmptyWallBay??Infinity)>3.20)failures.push(`${label}: 最大连续空墙 ${(solution.evaluation.diagnostics.largestEmptyWallBay||0).toFixed(2)}m，超过 3.20m`);
       if(programId==='living'&&room.area>=34){
         if(placedTypeCount('diningTable')<1||placedTypeCount('diningChair')<2)failures.push(`${label}: 大客厅缺少真实第二功能区（至少 1 桌 2 椅）`);
         if((wallDetails.unusedWallRatio??1)>.46)failures.push(`${label}: 可用空墙占比 ${((wallDetails.unusedWallRatio||0)*100).toFixed(1)}%，超过 46%`);

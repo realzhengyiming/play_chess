@@ -194,7 +194,7 @@
     // 家具共同进入 configuredRuleCandidates；这里仅是首次启动、尚无本地配置时的基线。
     const candidateEntry=(id,mode,options={})=>({id,enabled:true,mode,rotations:[0,90],relativeTo:'',relation:'',side:'front',crossAlign:'center',distance:{min:0,max:0,step:.20},facing:['parallel'],maxSamples:12,weight:1,collisionClearance:.025,allowFunctionalOverlap:false,...options});
     const DEFAULT_CANDIDATE_RULES={
-      bed:[candidateEntry('bed-wall','wall',{maxSamples:20}),candidateEntry('bed-corner','corner',{relation:'wall-end-corner',requiredAnchor:'wall',maxSamples:8,weight:1.35})],wardrobe:[candidateEntry('wardrobe-wall','wall',{maxSamples:32})],desk:[candidateEntry('desk-wall','wall')],vanity:[candidateEntry('vanity-wall','wall')],chest:[candidateEntry('chest-wall','wall')],shelf:[candidateEntry('shelf-wall','wall')],tvbench:[candidateEntry('tvbench-loveseat-facing','relation',{relativeTo:'bedroomLoveseat',relation:'bedroom-media-facing',side:'front',distance:{min:.55,max:2.8,step:.25},facing:['toward'],maxSamples:18,weight:1.55,referenceShapePolicy:{lShape:{enabled:true,lateralSide:'any',frontAlign:'body-center'}}}),candidateEntry('tvbench-wall','wall',{maxSamples:40})],sideboard:[candidateEntry('sideboard-wall','wall')],bookcase:[candidateEntry('bookcase-wall','wall')],display:[candidateEntry('display-wall','wall')],console:[candidateEntry('console-wall','wall')],tv:[candidateEntry('tv-facing-sofa','relation',{relativeTo:'sofa',relation:'sofa-facing',side:'front',distance:{min:1.55,max:3.2,step:.25},facing:['toward'],maxSamples:18,weight:1.55,referenceShapePolicy:{lShape:{enabled:true,lateralSide:'any',frontAlign:'body-center'}}}),candidateEntry('tv-wall','wall',{maxSamples:12})],
+      bed:[candidateEntry('bed-wall','wall',{maxSamples:20}),candidateEntry('bed-corner','corner',{relation:'wall-end-corner',requiredAnchor:'wall',maxSamples:8,weight:1.35})],wardrobe:[candidateEntry('wardrobe-wall','wall',{maxSamples:32})],desk:[candidateEntry('desk-wall','wall')],vanity:[candidateEntry('vanity-wall','wall')],chest:[candidateEntry('chest-wall','wall')],shelf:[candidateEntry('shelf-wall','wall')],tvbench:[candidateEntry('tvbench-bed-facing','relation',{relativeTo:'bed',relation:'bedroom-tv-bed-facing',side:'front',distance:{min:.45,max:2.8,step:.15},facing:['toward'],maxSamples:24,weight:2.20,referenceShapePolicy:{lShape:{enabled:true,lateralSide:'any',frontAlign:'body-center'}}}),candidateEntry('tvbench-loveseat-facing','relation',{relativeTo:'bedroomLoveseat',relation:'bedroom-media-facing',side:'front',distance:{min:.55,max:2.8,step:.25},facing:['toward'],maxSamples:18,weight:1.55,referenceShapePolicy:{lShape:{enabled:true,lateralSide:'any',frontAlign:'body-center'}}}),candidateEntry('tvbench-wall','wall',{maxSamples:40})],sideboard:[candidateEntry('sideboard-wall','wall')],bookcase:[candidateEntry('bookcase-wall','wall')],display:[candidateEntry('display-wall','wall')],console:[candidateEntry('console-wall','wall')],tv:[candidateEntry('tv-facing-sofa','relation',{relativeTo:'sofa',relation:'sofa-facing',side:'front',distance:{min:1.55,max:3.2,step:.25},facing:['toward'],maxSamples:18,weight:1.55,referenceShapePolicy:{lShape:{enabled:true,lateralSide:'any',frontAlign:'body-center'}}}),candidateEntry('tv-wall','wall',{maxSamples:12})],
       night:[candidateEntry('bed-left','relation',{relativeTo:'bed',relation:'bed-side',side:'left',crossAlign:'back',distance:{min:0,max:0,step:.05},collisionClearance:0,allowFunctionalOverlap:true,weight:1.55}),candidateEntry('bed-right','relation',{relativeTo:'bed',relation:'bed-side',side:'right',crossAlign:'back',distance:{min:0,max:0,step:.05},collisionClearance:0,allowFunctionalOverlap:true,weight:1.55})],
       chair:[candidateEntry('desk-front','relation',{relativeTo:'desk',relation:'desk-front',side:'front',distance:{min:.03,max:.07,step:.02},facing:['toward'],maxSamples:6,collisionClearance:.015,weight:1.25})],
       bench:[candidateEntry('bed-foot-near','relation',{relativeTo:'bed',relation:'bed-foot',side:'front',distance:{min:.10,max:.15,step:.05},facing:['toward'],allowFunctionalOverlap:true,maxSamples:4,weight:1.42})],
@@ -327,9 +327,12 @@
               candidateConfig.rules=entries;
             }
             if(rule.id==='tvbench'){
+              if(!entries.some(entry=>entry.relativeTo==='bed'))entries.unshift(candidateEntry('tvbench-bed-facing','relation',{relativeTo:'bed',relation:'bedroom-tv-bed-facing',side:'front',distance:{min:.45,max:2.8,step:.15},facing:['toward'],maxSamples:24,weight:2.20,referenceShapePolicy:{lShape:{enabled:true,lateralSide:'any',frontAlign:'body-center'}}}));
+              for(const entry of entries)if(entry.relativeTo==='bed'){entry.weight=Math.max(2.20,Number(entry.weight)||1);entry.maxSamples=Math.max(24,Number(entry.maxSamples)||0);writeRelationReferenceShapePolicy(entry,{frontAlign:'body-center'})}
               for(const entry of entries)if(entry.relativeTo==='bedroomLoveseat'){entry.distance={...(entry.distance||{}),min:Math.min(.55,Number(entry.distance?.min)||.55)};writeRelationReferenceShapePolicy(entry,{frontAlign:'body-center'})}
               for(const entry of entries)if(entry.mode==='wall')entry.maxSamples=Math.max(40,Number(entry.maxSamples)||0);
               candidateConfig.maxCandidates=Math.max(56,Number(candidateConfig.maxCandidates)||0);
+              candidateConfig.rules=entries;
             }
             for(const entry of entries){
               const relativeTo=entry.relativeTo||'';
@@ -437,7 +440,8 @@
         bed:[[1.20,1.90],[1.50,2.00],[1.80,2.00]],wardrobe:[[1.00,.55],[1.80,.60],[2.20,.62]],
         desk:[[.90,.55],[1.20,.55],[1.40,.55],[1.60,.55],[1.80,.58],[2.00,.60]],vanity:[[.80,.42],[1.00,.45],[1.20,.48]],
         chest:[[.80,.42],[1.00,.45],[1.20,.48]],shelf:[[.70,.32],[.90,.35],[1.10,.38]],
-        tvbench:[[1.00,.36],[1.20,.40],[1.50,.42]],bench:[[.90,.36],[1.10,.40],[1.30,.42]],
+        // 酒店式床尾电视采用壁挂电视 + 超薄矮柜；普通会客电视柜仍保留较深档。
+        tvbench:[[1.20,.24],[1.20,.30],[1.50,.36]],bench:[[.90,.36],[1.10,.40],[1.30,.42]],
         night:[[.38,.38],[.45,.45],[.50,.48]],chair:[[.46,.46],[.50,.50],[.56,.56]],
         vanityStool:[[.38,.38],[.42,.42],[.46,.46]],lounge:[[.64,.64],[.72,.72],[.80,.80]],
         bedroomLoveseat:[[1.10,.68],[1.25,.72],[1.45,.76]],bedroomTeaTable:[[.46,.46],[.56,.56],[.64,.64]],bedroomDisplay:[[.80,.30],[1.20,.32],[1.60,.34]],
@@ -473,7 +477,7 @@
       {id:'sofa-4',label:'四人沙发',w:SOFA_PRESETS.four.w,d:SOFA_PRESETS.four.d,shape:'box'}
     ];
     const ADAPTIVE_SIZE_SEARCH_TYPES={
-      bedroom:new Set(['bed','night','desk','vanity','bench','chair','vanityStool','lounge','bedroomLoveseat','bedroomTeaTable']),
+      bedroom:new Set(['bed','night','desk','vanity','tvbench','bench','chair','vanityStool','lounge','bedroomLoveseat','bedroomTeaTable']),
       living:new Set(['sofa','tv','coffee','diningTable','diningChair','sideboard','bookcase','display','console','arm','ottoman','side'])
     };
 
@@ -1329,11 +1333,19 @@
 
     function configuredRuleCandidates(item,state,scene) {
       const rule=furnitureRule(item),candidate=rule?.candidate||{mode:'wall'};let entries=Array.isArray(candidate.rules)&&candidate.rules.length?candidate.rules.filter(entry=>entry.enabled!==false):[candidate];
+      // 20㎡以上若库存已选择完整小沙发会客组，电视柜仍作为会客锚点先贴墙，
+      // 后续小沙发再正对它；酒店式“正对床”只服务没有小沙发的长条卧室。
+      if(item.typeId==='tvbench'&&(CONFIGS.bedroom.counts.bedroomLoveseat||0)>0)entries=entries.filter(entry=>entry.relativeTo!=='bed');
       if(item.typeId==='bedroomLoveseat'&&state.poses.tvbench){const related=entries.filter(entry=>entry.mode==='relation'&&entry.relativeTo==='tvbench');if(related.length)entries=related;}
       const totalLimit=Math.min(rule?.infill?24:72,Math.max(4,Math.round(Number(candidate.maxCandidates)||32))),buckets=[];
       if(rule?.infill)return customInfillCandidates(item,scene,state).slice(0,totalLimit);
       for(const entry of entries){const mode=entry.mode||'wall',relation=entry.relation||'custom-zone',perRule=Math.min(48,Math.max(1,Math.round(Number(entry.maxSamples)||12)));let rows=[];
         if(mode==='corner'&&(entry.requiredAnchor==='wall'||rule?.allowCorner))rows=wallPoseCandidates(item,scene,state).filter(pose=>(pose.wallEndGap??Infinity)<=.12);else if(mode==='corner')rows=cornerCandidates(item,scene,relation);else if(mode==='zone')rows=roomZoneCandidates(item,scene,relation,state);else if(mode==='relation'&&rule?.requiredAnchor==='wall')rows=genericWallRelativeCandidates(item,state,scene,entry);else if(mode==='relation')rows=genericRelativeCandidates(item,state,entry);else rows=wallPoseCandidates(item,scene,state);
+        // 超大卧室的电视柜先于沙发落子，必须从四面墙均匀找锚点。若仍按轮廓
+        // 顺序截前 N 个，第一面墙被床占满后就会误判“无位置”。只在这一档启用
+        // 按墙轮采，避免改变普通房间已经稳定的墙面落子排序。
+        const bedroomAspect=Math.max(scene.width/Math.max(scene.depth,EPS),scene.depth/Math.max(scene.width,EPS));
+        if(mode==='wall'&&item.typeId==='tvbench'&&(roomAreaTier('bedroom',scene.area).id==='studio'||bedroomAspect>=1.65)&&rows.length>perRule){const wallBuckets=new Map();for(const pose of rows){const key=Number.isFinite(pose.wallIndex)?pose.wallIndex:-1;if(!wallBuckets.has(key))wallBuckets.set(key,[]);wallBuckets.get(key).push(pose)}const distributed=[];for(let index=0;distributed.length<rows.length;index++){let added=false;for(const bucket of wallBuckets.values())if(bucket[index]){distributed.push(bucket[index]);added=true}if(!added)break}rows=distributed}
         // 墙面按轮廓顺序生成，异形房间的窗边墙常排在最后。书桌若直接截取
         // 前 N 个候选，窗边位置甚至进不了评分。先把自然采光候选提到桶前面，
         // 其余位置仍由后续合法性、椅子和通路共同筛选。
@@ -1593,6 +1605,15 @@
         score += 22;
         if (windowOverlap(item,pose,scene)) score -= 48;
       }
+      const bedroomMediaAspect=Math.max(scene.width/Math.max(scene.depth,EPS),scene.depth/Math.max(scene.width,EPS));
+      if(item.typeId==='tvbench'&&currentProgram==='bedroom'&&(roomAreaTier('bedroom',scene.area).id==='studio'||bedroomMediaAspect>=1.65)&&(CONFIGS.bedroom.counts.bedroomLoveseat||0)>0){
+        // 超大卧室里电视柜是会客组的第一手，不能只看“自己贴墙是否漂亮”。
+        // 在候选进入 Beam 前做一次很小的后继可行性检查：柜前若完全放不下
+        // 正对的小沙发，这个锚点就是死棋；能形成会客组的墙位则大幅优先。
+        const loveseat=FURNITURE.find(piece=>piece.typeId==='bedroomLoveseat');let loungeFeasible=false;
+        if(loveseat){const nextState={...state,poses:{...state.poses,[item.id]:pose}};for(const futurePose of configuredRuleCandidates(loveseat,nextState,scene)){if(isLegal(loveseat,futurePose,nextState,scene)){loungeFeasible=true;break}}}
+        score+=loungeFeasible?72:-120;
+      }
       if (!configuredEntry&&item.id.startsWith('night')) {
         score += pose.relation === 'bed-side' ? 52 : -12;
         const actual=itemLocalDims(item,pose),target=scene.area<11?.35:scene.area>18?.55:.45;
@@ -1624,7 +1645,9 @@
         // 普通柜体仍按墙端收口计分；相邻家具闭缝的额外奖励目前只给书桌，
         // 避免所有沿墙家具同时抢邻接位点而压缩后续可摆容量。
         const closureGap=pose.wallEndGap;
-        score+=closureGap<=.025?(storageLike?22:16):closureGap<=DESIGN_QUALITY_RULES.wall.installGapMax?(storageLike?13:9):
+        const wall=scene.walls[pose.wallIndex],actual=itemLocalDims(item,pose),residual=Math.max(0,(wall?.length||actual.w)-actual.w),balancedDeskInstall=item.typeId==='desk'&&residual>DESIGN_QUALITY_RULES.wall.installGapMax&&residual<=DESIGN_QUALITY_RULES.wall.installGapMax*2+EPS;
+        if(balancedDeskInstall){const targetGap=residual/2;score+=18-Math.min(24,Math.abs(closureGap-targetGap)*240)}
+        else score+=closureGap<=.025?(storageLike?22:16):closureGap<=DESIGN_QUALITY_RULES.wall.installGapMax?(storageLike?13:9):
           closureGap<=DESIGN_QUALITY_RULES.wall.severeGapMax?-44:closureGap<DESIGN_QUALITY_RULES.wall.usefulBayMin?-17:0;
       }
       if (!configuredEntry&&item.id === 'hamper') score += pose.relation === 'utility-corner' ? 32 : -8;
@@ -1795,10 +1818,14 @@
       if(currentProgram==='living'&&layoutDensityMode==='rich'&&item.slotIndex===0&&scene.area>=24&&
         ['sideboard','bookcase','display','side','arm'].includes(item.typeId)&&
         (CONFIGS.living.counts[item.typeId]||0)>0)return true;
-      // 大卧室会客组是一条可选但不可拆散的语义链：可以整组不启用；一旦小沙发
-      // 已经落下，就必须继续尝试圆几和对面电视柜，不能留下半组后直接补活动区。
+      // 大卧室会客组是一条可选但不可拆散的语义链。电视柜在落子顺序中早于
+      // 小沙发和圆几，因此不能等后两件已经落下才设为必放；库存一旦选中完整
+      // 会客组，三个锚点都必须落下，几何不可行时交给外层换下一套库存。
       if(currentProgram==='bedroom'&&item.slotIndex===0&&(CONFIGS.bedroom.counts[item.typeId]||0)>0){
         const hasPlaced=typeId=>Object.keys(state.poses).some(id=>ITEM_BY_ID[id]?.typeId===typeId);
+        const completeStudioGroup=roomAreaTier('bedroom',scene.area).id==='studio'&&(CONFIGS.bedroom.counts.bedroomLoveseat||0)>0&&
+          (CONFIGS.bedroom.counts.bedroomTeaTable||0)>0&&(CONFIGS.bedroom.counts.tvbench||0)>0;
+        if(completeStudioGroup&&['tvbench','bedroomLoveseat','bedroomTeaTable'].includes(item.typeId))return true;
         if(item.typeId==='bedroomTeaTable'&&hasPlaced('bedroomLoveseat'))return true;
         if(item.typeId==='tvbench'&&hasPlaced('bedroomLoveseat')&&hasPlaced('bedroomTeaTable'))return true;
       }
@@ -2184,6 +2211,9 @@
       const placedCount=typeId=>FURNITURE.filter(item=>item.typeId===typeId&&state.poses[item.id]).length;
       const placed=typeId=>placedCount(typeId)>0;
       const tier=roomAreaTier(currentProgram,scene.area),expected=new Set(tier.modules||[]),modules=[];
+      const bedroomAspect=Math.max(scene.width/Math.max(scene.depth,EPS),scene.depth/Math.max(scene.width,EPS));
+      const recognizedHotelMedia=currentProgram==='bedroom'&&scene.shape==='recognized'&&scene.area>=15&&bedroomAspect>=1.65;
+      if(recognizedHotelMedia)expected.delete('lounge');
       const add=(id,label,weight,parts)=>{
         const partWeight=parts.reduce((sum,row)=>sum+row[1],0)||1;
         const ratio=clamp(parts.reduce((sum,row)=>sum+clamp(row[0],0,1)*row[1],0)/partWeight,0,1);
@@ -2198,6 +2228,7 @@
         ]);
         if(expected.has('work')||expected.has('micro-work'))add('work','工作组',1.25,[[placed('desk')?1:0,.55],[placed('chair')?1:0,.45]]);
         if(expected.has('lounge'))add('lounge','卧室会客组',1.45,[[placed('bedroomLoveseat')?1:0,.42],[placed('bedroomTeaTable')?1:0,.25],[placed('tvbench')?1:0,.33]]);
+        if(recognizedHotelMedia)add('hotel-media','酒店式床对电视墙',1.15,[[placed('tvbench')?1:0,1]]);
         if(expected.has('storage'))add('storage','扩展收纳组',.75,[[Math.min(1,(placedCount('bedroomDisplay')+placedCount('chest')+placedCount('shelf'))/2),1]]);
         if(placed('vanity')||placed('vanityStool'))add('vanity','梳妆组',.55,[[placed('vanity')?1:0,.58],[placed('vanityStool')?1:0,.42]]);
         if(placed('lounge'))add('reading','阅读角',.45,[[1,1]]);
@@ -2622,15 +2653,24 @@
         :0;
       const densityCoherent=placedItems.length>=richMinimum;
       const requiredModuleScore=currentProgram==='living'&&scene.area>=34?98:DESIGN_QUALITY_RULES.gates.minModules;
+      // 长条卧室的一整面连续空墙不能仅靠“墙面尚有可用余量”混过去。
+      // 这类房间最适合酒店式床尾电视/浅柜；最大空白墙段超过 3.2m 时，
+      // 要求搜索继续尝试真实沿墙家具，而不是输出一条空走廊。
+      const bedroomAspect=Math.max(scene.width/Math.max(scene.depth,EPS),scene.depth/Math.max(scene.width,EPS));
+      const longBedroomWallRequired=currentProgram==='bedroom'&&scene.shape==='recognized'&&scene.area>=15&&bedroomAspect>=1.65;
+      const largestEmptyWallBay=Math.max(0,...(design.wallDetails.gapDetails||[]).filter(row=>row.severity==='useful'||row.severity==='architectural').map(row=>Number(row.width)||0));
+      const bedroomWallCoherent=!longBedroomWallRequired||largestEmptyWallBay<=3.20;
+      const bedroomWallFinishable=bedroomWallCoherent||customCabinetEnabled;
+      const searchSevereFieldDefect=ground.severe||(design.wallDetails.severe&&!customCabinetEnabled);
       // 大房间即使通路很漂亮，若最大连续空地仍超过约一半，也只是把家具堆成
       // 一个中央团块。它作为搜索期硬门槛，逼迫两组家具真正展开到不同区域。
       const largeRoomGroundCoherent=!(currentProgram==='living'&&scene.area>=34&&scene.area<=80&&ground.largestVoidRatio>.54);
       // 50 分代表硬使用区与主要通道均已满足的紧凑方案。旧阈值 52 会把完整的
       // “卧室单人沙发 + 茶几 + 小电视柜”组合误判失败，随后反复尝试更臃肿库存。
-      const qualityPass=allPlaced&&diningCoherent&&densityCoherent&&largeRoomGroundCoherent&&reach.hardPass&&!severeFieldDefect&&
+      const qualityPass=allPlaced&&diningCoherent&&densityCoherent&&largeRoomGroundCoherent&&bedroomWallFinishable&&reach.hardPass&&!searchSevereFieldDefect&&
         scores.modules>=requiredModuleScore&&scores.circulation>=55&&scores.relation>=62&&scores.composition>=50&&
         scores.storage>=DESIGN_QUALITY_RULES.gates.minWall&&scores.ground>=DESIGN_QUALITY_RULES.gates.minGround&&scores.comfort>=50&&scores.preference>=45;
-      diagnostics={...diagnostics,...design,modules,preference,activation,ground,functionCoverage:stateCoverage.coverage,diningCoherent,placedDiningChairs,richMinimum,densityCoherent,largeRoomGroundCoherent,requiredModuleScore,severeFieldDefect,weakField};
+      diagnostics={...diagnostics,...design,modules,preference,activation,ground,functionCoverage:stateCoverage.coverage,diningCoherent,placedDiningChairs,richMinimum,densityCoherent,largeRoomGroundCoherent,longBedroomWallRequired,largestEmptyWallBay,bedroomWallCoherent,requiredModuleScore,severeFieldDefect,weakField};
       return { total:round(total,1), scores, reach, qualityPass, diagnostics };
     }
 
@@ -3071,7 +3111,8 @@
           nextStates=nextStates.filter((state,index)=>{
             const domain=forward.counts[index];
             state._treeNode.forwardDomain=domain;
-            if (!domain&&!future.optional) {state._treeNode.status='forward-pruned';state._treeNode.reason=`下一件 ${future.label} 已无合法位置`;stats.pruned++;return false;}
+            const futureRequired=!future.optional||mustPlaceDependentSlot(future,state,scene);
+            if (!domain&&futureRequired) {state._treeNode.status='forward-pruned';state._treeNode.reason=`下一件 ${future.label} 已无合法位置`;stats.pruned++;return false;}
             if(!domain&&future.optional){state.partialScore-=18;return true;}
             state.partialScore+=Math.min(domain,12)*.28+clamp(bestMerit[index],-20,120)*.10;return true;
           });
@@ -3287,7 +3328,9 @@
         const extraStorage=(counts.chest||0)+(counts.shelf||0)+(counts.tvbench||0)+(counts.bedroomDisplay||0);
         const comfortTarget=area<18?0:area<28?1:2;
         const comfort=(counts.bench||0)+(counts.lounge||0)+(counts.bedroomLoveseat||0);
-        const loungeSet=area>=17?Math.min(ratio(counts.bedroomLoveseat,1),ratio(counts.bedroomTeaTable,1)):1;
+        const bedroomAspect=Math.max(scene.width/Math.max(scene.depth,EPS),scene.depth/Math.max(scene.width,EPS));
+        const recognizedHotelMedia=scene.shape==='recognized'&&area>=15&&bedroomAspect>=1.65;
+        const loungeSet=recognizedHotelMedia?1:area>=17?Math.min(ratio(counts.bedroomLoveseat,1),ratio(counts.bedroomTeaTable,1)):1;
         parts.push([core,3.2],[bedside,1.25],[activity,1.5],[ratio(extraStorage,extraStorageTarget),1.1],
           [ratio(comfort,comfortTarget),.65],[loungeSet,area>=17?.55:0]);
       }
@@ -3308,6 +3351,8 @@
       };
       // 常规卧室也不能只剩“床 + 衣柜”。9㎡以上完成床头组，12㎡以上完成工作组；
       // 丰富模式只增加末轮浅柜，不再把展示柜、休闲椅同时设为硬目标而挤掉核心家具。
+      const bedroomAspect=Math.max(scene.width/Math.max(scene.depth,EPS),scene.depth/Math.max(scene.width,EPS));
+      const recognizedHotelMedia=scene.shape==='recognized'&&scene.area>=15&&bedroomAspect>=1.65;
       return {
         night:scene.area>=9?2:scene.area>=6.2?1:0,
         desk:scene.area>=12||(scene.area>=6.2&&scene.area<9)?1:0,
@@ -3315,9 +3360,9 @@
         // 床尾凳、休闲椅、小沙发和展示柜是“可选构图”，不能同时作为硬完成目标。
         // 否则 18㎡ 左右的卧室会在过满候选与只剩核心家具之间跳跃。
         chest:0,bench:0,bedroomDisplay:0,lounge:0,
-        bedroomLoveseat:layoutDensityMode==='rich'&&scene.area>=20?1:0,
-        bedroomTeaTable:layoutDensityMode==='rich'&&scene.area>=20?1:0,
-        tvbench:layoutDensityMode==='rich'&&scene.area>=20?1:0,
+        bedroomLoveseat:layoutDensityMode==='rich'&&scene.area>=20&&!recognizedHotelMedia?1:0,
+        bedroomTeaTable:layoutDensityMode==='rich'&&scene.area>=20&&!recognizedHotelMedia?1:0,
+        tvbench:layoutDensityMode==='rich'&&(scene.area>=20||recognizedHotelMedia)?1:0,
         bedroomInfillCabinet:0
       };
     }
@@ -3477,6 +3522,11 @@
         if(area>=8&&area<9){micro.night=1;micro.desk=1;micro.chair=1;}
         // 通行版先保证睡眠、收纳、工作三个基本组可用。
         rows.push(make(micro));
+        // 长条卧室优先尝试酒店式“床尾壁挂电视 + 超薄电视柜”。它是睡眠组的
+        // 延伸，不要求先摆小沙发，也不会把 0.4m 深普通电视柜硬塞进窄通道。
+        const bedroomAspect=Math.max(scene.width/Math.max(scene.depth,EPS),scene.depth/Math.max(scene.width,EPS));
+        const hotelMediaPreferred=area>=15&&bedroomAspect>=1.65;
+        if(area>=15)rows.push(make({...core,tvbench:1}));
         // 大卧室先试完整的“单人/小沙发 + 茶几 + 小电视柜”硬家具组。
         // 活动区与填缝柜均在硬家具搜索结束后补，不再抢占这组的优先级。
         if(area>=20)rows.push(make({...core,bedroomLoveseat:1,bedroomTeaTable:1,tvbench:1}));
@@ -3513,10 +3563,15 @@
       // 综合方案则先尝试一个与面积相称的休闲/床尾构图，避免 A 方案永远只有基础家具。
       if(objectiveId==='function')rows.reverse();
       else if(objectiveId==='balanced'&&programId==='bedroom'){
+        const bedroomAspect=Math.max(scene.width/Math.max(scene.depth,EPS),scene.depth/Math.max(scene.width,EPS));
+        const hotelMediaPreferred=area>=15&&bedroomAspect>=1.65;
+        const recognizedHotelMediaPreferred=scene.shape==='recognized'&&hotelMediaPreferred;
         const preferred=area>=6.2&&area<9
           ?rows.find(row=>(row.counts.night||0)>=1&&(row.counts.desk||0)>0&&(row.counts.chair||0)>0)
+          :recognizedHotelMediaPreferred?rows.find(row=>(row.counts.tvbench||0)>0&&(row.counts.bedroomLoveseat||0)===0)
           :area>=20
           ?rows.find(row=>(row.counts.bedroomLoveseat||0)>0&&(row.counts.bedroomTeaTable||0)>0&&(row.counts.tvbench||0)>0)
+          :hotelMediaPreferred?rows.find(row=>(row.counts.tvbench||0)>0)
           :area>=13.2?(rows.find(row=>(row.counts.bench||0)>0)||rows.find(row=>(row.counts.bedroomLoveseat||0)>0))
           :area>=12.8?rows.find(row=>(row.counts.lounge||0)>0):null;
         if(preferred){
@@ -3557,6 +3612,11 @@
       // 大客厅的功能方案已经通过“更多件数”表达丰富度，再把每件家具放大为 generous
       // 会同时挤死餐组和沿墙柜，导致同一配置在标准模数可行、放大模数却连续失败。
       if(programId==='living'&&scene.area>=30&&candidate.estimate.pieces>=10&&mode==='generous')mode='standard';
+      // 窄长大卧室已经通过“床组 + 工作组 + 会客组三件套”表达丰富度。
+      // 再把每件家具整体放大，会把横向 0.50m 通路吃掉；标准模数仍允许单件
+      // 在多尺寸搜索中按墙长择优，是更稳定的酒店式解法。
+      const bedroomAspect=Math.max(scene.width/Math.max(scene.depth,EPS),scene.depth/Math.max(scene.width,EPS));
+      if(programId==='bedroom'&&bedroomAspect>=1.65&&(candidate.counts.bedroomLoveseat||0)>0&&(candidate.counts.bedroomTeaTable||0)>0&&mode==='generous')mode='standard';
       let sofaPreset=null;
       if (programId==='living') {
         if (mode==='compact') sofaPreset=scene.area>=30?'three':'loveseat';
@@ -3618,9 +3678,10 @@
         const richFinal=objectiveId==='function';
         const compactLivingBudget=programId==='living'&&trialScene.area<18?46:null;
         const largeLiving=programId==='living'&&trialScene.area>=28,largeRoom=trialScene.area>=28;
-        const largeBedroomLounge=programId==='bedroom'&&largeRoom&&(candidate.counts.bedroomLoveseat||0)>0;
+        const trialBedroomAspect=Math.max(trialScene.width/Math.max(trialScene.depth,EPS),trialScene.depth/Math.max(trialScene.width,EPS));
+        const largeBedroomLounge=programId==='bedroom'&&(candidate.counts.bedroomLoveseat||0)>0&&(largeRoom||trialBedroomAspect>=1.65);
         const qualityDining=programId==='living'&&diningTier;
-        const beamWidth=largeBedroomLounge?72:qualityDining&&largeRoom?152:(richFinal||qualityDining
+        const beamWidth=largeBedroomLounge?(trialBedroomAspect>=1.65&&trialScene.area<28?120:72):qualityDining&&largeRoom?152:(richFinal||qualityDining
           ?(largeRoom?Math.min(52,34+Math.round(FURNITURE.length*.8)):(FURNITURE.length>=20?92:Math.min(62,44+Math.round(FURNITURE.length*1.2))))
           :(largeRoom?Math.min(36,24+Math.round(FURNITURE.length*.55)):(compactLivingBudget||(FURNITURE.length>=20?52:Math.min(44,28+Math.round(FURNITURE.length*.8))))));
         // 超大客厅仍使用精确矩形复核；这里只把 Bitset broad-phase 的格网从
@@ -3809,7 +3870,9 @@
         const closures=candidates.filter(row=>row.gapKind==='closure').sort((a,b)=>b.score-a.score);
         const useful=candidates.filter(row=>row.gapKind==='useful').sort((a,b)=>b.runWidth-a.runWidth||b.score-a.score);
         const selected=[],append=rows=>{for(const candidate of rows){if(selected.some(row=>rectsOverlap(candidate,row,.08)))continue;selected.push(candidate);if(selected.length>=target*3)break}};
-        append(closures.slice(0,Math.min(2,target)));append(useful);append(closures.slice(Math.min(2,target)));
+        // 一整面空墙比十几厘米收口更影响视觉。至少先保留一个 1.2m 以上的
+        // 有效墙段候选，再用剩余预算修角落，避免两个小封板耗尽全部补全名额。
+        append(useful.filter(row=>row.runWidth>=1.2).slice(0,1));append(closures.slice(0,Math.min(2,target)));append(useful);append(closures.slice(Math.min(2,target)));
         return selected.map((body,index)=>({kind:'postDisplayCabinet',label:`${body.runWidth<.6?'定制收口':'定制展示柜'} ${body.runWidth.toFixed(1)} m`,x:body.x,y:body.y,w:body.w,d:body.d,runWidth:body.runWidth,rotation:0,color:body.runWidth<.6?'#789087':index?'#71877e':'#5d7f78',layer:'overlay',collision:'post-layout',wallIndex:body.wallIndex,postLayoutBudget:target}));
       };
 
@@ -3933,10 +3996,12 @@
       // 则不能再由对象分数抵消。
       const largeRoomWallCoherent=!(currentProgram==='living'&&scene.area>=34&&scene.area<=80&&
         (wall.unusedWallRatio>.46||wall.emptyWallScore<.12));
-      plan.evaluation.qualityPass=scores.feasible===100&&diagnostics.diningCoherent!==false&&diagnostics.densityCoherent!==false&&diagnostics.largeRoomGroundCoherent!==false&&largeRoomWallCoherent&&finalReach.hardPass&&!severe&&
+      const finalLargestEmptyWallBay=Math.max(0,...(wall.gapDetails||[]).filter(row=>row.severity==='useful'||row.severity==='architectural').map(row=>Number(row.width)||0));
+      const finalBedroomWallCoherent=diagnostics.longBedroomWallRequired!==true||finalLargestEmptyWallBay<=3.20;
+      plan.evaluation.qualityPass=scores.feasible===100&&diagnostics.diningCoherent!==false&&diagnostics.densityCoherent!==false&&diagnostics.largeRoomGroundCoherent!==false&&largeRoomWallCoherent&&finalBedroomWallCoherent&&finalReach.hardPass&&!severe&&
         scores.modules>=(diagnostics.requiredModuleScore||0)&&scores.circulation>=55&&scores.relation>=62&&scores.composition>=50&&
         scores.storage>=DESIGN_QUALITY_RULES.gates.minWall&&scores.ground>=DESIGN_QUALITY_RULES.gates.minGround&&scores.comfort>=50&&scores.preference>=45;
-      plan.evaluation.diagnostics={...plan.evaluation.diagnostics,ground:currentGround||baseline,wallDetails:wall,largeRoomWallCoherent,severeFieldDefect:severe,postLayoutValidation:{
+      plan.evaluation.diagnostics={...plan.evaluation.diagnostics,ground:currentGround||baseline,wallDetails:wall,largeRoomWallCoherent,largestEmptyWallBay:finalLargestEmptyWallBay,bedroomWallCoherent:finalBedroomWallCoherent,severeFieldDefect:severe,postLayoutValidation:{
         baselineGroundScore:round((baseline?.score||0)*100,1),baselineGroundSevere:Boolean(baseline?.severe),
         baselineWallScore:round((baselineWall?.score||0)*100,1),baselineWallSevere:Boolean(baselineWall?.severe),
         acceptedSolids:solids.length,rejectedSolids:decor.filter(row=>row.collision==='post-layout').length-solids.length,
