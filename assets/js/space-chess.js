@@ -1334,6 +1334,10 @@
       if(rule?.infill)return customInfillCandidates(item,scene,state).slice(0,totalLimit);
       for(const entry of entries){const mode=entry.mode||'wall',relation=entry.relation||'custom-zone',perRule=Math.min(48,Math.max(1,Math.round(Number(entry.maxSamples)||12)));let rows=[];
         if(mode==='corner'&&(entry.requiredAnchor==='wall'||rule?.allowCorner))rows=wallPoseCandidates(item,scene,state).filter(pose=>(pose.wallEndGap??Infinity)<=.12);else if(mode==='corner')rows=cornerCandidates(item,scene,relation);else if(mode==='zone')rows=roomZoneCandidates(item,scene,relation,state);else if(mode==='relation'&&rule?.requiredAnchor==='wall')rows=genericWallRelativeCandidates(item,state,scene,entry);else if(mode==='relation')rows=genericRelativeCandidates(item,state,entry);else rows=wallPoseCandidates(item,scene,state);
+        // 墙面按轮廓顺序生成，异形房间的窗边墙常排在最后。书桌若直接截取
+        // 前 N 个候选，窗边位置甚至进不了评分。先把自然采光候选提到桶前面，
+        // 其余位置仍由后续合法性、椅子和通路共同筛选。
+        if(item.typeId==='desk'&&mode==='wall'&&scene.window?.mid)rows.sort((a,b)=>dist(a,scene.window.mid)-dist(b,scene.window.mid));
         buckets.push(rows.slice(0,perRule).map(pose=>({...pose,candidateRuleId:pose.candidateRuleId||entry.id||relation})));
       }
       const all=[];for(let index=0;all.length<totalLimit;index++){let added=false;for(const bucket of buckets)if(bucket[index]){all.push(bucket[index]);added=true;if(all.length>=totalLimit)break}if(!added)break}return all;
@@ -1572,6 +1576,10 @@
         score += actual.w*7;
         const closureGap=Math.min(Number.isFinite(pose.wallEndGap)?pose.wallEndGap:Infinity,Number.isFinite(pose.wallClosureGap)?pose.wallClosureGap:Infinity);
         if(Number.isFinite(closureGap))score += closureGap<=.025?12:closureGap<=.08?7:Math.max(-6,2-closureGap*9);
+        // 1.60m 成品桌放进约 1.69m 窗墙时，贴死一侧会在另一角留下约 9cm
+        // 难清洁缝；居中后两侧各约 4cm，属于可收口安装缝。对这种短墙优先
+        // 平分余量，而不是机械奖励“单侧零缝”。
+        if(pose.wallIndex>=0){const wall=scene.walls[pose.wallIndex],residual=Math.max(0,wall.length-actual.w),installGap=DESIGN_QUALITY_RULES.wall.installGapMax;if(residual>installGap&&residual<=installGap*2+EPS){const targetGap=residual/2,actualGap=Math.max(0,Number(pose.wallEndGap)||0);score+=16-Math.min(16,Math.abs(actualGap-targetGap)*180)}}
         if(Number.isFinite(pose.wallSegmentFill))score+=clamp((pose.wallSegmentFill-.48)/.42,0,1)*6;
         const nearWindow = Math.max(0, 1.6-dist(pose,scene.window.mid));
         score += nearWindow*22;
@@ -2610,7 +2618,7 @@
       const richMinimum=layoutDensityMode==='rich'
         ?(currentProgram==='living'
           ?(scene.area>=34?(irregularRoom?9:10):scene.area>=24?(irregularRoom?7:8):scene.area>=16?6:3)
-          :(scene.area>=20?7:scene.area>=15?6:scene.area>=10?4:scene.area>=8?3:2))
+          :(scene.area>=20?7:scene.area>=17?7:scene.area>=15?6:scene.area>=10?4:scene.area>=8?3:2))
         :0;
       const densityCoherent=placedItems.length>=richMinimum;
       const requiredModuleScore=currentProgram==='living'&&scene.area>=34?98:DESIGN_QUALITY_RULES.gates.minModules;
@@ -3759,7 +3767,10 @@
       // 大房间的沿墙补全不进入 Beam。这里只对最终方案做一次有上限的空墙扫描，
       // 因而不会把“可变长度 × 墙段 × 回合”乘进搜索树。18/28/40㎡分别最多补 1/2/3 组。
       const synthesizeWallComplements=()=>{
-        if(!customCabinetEnabled||roomScene.area<18)return [];
+        // 长条卧室即使不足 18㎡也可能拥有四五米完整空墙；17㎡起允许末轮补浅柜，
+        // 只扫描最终局面，不增加 Beam 分支，并继续接受 0.50m 通路复核。
+        const complementAreaFloor=currentProgram==='bedroom'?17:18;
+        if(!customCabinetEnabled||roomScene.area<complementAreaFloor)return [];
         // 配置中的墙段预算仍决定需要补几段，但它只在最终方案上执行；上限避免
         // 超大房间沿每面空墙无限补柜，也不会把这些柜体重新带回搜索树。
         const areaTarget=roomScene.area>=40?5:roomScene.area>=28?3:2;
