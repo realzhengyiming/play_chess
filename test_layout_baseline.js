@@ -44,6 +44,17 @@ function assertRetainedNodesHaveChildren(beamTree, label) {
   assert(!orphanRetained.length, `${label}: 存在 ${orphanRetained.length} 个标成“进入下一回合”但没有真实子分支的节点`);
 }
 
+function assertScoreAndPruneObservability(engine, solution, beamTree, label) {
+  const breakdown = engine.traceEvaluationBreakdown(solution.evaluation);
+  for (const key of ['ground','wall','relation','circulation','alignment','daylight','emptyWall','corner','severeWallGaps','awkwardWallGaps']) {
+    assert(Number.isFinite(breakdown[key]), `${label}: 步骤评分缺少 ${key}`);
+  }
+  for (const round of beamTree?.rounds || []) {
+    assert(Number.isFinite(round.rejectSummary?.flow), `${label}: Beam 回合缺少通路剪枝计数`);
+    assert(Number.isFinite(round.rejectSummary?.island), `${label}: Beam 回合缺少孤岛剪枝计数`);
+  }
+}
+
 function assertOptionalRepeatedTypeCanSkipAndContinue(solution, beamTree, typeId, label) {
   const itemById = new Map((solution.inventoryItems || []).map(item => [item.id, item]));
   const rounds = (beamTree?.rounds || []).filter(round => itemById.get(round.itemId)?.typeId === typeId);
@@ -93,6 +104,7 @@ setTimeout(() => {
     assert(result.feasible && solution, `${label}: 没有最终方案`);
     assert(solution.evaluation?.qualityPass, `${label}: 严格质量验收未通过`);
     assertRetainedNodesHaveChildren(result.probe.beamTree, label);
+    assertScoreAndPruneObservability(engine, solution, result.probe.beamTree, label);
     if (testCase.programId === 'bedroom') assertOptionalRepeatedTypeCanSkipAndContinue(solution, result.probe.beamTree, 'night', label);
     if (testCase.programId === 'bedroom') {
       assert(!solution.decorItems?.some(item => item.kind === 'rug'), `${label}: 卧室不应自动生成地毯`);

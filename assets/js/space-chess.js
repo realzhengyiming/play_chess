@@ -2019,8 +2019,8 @@
         results[level.id]={targetCount,reachableTargets,hardTargetCount,reachableHardTargets,targetStatus,reachableRatio:targetCount?reachableTargets/targetCount:1,hardReachableRatio:hardTargetCount?reachableHardTargets/hardTargetCount:1,freeRatio:roomCells?freeCells/roomCells:0,connectedRatio:freeCells?1-unreachableCells/freeCells:1,reachedCells,freeCells,unreachableCells,unreachableArea,rawUnreachableArea,islandPass,minimumPassage:level.radius*2};
       }
       const tight=results.tight||results[levels[0].id],normal=results.normal||tight,comfortable=results.comfortable||normal;
-      // 户型选择器里的真实多边形统一执行零孤岛硬门槛。合成矩形继续保留
-      // 拓扑诊断，用于覆盖旧的几何回归，不代表可以交付一个带孤岛的真实户型。
+      // 户型选择器里的真实多边形统一执行零孤岛硬门槛。合成几何保留
+      // 拓扑诊断，供压力测试观察，不把几何模板当成真实户型交付。
       const islandRequired=scene.shape==='recognized';
       return {...tight,levels:results,normalRatio:normal.reachableRatio,comfortableRatio:comfortable.reachableRatio,
         normalHardRatio:normal.hardReachableRatio,comfortableHardRatio:comfortable.hardReachableRatio,islandRequired,
@@ -2590,8 +2590,10 @@
       // 丰满度是质量门槛，不只是库存估算偏好。过去异形大客厅即使只落下
       // 沙发、电视、茶几和两件小家具也会通过，视觉上必然显空。
       const irregularRoom=scene.shape!=='rect';
-      const richMinimum=currentProgram==='living'&&layoutDensityMode==='rich'
-        ?(scene.area>=34?(irregularRoom?9:10):scene.area>=24?(irregularRoom?7:8):scene.area>=16?6:3)
+      const richMinimum=layoutDensityMode==='rich'
+        ?(currentProgram==='living'
+          ?(scene.area>=34?(irregularRoom?9:10):scene.area>=24?(irregularRoom?7:8):scene.area>=16?6:3)
+          :(scene.area>=20?7:scene.area>=15?6:scene.area>=10?4:scene.area>=8?3:2))
         :0;
       const densityCoherent=placedItems.length>=richMinimum;
       const requiredModuleScore=currentProgram==='living'&&scene.area>=34?85:DESIGN_QUALITY_RULES.gates.minModules;
@@ -2602,6 +2604,17 @@
         scores.storage>=DESIGN_QUALITY_RULES.gates.minWall&&scores.ground>=DESIGN_QUALITY_RULES.gates.minGround&&scores.comfort>=50&&scores.preference>=45;
       diagnostics={...diagnostics,...design,modules,preference,activation,ground,functionCoverage:stateCoverage.coverage,diningCoherent,placedDiningChairs,richMinimum,densityCoherent,requiredModuleScore,severeFieldDefect,weakField};
       return { total:round(total,1), scores, reach, qualityPass, diagnostics };
+    }
+
+    function traceEvaluationBreakdown(evaluation) {
+      const scores=evaluation?.scores||{},diagnostics=evaluation?.diagnostics||{},wall=diagnostics.wallDetails||{};
+      const percent=value=>Math.round(clamp(Number.isFinite(value)?value:0,0,1)*100);
+      return {
+        ground:Number(scores.ground)||0,wall:Number(scores.storage)||0,relation:Number(scores.relation)||0,
+        circulation:Number(scores.circulation)||0,alignment:percent(diagnostics.alignment),daylight:Number(scores.daylight)||0,
+        emptyWall:percent(wall.emptyWallScore),corner:percent(wall.cornerClosure),
+        severeWallGaps:Number(wall.severeGaps)||0,awkwardWallGaps:Number(wall.awkwardGaps)||0
+      };
     }
 
     function solutionSignature(state) {
@@ -2927,7 +2940,7 @@
         // 无差别放行 72 个候选，丰富客厅会迅速膨胀到 8 万节点以上。
         const perParentLimit=wideLiving?(coreType?24:(item.optional?9:14)):(coreType?28:(item.optional?12:18));
         const batch=batchCandidateMatrix(item,beam,scene,context,perParentLimit,stats,true);
-        const rejectSummary=batch.rejectCounts.reduce((sum,row)=>{for(const key of Object.keys(sum))sum[key]+=row[key]||0;return sum;},{static:0,collision:0,functional:0,scoreCut:0});
+        const rejectSummary=batch.rejectCounts.reduce((sum,row)=>{for(const key of Object.keys(sum))sum[key]+=row[key]||0;return sum;},{static:0,collision:0,functional:0,scoreCut:0,flow:0,island:0});
         const treeRound={depth:depth+1,itemId:item.id,parentIds:beam.map(state=>state._treeId),nodes:[],rawCandidates:batch.parentIndex.length,legalCandidates:batch.records.length,rejectSummary,beamWidth};
         beamTree.rounds.push(treeRound);
         // 上一轮节点虽曾进入 Beam，但可能在本轮一个合法候选都生成不出来。
@@ -3008,6 +3021,7 @@
             stats.flowChecks++;
             const flow=computeReachability(next,scene,[FLOW_RADII[0]]);
             if(flow.hardPass)return true;
+            if(flow.islandPass)treeRound.rejectSummary.flow++;else treeRound.rejectSummary.island++;
             next._treeNode.status='flow-pruned';next._treeNode.reason=flow.islandPass?'关键家具不可达，0.50m 水漫失败':`形成 ${flow.unreachableArea.toFixed(2)}㎡ 孤岛，或通行缝小于 0.50m`;
             stats.flowPruned++;stats.pruned++;return false;
           });
@@ -3963,7 +3977,7 @@
       });
     }
 
-    const Engine = { PROGRAMS, CONFIGS, SOFA_PRESETS, INVENTORY_VALUES, INVENTORY_OBJECTIVES, ROOM_AREA_MODULES, roomAreaTier, AUTO_DIMENSION_PRESETS, VARIABLE_SIZE_PRESETS, FURNITURE_RULES, DESIGN_GRAMMAR, FLOW_RADII, DENSITY_MODES, applyFurnitureCatalog, applyDesignQualityRules, getDesignQualityRules:()=>JSON.parse(JSON.stringify(DESIGN_QUALITY_RULES)), setProgram, refreshFurniture, setVariableSizeSearch, setLayoutDensityMode, setCustomCabinetEnabled, applyProgramSnapshot, autoSelectInventory, generateInventoryFrontier, stagedInventoryCandidates, inventoryEstimate, synthesizeSoftDecor, getFurniture:()=>FURNITURE, makeScene, search, searchMatrix, searchScalar, evaluateFull, computeReachability, designMetrics, generateCandidates, validateState, isLegal, wallPoseCandidates, functionalZones, footprintRects, polygonArea, pointInPolygon, prepareRecognizedRooms,
+    const Engine = { PROGRAMS, CONFIGS, SOFA_PRESETS, INVENTORY_VALUES, INVENTORY_OBJECTIVES, ROOM_AREA_MODULES, roomAreaTier, AUTO_DIMENSION_PRESETS, VARIABLE_SIZE_PRESETS, FURNITURE_RULES, DESIGN_GRAMMAR, FLOW_RADII, DENSITY_MODES, applyFurnitureCatalog, applyDesignQualityRules, getDesignQualityRules:()=>JSON.parse(JSON.stringify(DESIGN_QUALITY_RULES)), setProgram, refreshFurniture, setVariableSizeSearch, setLayoutDensityMode, setCustomCabinetEnabled, applyProgramSnapshot, autoSelectInventory, generateInventoryFrontier, stagedInventoryCandidates, inventoryEstimate, synthesizeSoftDecor, getFurniture:()=>FURNITURE, makeScene, search, searchMatrix, searchScalar, evaluateFull, traceEvaluationBreakdown, computeReachability, designMetrics, generateCandidates, validateState, isLegal, wallPoseCandidates, functionalZones, footprintRects, polygonArea, pointInPolygon, prepareRecognizedRooms,
       setRecognizedRoomOverrideForTest:value=>{recognizedRoomOverride=value}
     };
     globalThis.RoomChessEngine = Engine;
@@ -4169,7 +4183,9 @@
       const source=[...new Set(snapshot.retained.map(row=>candidateSourceLabel(row.pose)))].join('、')||'规则生成';
       const specs=[...new Set(snapshot.retained.map(row=>row.pose.sizeLabel).filter(Boolean))].join(' / ');
       const r=snapshot.rejectSummary||{},reasons=[r.outside&&`越界 ${r.outside}`,r.door&&`挡门 ${r.door}`,r.static&&`门窗/静态 ${r.static}`,r.collision&&`家具碰撞 ${r.collision}`,r.functional&&`功能区 ${r.functional}`].filter(Boolean).join('、')||'无';
-      ui.candidateBadge.innerHTML=`<strong>${phase}：${snapshot.item.label}</strong><br>生成 ${snapshot.rawCount} · 硬合法 ${snapshot.legal.length} · 送入搜索 ${snapshot.retained.length} · 淘汰 ${snapshot.rejected.length}（${reasons}） · 来源：${source}${specs?` · 规格：${specs}`:''}`;
+      const round=activeBeamTree()?.rounds?.[traceIndex],roundReject=round?.rejectSummary||{};
+      const topology=`整回合拓扑剪枝：通路 ${roundReject.flow||0} · 孤岛 ${roundReject.island||0}`;
+      ui.candidateBadge.innerHTML=`<strong>${phase}：${snapshot.item.label}</strong><br>生成 ${snapshot.rawCount} · 硬合法 ${snapshot.legal.length} · 送入搜索 ${snapshot.retained.length} · 淘汰 ${snapshot.rejected.length}（${reasons}） · ${topology} · 来源：${source}${specs?` · 规格：${specs}`:''}`;
     }
 
     function renderFurnitureConfig() {
@@ -4675,7 +4691,7 @@
         const x=depth*(cardW+columnGap),isOutput=depth>tree.rounds.length,round=depth&&!isOutput?tree.rounds[depth-1]:null,item=round?ITEM_BY_ID[round.itemId]:null;
         if(depth){beamCtx.save();beamCtx.setLineDash([8,9]);beamCtx.strokeStyle='rgba(24,35,31,.25)';beamCtx.lineWidth=1.2;beamCtx.beginPath();beamCtx.moveTo(x-columnGap/2,-58);beamCtx.lineTo(x-columnGap/2,contentHeight+cardH+28);beamCtx.stroke();beamCtx.restore();}
         beamCtx.fillStyle=isOutput?'#5c46be':'#18231f';beamCtx.font='900 11px system-ui';beamCtx.fillText(isOutput?`最终输出 · ${tree.outputCount||0} 个 · A/B/C 边框已标记`:depth?`第 ${depth} 手 · ${itemStepLabel(item)||round.itemId}`:'起点 · 空房间',x+cardW/2,-42);
-        if(round){const r=round.rejectSummary||{};beamCtx.fillStyle='#8a5a4b';beamCtx.font='700 8px system-ui';beamCtx.fillText(`越界/门窗/静态 ${r.static||0} · 家具碰撞 ${r.collision||0} · 功能冲突 ${r.functional||0} · 局部分 ${r.scoreCut||0}`,x+cardW/2,-25);}
+        if(round){const r=round.rejectSummary||{};beamCtx.fillStyle='#8a5a4b';beamCtx.font='700 8px system-ui';beamCtx.fillText(`静态 ${r.static||0} · 碰撞 ${r.collision||0} · 功能 ${r.functional||0} · 通路 ${r.flow||0} · 孤岛 ${r.island||0} · 局部分 ${r.scoreCut||0}`,x+cardW/2,-25);}
       }
       // 聚焦模式中的所有可见边都通向最终输出，用半透明走廊包住整片胜出路径。
       if(beamExpansionMode==='focus')for(const [parentId,rows] of displayChildren){const p=positions.get(parentId);if(!p||!beamOutputPath.has(parentId))continue;for(const child of rows){if(!beamOutputPath.has(child.id))continue;const c=positions.get(child.id);beamCtx.strokeStyle='rgba(21,154,123,.16)';beamCtx.lineWidth=22;beamCtx.beginPath();beamCtx.moveTo(p.x+cardW,p.y+p.h/2);beamCtx.bezierCurveTo(p.x+cardW+columnGap*.48,p.y+p.h/2,c.x-columnGap*.48,c.y+c.h/2,c.x,c.y+c.h/2);beamCtx.stroke();}}
@@ -4716,7 +4732,7 @@
         const isOutput=depth>tree.rounds.length,round=depth&&!isOutput?tree.rounds[depth-1]:null,item=round?ITEM_BY_ID[round.itemId]:null,r=round?.rejectSummary||{};
         beamCtx.fillStyle='rgba(255,255,255,.92)';beamCtx.strokeStyle='rgba(24,35,31,.12)';beamCtx.lineWidth=1;beamCtx.beginPath();beamCtx.roundRect(screenX+2,8,bandW-4,34,8);beamCtx.fill();beamCtx.stroke();
         beamCtx.fillStyle=isOutput?'#5c46be':'#18231f';beamCtx.font='850 9px system-ui';beamCtx.textAlign='center';beamCtx.textBaseline='middle';beamCtx.fillText(isOutput?`输出 ${tree.outputCount||0}`:depth?`${depth}. ${itemStepLabel(item)||round.itemId}`:'0. 空房间',screenX+bandW/2,19);
-        if(round){beamCtx.fillStyle='#9a5a48';beamCtx.font='700 7px system-ui';beamCtx.fillText(`静 ${r.static||0}｜撞 ${r.collision||0}｜功能 ${r.functional||0}｜分 ${r.scoreCut||0}`,screenX+bandW/2,32);}
+        if(round){beamCtx.fillStyle='#9a5a48';beamCtx.font='700 7px system-ui';beamCtx.fillText(`静 ${r.static||0}｜撞 ${r.collision||0}｜功 ${r.functional||0}｜通 ${r.flow||0}｜岛 ${r.island||0}｜分 ${r.scoreCut||0}`,screenX+bandW/2,32);}
       }
       ui.beamSummary.textContent=`棋盘节点 ${visible.size} · 总记录 ${tree.rounds.reduce((n,r)=>n+r.nodes.length,0).toLocaleString()}`;
       ui.beamRoundOutput.textContent=`${tree.rounds.length} 回合 · ${FURNITURE.length} 件`;
@@ -4845,14 +4861,17 @@
           'reading-corner':'放入阅读角','utility-corner':'放入收纳角','seat-light':'放入座位照明位','corner-light':'放入角落照明位','corner-accent':'放入角落软装位'
         };
         const sizeAction=p.sizeLabel?` · 选择${p.sizeLabel} ${(p.overrideW??item?.w??0).toFixed(2)}×${(p.overrideD??item?.d??0).toFixed(2)} m`:'';
-        const action=(p.relation==='custom-infill'?`末轮扫描余墙并定尺 ${p.overrideW?.toFixed(2)||''} m · 安装余缝 ${Math.round((p.installationGap||0)*1000)} mm`:p.relation==='wall-run'?`沿墙连续补齐 ${p.overrideW?.toFixed(2)||''} m`:(relationActions[p.relation]||`靠墙 ${p.wallIndex+1} 落子`))+sizeAction;
+        const ruleAction=p.candidateRuleId?` · 规则 ${p.candidateRuleId}`:'';
+        const action=(p.relation==='custom-infill'?`末轮扫描余墙并定尺 ${p.overrideW?.toFixed(2)||''} m · 安装余缝 ${Math.round((p.installationGap||0)*1000)} mm`:p.relation==='wall-run'?`沿墙连续补齐 ${p.overrideW?.toFixed(2)||''} m`:(relationActions[p.relation]||`靠墙 ${p.wallIndex+1} 落子`))+sizeAction+ruleAction;
         const local=`局部 ${s.lastMove.merit>=0?'+':''}${s.lastMove.merit.toFixed(1)}`,partial=s.partialScore?` · 搜索累计 ${s.partialScore.toFixed(1)}`:'';
         let vector='';
         if(i===traceIndex&&s._evaluation){
-          const previous=trace[i-1]?._evaluation,keys=[['ground','地面'],['storage','墙面'],['relation','关系'],['circulation','通行']];
-          const parts=keys.map(([key,label])=>{const value=s._evaluation.scores[key],delta=previous?value-previous.scores[key]:null;return `${label} ${value}${delta==null?'':` (${delta>=0?'+':''}${delta})`}`});
+          const previous=trace[i-1]?._evaluation,currentBreakdown=traceEvaluationBreakdown(s._evaluation),previousBreakdown=previous?traceEvaluationBreakdown(previous):null;
+          const keys=[['ground','地面'],['wall','墙面'],['relation','关系'],['circulation','通行'],['alignment','对齐'],['daylight','采光'],['emptyWall','空墙'],['corner','墙角']];
+          const parts=keys.map(([key,label])=>{const value=currentBreakdown[key],delta=previousBreakdown?value-previousBreakdown[key]:null;return `${label} ${value}${delta==null?'':` (${delta>=0?'+':''}${delta})`}`});
           const totalDelta=previous?s._evaluation.total-previous.total:null;
-          vector=`<span class="trace-score-detail">当前总分 ${s._evaluation.total.toFixed(1)}${totalDelta==null?'':` (${totalDelta>=0?'+':''}${totalDelta.toFixed(1)})`} · ${parts.join(' · ')}</span>`;
+          const gapText=`墙缝：严重 ${currentBreakdown.severeWallGaps} · 尴尬 ${currentBreakdown.awkwardWallGaps}`;
+          vector=`<span class="trace-score-detail">当前总分 ${s._evaluation.total.toFixed(1)}${totalDelta==null?'':` (${totalDelta>=0?'+':''}${totalDelta.toFixed(1)})`} · ${parts.join(' · ')}<br>${gapText}</span>`;
         }
         return `<button type="button" class="trace-entry ${i===traceIndex?'active':''}" data-trace-step="${i}">第 ${s.depth} 手：${itemStepLabel(item)} ${action}<br>${local}${partial} · 保留 ${s.beamSize||0} 个候选局面${vector}</button>`;
       }).join('');

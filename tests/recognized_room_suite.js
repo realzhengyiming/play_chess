@@ -50,17 +50,20 @@ setTimeout(() => {
       });
       if (!solution) {
         failures.push(`${label}: 无方案`);
-        rows.push({room:label, area:+room.area.toFixed(1), ms:+result.totalTimeMs.toFixed(1), placed:0, score:'-', quality:'-', doors:actualDoorTypes.join('|'), connected:'-', islandM2:'-'});
+        rows.push({room:label, area:+room.area.toFixed(1), ms:+result.totalTimeMs.toFixed(1), attempts:result.attempts, nodes:result.totalNodes, placed:0, score:'-', ground:'-', wall:'-', relation:'-', path:'-', emptyWall:'-', wallGaps:'-', quality:'-', doors:actualDoorTypes.join('|'), connected:'-', islandM2:'-'});
         return;
       }
       const reach = solution.evaluation.reach || engine.computeReachability(solution, result.scene, [engine.FLOW_RADII[0]]);
       const islandArea = Number(reach.unreachableArea || 0);
       const placed = Object.keys(solution.poses || {}).length;
+      const breakdown=engine.traceEvaluationBreakdown(solution.evaluation);
       rows.push({
-        room:label, area:+room.area.toFixed(1), ms:+result.totalTimeMs.toFixed(1), placed,
+        room:label, area:+room.area.toFixed(1), ms:+result.totalTimeMs.toFixed(1), attempts:result.attempts, nodes:result.totalNodes, placed,
         score:solution.evaluation.total,
+        ground:breakdown.ground, wall:breakdown.wall, relation:breakdown.relation, path:breakdown.circulation,
+        emptyWall:breakdown.emptyWall, wallGaps:`${breakdown.severeWallGaps}/${breakdown.awkwardWallGaps}`,
         quality:solution.evaluation.qualityPass ? 'pass' : Object.entries(solution.evaluation.scores).filter(([key, value]) => ({modules:solution.evaluation.diagnostics.requiredModuleScore,circulation:55,relation:62,composition:50,storage:50,ground:58,comfort:50,preference:45}[key] ?? -Infinity) > value).map(([key, value]) => `${key}:${value}`).join(','),
-        doors:actualDoorTypes.join('|'), connected:+reach.connectedRatio.toFixed(3), islandM2:+islandArea.toFixed(3),
+        doors:actualDoorTypes.join('|'), minPass:reach.minimumPassage, connected:+reach.connectedRatio.toFixed(3), islandM2:+islandArea.toFixed(3),
       });
       if (!solution.evaluation.qualityPass) qualityWarnings.push(`${label}: 未通过质量门槛`);
       if (assertSpeed && result.totalTimeMs > 2000) failures.push(`${label}: 搜索 ${result.totalTimeMs.toFixed(0)}ms，超过 2s 目标`);
