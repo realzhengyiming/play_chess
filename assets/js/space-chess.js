@@ -2333,7 +2333,9 @@
     }
 
     function partialFieldMerit(state,scene){
-      const ground=groundPlaneMetrics(state,scene,stateCoverageAndActivation(state,scene));
+      // Beam 中只需要判断趋势，不需要重复跑最终评分使用的 0.24m 精细格网。
+      // 0.38m 粗格网保留断连、死角和重心失衡信号，入围方案仍会接受完整精度复核。
+      const ground=groundPlaneMetrics(state,scene,stateCoverageAndActivation(state,scene),.38);
       return ground.score*24-ground.unreachableFreeRatio*95-ground.deadPockets*7-(ground.severe?24:0);
     }
 
@@ -2905,9 +2907,12 @@
         // 做一次低分辨率全地面复核。这样长家具链切断空间会在 Beam 内被淘汰，
         // 不再到最终评分时才判死刑。
         const fieldMilestone=item.typeId==='coffee'||(item.typeId==='arm'&&item.slotIndex===0)||
-          (item.typeId==='diningChair'&&item.slotIndex===1)||['sideboard','bookcase','display','console'].includes(item.typeId);
+          (item.typeId==='diningChair'&&item.slotIndex===1);
         if(fieldMilestone){
-          for(const state of nextStates.slice(0,Math.min(nextStates.length,Math.max(beamWidth,36)))){
+          // 只复核排名最靠前的一小批。沿墙柜的连续性已有局部评分负责，不再每落
+          // 一件柜体就给整个 Beam 重算全地面。
+          const fieldReviewLimit=Math.min(nextStates.length,Math.max(32,Math.min(56,Math.ceil(beamWidth*.34))));
+          for(const state of nextStates.slice(0,fieldReviewLimit)){
             state.partialScore+=partialFieldMerit(state,scene);state._treeNode.score=state.partialScore;
           }
           nextStates.sort((a,b)=>b.partialScore-a.partialScore);
@@ -3461,8 +3466,22 @@
         const totalDelta=(b.evaluation?.total??-Infinity)-(a.evaluation?.total??-Infinity);if(totalDelta)return totalDelta;
         return Object.keys(b.poses||{}).length-Object.keys(a.poses||{}).length;
       })[0];
+      const makePlan=(trial,objectiveId,allowAny=false)=>{
+        const strictSolutions=trial.probe.solutions.filter(passesHardFurniturePhase);
+        const chosen=chooseObjectiveSolution(strictSolutions.length||!allowAny?strictSolutions:trial.probe.solutions,objectiveId);
+        if(!chosen)return null;
+        return {...chosen,inventoryItems:trial.items,inventoryConfig:trial.config,inventoryProfile:trial.profile,inventoryKey:trial.key,inventoryObjective:objectiveId,
+          inventoryLabel:INVENTORY_OBJECTIVES[objectiveId].label,inventoryEstimate:trial.candidate.estimate,planTrace:trial.probe.trace,planBeamTree:trial.probe.beamTree};
+      };
+      let balancedTrial=null;
       for (let objectiveIndex=0;objectiveIndex<objectives.length;objectiveIndex++) {
         const objectiveId=objectives[objectiveIndex];
+        // 丰满模式先找一盘通过完整质量门槛的“好棋”。同一批入围解已经包含
+        // 构图多样性，后两个目标只需换排序视角，无需把相同库存再搜索两遍。
+        if(objectiveIndex>0&&layoutDensityMode==='rich'&&balancedTrial){
+          const reusedPlan=makePlan(balancedTrial,objectiveId);
+          if(reusedPlan){plans[objectiveIndex]=reusedPlan;continue;}
+        }
         const frontier=generateInventoryFrontier(programId,trialScene,objectiveId);
         let accepted=null,checked=0;const checkedSignatures=new Set();
         const balancedPieces=plans[0]?.inventoryItems.length;
@@ -3497,11 +3516,9 @@
         }
         if (!accepted) continue;
         usedKeys.add(accepted.key);
-        const strictSolutions=accepted.probe.solutions.filter(passesHardFurniturePhase);
-        const chosen=chooseObjectiveSolution(strictSolutions,objectiveId);
-        if(!chosen)continue;
-        plans[objectiveIndex]={...chosen,inventoryItems:accepted.items,inventoryConfig:accepted.config,inventoryProfile:accepted.profile,inventoryKey:accepted.key,inventoryObjective:objectiveId,
-          inventoryLabel:INVENTORY_OBJECTIVES[objectiveId].label,inventoryEstimate:accepted.candidate.estimate,planTrace:accepted.probe.trace,planBeamTree:accepted.probe.beamTree};
+        const plan=makePlan(accepted,objectiveId);if(!plan)continue;
+        plans[objectiveIndex]=plan;
+        if(objectiveIndex===0)balancedTrial=accepted;
       }
       if (plans.filter(Boolean).length<objectives.length) {
         const placedCount=trial=>Math.max(0,...(trial.probe.solutions||[]).map(solution=>Object.keys(solution.poses||{}).length));
@@ -3525,11 +3542,8 @@
           const fallback=eligible.find(trial=>!usedKeys.has(trial.key))||eligible.find(trial=>trial.key===plans[0]?.inventoryKey)||eligible[0]||successful[0];
           if (!fallback) continue;
           usedKeys.add(fallback.key);
-          const strictSolutions=fallback.probe.solutions.filter(passesHardFurniturePhase);
-          const chosen=chooseObjectiveSolution(strictSolutions.length?strictSolutions:fallback.probe.solutions,objectiveId);
-          if(!chosen)continue;
-          plans[objectiveIndex]={...chosen,inventoryItems:fallback.items,inventoryConfig:fallback.config,inventoryProfile:fallback.profile,inventoryKey:fallback.key,inventoryObjective:objectiveId,
-            inventoryLabel:INVENTORY_OBJECTIVES[objectiveId].label,inventoryEstimate:fallback.candidate.estimate,planTrace:fallback.probe.trace,planBeamTree:fallback.probe.beamTree};
+          const plan=makePlan(fallback,objectiveId,true);if(!plan)continue;
+          plans[objectiveIndex]=plan;
         }
       }
       const completePlans=plans.filter(Boolean);
