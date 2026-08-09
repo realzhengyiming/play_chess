@@ -57,6 +57,9 @@ setTimeout(() => {
       const islandArea = Number(reach.unreachableArea || 0);
       const placed = Object.keys(solution.poses || {}).length;
       const breakdown=engine.traceEvaluationBreakdown(solution.evaluation);
+      const itemById=new Map(engine.getFurniture().map(item=>[item.id,item]));
+      const placedTypeCount=typeId=>Object.keys(solution.poses||{}).filter(id=>itemById.get(id)?.typeId===typeId).length;
+      const wallDetails=solution.evaluation.diagnostics.wallDetails||{},groundDetails=solution.evaluation.diagnostics.ground||{};
       rows.push({
         room:label, area:+room.area.toFixed(1), ms:+result.totalTimeMs.toFixed(1), attempts:result.attempts, nodes:result.totalNodes, placed,
         score:solution.evaluation.total,
@@ -66,6 +69,12 @@ setTimeout(() => {
         doors:actualDoorTypes.join('|'), minPass:reach.minimumPassage, connected:+reach.connectedRatio.toFixed(3), islandM2:+islandArea.toFixed(3),
       });
       if (!solution.evaluation.qualityPass) qualityWarnings.push(`${label}: 未通过质量门槛`);
+      if(programId==='living'&&room.area>=34){
+        if(placedTypeCount('diningTable')<1||placedTypeCount('diningChair')<2)failures.push(`${label}: 大客厅缺少真实第二功能区（至少 1 桌 2 椅）`);
+        if((wallDetails.unusedWallRatio??1)>.46)failures.push(`${label}: 可用空墙占比 ${((wallDetails.unusedWallRatio||0)*100).toFixed(1)}%，超过 46%`);
+        if((wallDetails.emptyWallScore??0)<.12)failures.push(`${label}: 空墙评分 ${((wallDetails.emptyWallScore||0)*100).toFixed(0)}，低于 12`);
+        if((groundDetails.largestVoidRatio??1)>.54)failures.push(`${label}: 最大连续空地占比 ${((groundDetails.largestVoidRatio||0)*100).toFixed(1)}%，超过 54%`);
+      }
       if (assertSpeed && result.totalTimeMs > 2000) failures.push(`${label}: 搜索 ${result.totalTimeMs.toFixed(0)}ms，超过 2s 目标`);
       if (verbose && !solution.evaluation.qualityPass) console.dir({label, plans:result.plans, trials:result.trials, scores:solution.evaluation.scores, diagnostics:solution.evaluation.diagnostics, poses:Object.keys(solution.poses)}, {depth:5});
       if (!reach.hardPass) failures.push(`${label}: 存在不可达家具或孤岛`);

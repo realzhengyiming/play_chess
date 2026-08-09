@@ -262,9 +262,10 @@
           rows.sort((a,b)=>(dependencyRank.get(a.rule.id)??500)-(dependencyRank.get(b.rule.id)??500)||a.priority-b.priority||a.index-b.index);
         }
         if(programId==='living'){
-          // 先完成会客与餐桌两个大模块，再追加边几/单椅等小件。旧顺序先塞配件，
-          // 大客厅经常到餐桌回合才发现空间已碎；边几仍保持在单椅之前以支持组合链。
-          const dependencyRank=new Map(['sofa','tv','coffee','diningTable','diningChair','side','arm','floorLamp','sideboard','bookcase','display','console','ottoman','plant','infillCabinet'].map((id,index)=>[id,index]));
+          // 先锁定不可替代的大件骨架：沙发/电视确定朝向，紧凑会客组先闭合，
+          // 沿墙柜再占住连续墙段，餐组最后进入另一空间。旧顺序先落餐组、后轮到
+          // 柜子时常已无完整墙段；反过来把茶几放到餐组后又会让前向检查误剪。
+          const dependencyRank=new Map(['sofa','tv','coffee','side','arm','floorLamp','sideboard','bookcase','display','console','diningTable','diningChair','ottoman','plant','infillCabinet'].map((id,index)=>[id,index]));
           rows.sort((a,b)=>(dependencyRank.get(a.rule.id)??500)-(dependencyRank.get(b.rule.id)??500)||a.priority-b.priority||a.index-b.index);
         }
         program.types=rows.map(({rule,min,max,priority})=>({
@@ -302,6 +303,16 @@
               }
               const primary=entries.find(entry=>entry.relativeTo==='desk'||entry.relation==='desk-front');if(primary)Object.assign(candidateConfig,primary);
               candidateConfig.maxCandidates=Math.min(12,Math.max(6,Number(candidateConfig.maxCandidates)||6));candidateConfig.rules=entries;
+            }
+            if(rule.id==='diningChair'){
+              // 搜索态表示“收拢在餐桌边”的餐椅，后退使用区由 service 单独评价。
+              // 旧配置把实体再额外推出 0.18–0.38m，四周很容易连成一道墙并触发
+              // 0.50m 水漫剪枝。椅面与桌沿保留 0.08–0.14m 即可，不代表使用时净距。
+              for(const entry of entries)if(entry.relativeTo==='diningTable'||entry.relation==='dining-seat'){
+                entry.distance={min:.08,max:.14,step:.06};entry.maxSamples=Math.min(4,Math.max(2,Number(entry.maxSamples)||2));
+              }
+              const primary=entries.find(entry=>entry.relativeTo==='diningTable'||entry.relation==='dining-seat');if(primary)Object.assign(candidateConfig,primary);
+              candidateConfig.maxCandidates=Math.min(20,Math.max(8,Number(candidateConfig.maxCandidates)||8));candidateConfig.rules=entries;
             }
             if(rule.id==='arm'){
               // 历史配置把单椅直接放在沙发左右，或继续排在边几外侧，会形成一字横排。
@@ -1754,7 +1765,7 @@
       return clamp(Math.max(selectedFloor,computed),-12,46);
     }
 
-    function mustPlaceDependentSlot(item,state) {
+    function mustPlaceDependentSlot(item,state,scene) {
       // 这里只表达真正的“条件最小数量”，绝不能把 max 上限误当成必放数量。
       // 自动库存明确选中了工作组或至少一只床头柜时，组锚点不能先走 skip；
       // 若几何上放不下，外层会回退较小库存，而不是输出名义完整、实际缺件的方案。
@@ -1769,6 +1780,13 @@
       // 面积档已选择“客餐厅”库存时，餐桌是该模块的锚点，不能在第一步被可选
       // skip 分支悄悄删掉后仍把方案当作客餐厅通过；摆不下时由外层回退清单。
       if(currentProgram==='living'&&item.typeId==='diningTable'&&item.slotIndex===0&&(CONFIGS.living.counts.diningTable||0)>0)return true;
+      // 丰满模式的大客餐厅按“完整功能组”落子。过去餐桌与餐椅落下以后，
+      // 单椅、边几和沿墙柜仍能走 skip，Beam 很快被六件核心家具的半成品占满；
+      // 最终再靠几个小件计数冒充丰富。既然库存候选已经明确选择这些模块，
+      // 第一件就必须真正落下；几何不可行时由外层换下一套库存。
+      if(currentProgram==='living'&&layoutDensityMode==='rich'&&item.slotIndex===0&&scene.area>=24&&
+        ['sideboard','bookcase','display','side','arm'].includes(item.typeId)&&
+        (CONFIGS.living.counts[item.typeId]||0)>0)return true;
       // 大卧室会客组是一条可选但不可拆散的语义链：可以整组不启用；一旦小沙发
       // 已经落下，就必须继续尝试圆几和对面电视柜，不能留下半组后直接补活动区。
       if(currentProgram==='bedroom'&&item.slotIndex===0&&(CONFIGS.bedroom.counts[item.typeId]||0)>0){
@@ -1832,7 +1850,7 @@
         valid.push({pose, merit:candidateStaticScore(item,pose,state,scene)});
       }
       valid.sort((a,b) => b.merit-a.merit);
-      if(item.optional&&!mustPlaceDependentSlot(item,state)) {
+      if(item.optional&&!mustPlaceDependentSlot(item,state,scene)) {
         const top=valid[0]?.merit||18;
         valid.push({pose:{skip:true,relation:'optional-skip'},merit:top-optionalSkipCost(item,state,scene)});
         valid.sort((a,b)=>b.merit-a.merit);
@@ -2179,14 +2197,13 @@
         add('conversation','视听会客组',2.5,[[placed('sofa')?1:0,.40],[placed('tv')?1:0,.34],[placed('coffee')?1:0,.26]]);
         if(expected.has('guest-seating'))add('guest-seating','围合座位组',1.15,[[Math.min(1,placedCount('arm')),.55],[Math.min(1,placedCount('side')),.27],[Math.min(1,placedCount('floorLamp')),.18]]);
         if(expected.has('dining')){
-          const chairTarget=scene.area>=34?4:2;
+          // 当前阶段以“真实第二功能区”为底线：一桌两椅即为完整紧凑餐组；
+          // 更多餐椅仍可作为可选增量，不能为了凑四椅挤死通路和沿墙收纳。
+          const chairTarget=2;
           const diningRatio=(placed('diningTable')?.42:0)+Math.min(1,placedCount('diningChair')/chairTarget)*.58;
-          const storageCount=['sideboard','bookcase','display','console'].reduce((sum,typeId)=>sum+placedCount(typeId),0);
-          // 识别结果只有 living_room 类型，不能仅按面积强制推断其一定兼作餐厅。
-          // 34㎡以上允许“完整餐组”或“扩展会客 + 连续收纳”二选一；后者仍需
-          // 至少两把单椅和两件沿墙收纳，不能用三件核心家具冒充丰富方案。
-          const expandedLiving=scene.area>=34&&!placed('diningTable')&&placedCount('arm')>=2&&storageCount>=2?1:0;
-          add('dining','第二功能区（餐组 / 扩展会客）',1.65,[[Math.max(diningRatio,expandedLiving),1]]);
+          // 第二功能区必须是真实餐组，不能再用同一会客区里的两把单椅和两个柜子
+          // 把模块分顶满。否则大房间视觉上仍只有一个中心团块。
+          add('dining','第二功能区（餐组）',1.65,[[diningRatio,1]]);
         }
         if(expected.has('storage')){
           const storageTypes=['sideboard','bookcase','display','console'].filter(placed).length;
@@ -2596,13 +2613,16 @@
           :(scene.area>=20?7:scene.area>=15?6:scene.area>=10?4:scene.area>=8?3:2))
         :0;
       const densityCoherent=placedItems.length>=richMinimum;
-      const requiredModuleScore=currentProgram==='living'&&scene.area>=34?85:DESIGN_QUALITY_RULES.gates.minModules;
+      const requiredModuleScore=currentProgram==='living'&&scene.area>=34?98:DESIGN_QUALITY_RULES.gates.minModules;
+      // 大房间即使通路很漂亮，若最大连续空地仍超过约一半，也只是把家具堆成
+      // 一个中央团块。它作为搜索期硬门槛，逼迫两组家具真正展开到不同区域。
+      const largeRoomGroundCoherent=!(currentProgram==='living'&&scene.area>=34&&scene.area<=80&&ground.largestVoidRatio>.54);
       // 50 分代表硬使用区与主要通道均已满足的紧凑方案。旧阈值 52 会把完整的
       // “卧室单人沙发 + 茶几 + 小电视柜”组合误判失败，随后反复尝试更臃肿库存。
-      const qualityPass=allPlaced&&diningCoherent&&densityCoherent&&reach.hardPass&&!severeFieldDefect&&
+      const qualityPass=allPlaced&&diningCoherent&&densityCoherent&&largeRoomGroundCoherent&&reach.hardPass&&!severeFieldDefect&&
         scores.modules>=requiredModuleScore&&scores.circulation>=55&&scores.relation>=62&&scores.composition>=50&&
         scores.storage>=DESIGN_QUALITY_RULES.gates.minWall&&scores.ground>=DESIGN_QUALITY_RULES.gates.minGround&&scores.comfort>=50&&scores.preference>=45;
-      diagnostics={...diagnostics,...design,modules,preference,activation,ground,functionCoverage:stateCoverage.coverage,diningCoherent,placedDiningChairs,richMinimum,densityCoherent,requiredModuleScore,severeFieldDefect,weakField};
+      diagnostics={...diagnostics,...design,modules,preference,activation,ground,functionCoverage:stateCoverage.coverage,diningCoherent,placedDiningChairs,richMinimum,densityCoherent,largeRoomGroundCoherent,requiredModuleScore,severeFieldDefect,weakField};
       return { total:round(total,1), scores, reach, qualityPass, diagnostics };
     }
 
@@ -2832,7 +2852,7 @@
           if (seen.has(key)) continue;
           seen.add(key);poses.push(pose);parentList.push(parent);
         }
-        if(item.optional&&!mustPlaceDependentSlot(item,beam[parent])){poses.push({skip:true,relation:'optional-skip'});parentList.push(parent);}
+        if(item.optional&&!mustPlaceDependentSlot(item,beam[parent],scene)){poses.push({skip:true,relation:'optional-skip'});parentList.push(parent);}
       }
       const total=poses.length;
       const parentIndex=new Uint32Array(total);
@@ -3272,11 +3292,11 @@
         side:layoutDensityMode==='rich'?1:0,arm:layoutDensityMode==='rich'?(roomAreaTier('living',scene.area).modules.includes('dining')?1:scene.area>=14?2:1):0,
         floorLamp:layoutDensityMode==='rich'?1:0,plant:0,
         infillCabinet:0,
-        // 大客厅不能只靠一组沙发和定制柜撑满；34㎡以上至少挑战三种常规沿墙家具，
-        // 如果几何上确实放不下，外层仍会回退到较小清单，而不是让搜索直接失败。
+        // 大客厅不能只靠一组沙发和定制柜撑满；34㎡以上先锁定两种常规沿墙家具，
+        // 其余连续空墙交给最终定制柜补全，避免第三种成品柜制造新的墙缝。
         sideboard:scene.area>=34&&layoutDensityMode==='rich'?1:0,
         bookcase:scene.area>=34&&layoutDensityMode==='rich'?1:0,
-        display:scene.area>=34&&layoutDensityMode==='rich'?1:0
+        display:0
       };
       // 常规卧室也不能只剩“床 + 衣柜”。9㎡以上完成床头组，12㎡以上完成工作组；
       // 丰富模式只增加末轮浅柜，不再把展示柜、休闲椅同时设为硬目标而挤掉核心家具。
@@ -3472,8 +3492,12 @@
         if(area>=22)rows.push(make({...core,sideboard:1,bookcase:1,display:1}));
         // 大客餐厅仍保留会客核心，但家具增长以完整模块为单位。
         if(area>=30)rows.push(make({...core,arm:3,side:2,floorLamp:2,sideboard:2,bookcase:1,display:1,infillCabinet:0}));
-        if(area>=19)rows.push(make({...conversation,arm:1,side:1,diningTable:1,diningChair:area>=32?4:2}));
+        const largeDiningChairTarget=2;
+        if(area>=19)rows.push(make({...conversation,arm:1,side:1,diningTable:1,diningChair:largeDiningChairTarget}));
         if(area>=23)rows.push(make({...conversation,arm:1,side:1,diningTable:1,diningChair:4,sideboard:1}));
+        // 大客厅优先尝试紧凑但完整的双区骨架：围合会客 + 双人餐组 +
+        // 两种沿墙收纳。它比四椅三柜组合更容易保住 0.50m 连通通路。
+        if(area>=34)rows.push(make({...conversation,arm:1,side:1,floorLamp:1,diningTable:1,diningChair:2,sideboard:1,bookcase:1}));
         if(modules.has('storage'))rows.push(make({...core,arm:2,side:1,floorLamp:1,diningTable:1,diningChair:4,sideboard:1,bookcase:1,display:1}));
         if(modules.has('storage'))rows.push(make({...conversation,arm:1,side:1,diningTable:1,diningChair:2,sideboard:1,bookcase:1,display:1}));
       }
@@ -3493,9 +3517,9 @@
         }
       }else if(objectiveId==='balanced'&&programId==='living'&&modules.has('dining')){
         // 客餐厅先挑战完整餐组；34㎡以上同时带一组沿墙收纳，而不是先跑纯会客厅。
-        const chairTarget=area>=34?4:2;
+        const chairTarget=2;
         const preferred=modules.has('storage')
-          ?rows.find(row=>(row.counts.diningTable||0)>0&&(row.counts.diningChair||0)>=chairTarget&&(row.counts.bookcase||0)>0)
+          ?rows.find(row=>(row.counts.diningTable||0)>0&&(row.counts.diningChair||0)===chairTarget&&(row.counts.sideboard||0)>0&&(row.counts.bookcase||0)>0)
           :rows.find(row=>(row.counts.diningTable||0)>0&&(row.counts.diningChair||0)>=chairTarget);
         if(preferred)rows.splice(0,rows.length,preferred,...rows.filter(row=>row!==preferred));
       }
@@ -3622,7 +3646,9 @@
         const strictSolutions=trial.probe.solutions.filter(passesHardFurniturePhase);
         const chosen=chooseObjectiveSolution(strictSolutions.length||!allowAny?strictSolutions:trial.probe.solutions,objectiveId);
         if(!chosen)return null;
-        return {...chosen,inventoryItems:trial.items,inventoryConfig:trial.config,inventoryProfile:trial.profile,inventoryKey:trial.key,inventoryObjective:objectiveId,
+        // 同一盘搜索结果会被 A/B/C 三个视角复用，但最终补柜会原地更新评分。
+        // 每个方案必须拥有独立 evaluation，避免后一个方案覆盖前一个方案的墙面账目。
+        return {...chosen,evaluation:JSON.parse(JSON.stringify(chosen.evaluation)),inventoryItems:trial.items,inventoryConfig:trial.config,inventoryProfile:trial.profile,inventoryKey:trial.key,inventoryObjective:objectiveId,
           inventoryLabel:INVENTORY_OBJECTIVES[objectiveId].label,inventoryEstimate:trial.candidate.estimate,planTrace:trial.probe.trace,planBeamTree:trial.probe.beamTree};
       };
       let balancedTrial=null;
@@ -3763,17 +3789,16 @@
               // 当作碰撞”的数值误判，真实实体重叠仍会被拒绝。
               if(baseOccupied.some(body=>rectsOverlap(rect,body,-.005))||baseHard.some(zone=>rectsOverlap(rect,zone,0)))continue;
               const closurePriority=available<=DESIGN_QUALITY_RULES.wall.severeGapMax?72:available<DESIGN_QUALITY_RULES.wall.usefulBayMin?42:0;
-              candidates.push({...rect,wallIndex:wall.index,runWidth:width,score:closurePriority+width*12-Math.max(0,available-width)*1.5});
+              candidates.push({...rect,wallIndex:wall.index,runWidth:width,available,gapKind:available<DESIGN_QUALITY_RULES.wall.usefulBayMin?'closure':'useful',score:closurePriority+width*12-Math.max(0,available-width)*1.5});
             }
           }
         }
-        candidates.sort((a,b)=>b.score-a.score);const selected=[];
-        for(const candidate of candidates){
-          if(selected.some(row=>rectsOverlap(candidate,row,.08)))continue;
-          // 先保留少量备选；最终逐个接受时还要做 0.50m 通行、孤岛和墙面复核。
-          // 旧逻辑只留 target 个，前两项若被复核拒绝，就不会回看后续合法墙段。
-          selected.push(candidate);if(selected.length>=target*2)break;
-        }
+        // 角落/柜间碎缝优先修，但不能让五个 10cm 收口板吃完全部预算。
+        // 大客厅最多预留两个碎缝位，其余候选优先覆盖 0.7m 以上的真正空墙。
+        const closures=candidates.filter(row=>row.gapKind==='closure').sort((a,b)=>b.score-a.score);
+        const useful=candidates.filter(row=>row.gapKind==='useful').sort((a,b)=>b.runWidth-a.runWidth||b.score-a.score);
+        const selected=[],append=rows=>{for(const candidate of rows){if(selected.some(row=>rectsOverlap(candidate,row,.08)))continue;selected.push(candidate);if(selected.length>=target*3)break}};
+        append(closures.slice(0,Math.min(2,target)));append(useful);append(closures.slice(Math.min(2,target)));
         return selected.map((body,index)=>({kind:'postDisplayCabinet',label:`${body.runWidth<.6?'定制收口':'定制展示柜'} ${body.runWidth.toFixed(1)} m`,x:body.x,y:body.y,w:body.w,d:body.d,runWidth:body.runWidth,rotation:0,color:body.runWidth<.6?'#789087':index?'#71877e':'#5d7f78',layer:'overlay',collision:'post-layout',wallIndex:body.wallIndex,postLayoutBudget:target}));
       };
 
@@ -3892,10 +3917,15 @@
       // 墙面补全会改变最终的地面/墙面结果，必须按最终现场重新过一遍质量门槛。
       // 不能和补全前的 qualityPass 做 AND，否则已经消除的墙缝仍会永久留下失败状态。
       const diagnostics=plan.evaluation.diagnostics;
-      plan.evaluation.qualityPass=scores.feasible===100&&diagnostics.diningCoherent!==false&&diagnostics.densityCoherent!==false&&finalReach.hardPass&&!severe&&
+      // 末轮补柜之后才对“大面积可用空墙”做硬验收。搜索前若直接卡这个指标，
+      // 会把本来能由定制柜修好的骨架提前淘汰；最终仍超过 46% 或空墙分低于 12，
+      // 则不能再由对象分数抵消。
+      const largeRoomWallCoherent=!(currentProgram==='living'&&scene.area>=34&&scene.area<=80&&
+        (wall.unusedWallRatio>.46||wall.emptyWallScore<.12));
+      plan.evaluation.qualityPass=scores.feasible===100&&diagnostics.diningCoherent!==false&&diagnostics.densityCoherent!==false&&diagnostics.largeRoomGroundCoherent!==false&&largeRoomWallCoherent&&finalReach.hardPass&&!severe&&
         scores.modules>=(diagnostics.requiredModuleScore||0)&&scores.circulation>=55&&scores.relation>=62&&scores.composition>=50&&
         scores.storage>=DESIGN_QUALITY_RULES.gates.minWall&&scores.ground>=DESIGN_QUALITY_RULES.gates.minGround&&scores.comfort>=50&&scores.preference>=45;
-      plan.evaluation.diagnostics={...plan.evaluation.diagnostics,ground:currentGround||baseline,wallDetails:wall,severeFieldDefect:severe,postLayoutValidation:{
+      plan.evaluation.diagnostics={...plan.evaluation.diagnostics,ground:currentGround||baseline,wallDetails:wall,largeRoomWallCoherent,severeFieldDefect:severe,postLayoutValidation:{
         baselineGroundScore:round((baseline?.score||0)*100,1),baselineGroundSevere:Boolean(baseline?.severe),
         baselineWallScore:round((baselineWall?.score||0)*100,1),baselineWallSevere:Boolean(baselineWall?.severe),
         acceptedSolids:solids.length,rejectedSolids:decor.filter(row=>row.collision==='post-layout').length-solids.length,
@@ -4813,7 +4843,9 @@
           return `${program.primaryLabels[j]} ${p?.wallIndex>=0?p.wallIndex+1:'关系位'}`;
         }).join(' · ');
         const score=scoreKeys[i]==='total'?s.evaluation.total:s.evaluation.scores[scoreKeys[i]];
-        const coverage=Math.round((s.evaluation.diagnostics?.functionCoverage||0)*100);
+        // 卡片展示最终模块完成度，而不是“库存类别覆盖率”。后者会把完整的
+        // 会客/餐组/收纳方案显示成 66%，与右侧功能模块 100 分互相矛盾。
+        const coverage=Math.round(Number(s.evaluation.scores?.modules)||0);
         return `
         <button class="solution-card ${i===activeSolution?'active':''}" data-solution="${i}" aria-label="查看方案 ${String.fromCharCode(65+i)} ${label}">
           <span class="solution-preview-viewport" title="固定比例方案缩略图"><canvas class="solution-preview" width="480" height="300" data-preview="${i}" aria-hidden="true"></canvas></span>
