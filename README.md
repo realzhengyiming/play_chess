@@ -82,11 +82,19 @@ uvicorn floorplan_api:app --host 127.0.0.1 --port 8765 --reload
 
 ## 配置约定
 
-主页面目前只运行 `default` 基础配置，避免用户配置、基础配置和双跑结果混在一起干扰算法调试。`current` 文件暂时保留作为旧配置备份，但主排布页面不会读取它。
+主页面与配置中心都只读取 `/api/furniture-config` 对应的 `furniture-config-current.json`。`furniture-config-default.json` 仅是人工点击“恢复基础配置”时使用的回滚快照，打开页面不会用它覆盖 current。
 
 布置丰满度当前只开放“丰富”模式；“疏朗 / 标准”在界面灰化，导入旧配置时也会统一按丰富模式运行。
 
-浏览器 Cookie/本地存储不作为配置真相源。基础配置的修改必须先通过回归测试，再更新 `server_config/furniture-config-default.json`。
+浏览器 Cookie/本地存储不作为配置真相源。服务端 current 是唯一运行配置；配置缺项时引擎停止并报错，不再悄悄套 JS 默认参数。
+
+配置中心分为三个板块：
+
+- `家具物品库`：尺寸模数、相对家具、距离、朝向、使用区、沿墙连续柜体；
+- `房间落子清单`：房间引用哪些家具、最少/最多数量和优先级；
+- `全局约束`：地面/墙面评分、0.5m 通行、零孤岛、丰富度、面积模组、设计语法、搜索预算和末轮填缝。
+
+运行时代码只保留多边形、碰撞、候选生成、搜索和评分计算过程。所有可调整的数据阈值从上述 current 配置读取。同类家具的不同模数写在 `geometry.variants`，是否进入尺寸搜索由 `geometry.searchVariants` 明确控制。
 
 房间类型的家具落子清单相互独立。目前重点维护：
 
@@ -100,7 +108,8 @@ uvicorn floorplan_api:app --host 127.0.0.1 --port 8765 --reload
 ```powershell
 node test_layout_baseline.js
 node test_layout_stress.js
-node tests/layout_quality_benchmark.js --assert-quality
+node tests/layout_quality_benchmark.js
+node tests/recognized_room_suite.js --assert-quality --assert-speed
 python -m py_compile floorplan_api.py
 ```
 
@@ -111,7 +120,7 @@ python -m py_compile floorplan_api.py
 1. 卧室、客厅及矩形/L 形/凹槽房型都能生成方案。
 2. 搜索树“全部展开”能看到真实终止节点和未进入下一回合的原因。
 3. 配置中心改动会自动保存，并在主页面刷新后生效。
-4. 单次完整搜索尽量控制在 1 秒内；压力用例超限时先检查候选上限和 Beam 宽度。
+4. 所有户型识别样例的单次完整搜索必须不超过 2 秒；压力用例超限时先检查候选上限和 Beam 宽度。
 
 ## 减少 Codex 上下文的使用方式
 

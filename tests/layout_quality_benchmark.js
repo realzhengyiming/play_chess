@@ -31,8 +31,7 @@ setTimeout(() => {
   const engine = globalThis.RoomChessEngine;
   if (!engine) throw new Error('RoomChessEngine 未导出');
   const config = JSON.parse(fs.readFileSync(path.join(root, 'server_config/furniture-config-default.json'), 'utf8'));
-  if (!engine.applyFurnitureCatalog(config.furnitureRules)) throw new Error('默认家具配置加载失败');
-  if (config.designQualityRules && engine.applyDesignQualityRules) engine.applyDesignQualityRules(config.designQualityRules);
+  if (!engine.applyGlobalConfig(config)) throw new Error('默认全局配置加载失败');
   engine.setLayoutDensityMode('rich');
   engine.setCustomCabinetEnabled(true);
 

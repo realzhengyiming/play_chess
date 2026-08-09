@@ -25,7 +25,7 @@ const countTypes = solution => {
 setTimeout(() => {
   const engine = globalThis.RoomChessEngine;
   const baseline = JSON.parse(fs.readFileSync(path.join(__dirname, 'server_config', 'furniture-config-default.json'), 'utf8'));
-  if (!engine.applyFurnitureCatalog(baseline.furnitureRules)) fail('默认配置加载失败');
+  if (!engine.applyGlobalConfig(baseline)) fail('默认配置加载失败');
   engine.setLayoutDensityMode('rich');
   engine.setCustomCabinetEnabled(true);
 

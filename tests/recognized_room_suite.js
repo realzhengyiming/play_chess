@@ -29,8 +29,7 @@ setTimeout(() => {
     rooms.forEach((room, index) => {
       const programId = SUPPORTED[room.type];
       if (!programId || !room.polygon) return;
-      engine.applyFurnitureCatalog(config.furnitureRules);
-      if (config.designQualityRules && engine.applyDesignQualityRules) engine.applyDesignQualityRules(config.designQualityRules);
+      engine.applyGlobalConfig(config);
       engine.setLayoutDensityMode('rich');
       engine.setCustomCabinetEnabled(true);
       engine.setProgram(programId);

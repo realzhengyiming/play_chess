@@ -32,7 +32,8 @@
     <nav class="config-mode-bar" aria-label="配置板块切换">
       <button class="config-mode-btn active" id="libraryModeBtn" type="button">① 家具物品库</button>
       <button class="config-mode-btn" id="roomModeBtn" type="button">② 房间落子清单</button>
-      <span class="config-mode-note">先定义家具，再把家具加入房间并决定数量与落子顺序</span>
+      <button class="config-mode-btn" id="constraintsModeBtn" type="button">③ 全局约束</button>
+      <span class="config-mode-note">唯一配置源：家具、房间清单、全局约束</span>
     </nav>
 
     <section class="room-type-bar" aria-label="房间类型配置">
@@ -52,6 +53,21 @@
       <section class="room-order">
         <div class="room-plan-head"><h2 id="roomOrderTitle">房间落子清单</h2><p>这里仅管理是否使用、数量和先后顺序；家具尺寸、形状和候选规则仍在“家具物品库”编辑。</p></div>
         <div class="room-order-body"><div class="room-item" style="background:#f1f3ef;font-weight:800"><span>顺序</span><span>家具</span><span>最少</span><span>最多</span><span class="optional-col">默认</span><span class="optional-col">偏好</span><span>排序</span><span>操作</span></div><div id="roomAssignmentList"></div></div>
+      </section>
+    </section>
+
+    <section class="global-constraints-panel" id="globalConstraintsPanel" aria-label="全局排布约束">
+      <div class="constraints-summary" id="constraintsSummary"></div>
+      <section class="panel">
+        <div class="panel-head"><h2>全局约束 JSON</h2><span class="kicker">保存后立即成为主页唯一规则</span></div>
+        <div class="panel-body constraints-editor">
+          <p class="schema-note">这里包含地面/墙面评分、0.5m 通行、零孤岛、丰富模式、面积模组、关系策略、Beam 搜索预算和填缝柜策略。JS 只执行这些数据，不另藏一套可调阈值。</p>
+          <textarea id="globalConstraintsJson" spellcheck="false" aria-label="全局约束 JSON"></textarea>
+          <div class="constraints-actions">
+            <button class="btn primary" id="saveGlobalConstraintsBtn" type="button">校验并保存全局约束</button>
+            <span class="status" id="globalConstraintsStatus">尚未修改</span>
+          </div>
+        </div>
       </section>
     </section>
 
