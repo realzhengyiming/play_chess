@@ -3574,7 +3574,7 @@
         const largeLiving=programId==='living'&&trialScene.area>=28,largeRoom=trialScene.area>=28;
         const largeBedroomLounge=programId==='bedroom'&&largeRoom&&(candidate.counts.bedroomLoveseat||0)>0;
         const qualityDining=programId==='living'&&diningTier;
-        const beamWidth=largeBedroomLounge?72:qualityDining&&largeRoom?180:(richFinal||qualityDining
+        const beamWidth=largeBedroomLounge?72:qualityDining&&largeRoom?152:(richFinal||qualityDining
           ?(largeRoom?Math.min(52,34+Math.round(FURNITURE.length*.8)):(FURNITURE.length>=20?92:Math.min(62,44+Math.round(FURNITURE.length*1.2))))
           :(largeRoom?Math.min(36,24+Math.round(FURNITURE.length*.55)):(compactLivingBudget||(FURNITURE.length>=20?52:Math.min(44,28+Math.round(FURNITURE.length*.8))))));
         // 超大客厅仍使用精确矩形复核；这里只把 Bitset broad-phase 的格网从

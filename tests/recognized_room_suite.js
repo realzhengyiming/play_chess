@@ -12,6 +12,7 @@ const SUPPORTED = {bedroom:'bedroom', living_room:'living'};
 const reportOnly = process.argv.includes('--report-only');
 const verbose = process.argv.includes('--verbose');
 const assertQuality = process.argv.includes('--assert-quality');
+const assertSpeed = process.argv.includes('--assert-speed');
 
 setTimeout(() => {
   const engine = globalThis.RoomChessEngine;
@@ -62,6 +63,7 @@ setTimeout(() => {
         doors:actualDoorTypes.join('|'), connected:+reach.connectedRatio.toFixed(3), islandM2:+islandArea.toFixed(3),
       });
       if (!solution.evaluation.qualityPass) qualityWarnings.push(`${label}: 未通过质量门槛`);
+      if (assertSpeed && result.totalTimeMs > 2000) failures.push(`${label}: 搜索 ${result.totalTimeMs.toFixed(0)}ms，超过 2s 目标`);
       if (verbose && !solution.evaluation.qualityPass) console.dir({label, plans:result.plans, trials:result.trials, scores:solution.evaluation.scores, diagnostics:solution.evaluation.diagnostics, poses:Object.keys(solution.poses)}, {depth:5});
       if (!reach.hardPass) failures.push(`${label}: 存在不可达家具或孤岛`);
       if (islandArea > .08) failures.push(`${label}: 孤岛面积 ${islandArea.toFixed(2)}㎡`);
