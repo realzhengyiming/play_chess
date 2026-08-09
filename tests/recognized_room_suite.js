@@ -75,6 +75,14 @@ setTimeout(() => {
       if (!solution.evaluation.qualityPass) qualityWarnings.push(`${label}: 未通过质量门槛`);
       if(programId==='bedroom'&&room.area>=15&&deskWindowDistance!=null&&deskWindowDistance>2.3)failures.push(`${label}: 书桌距窗 ${deskWindowDistance.toFixed(2)}m，超过 2.30m`);
       if(hotelBedroom&&placedTypeCount('tvbench')<1)failures.push(`${label}: 长条卧室缺少酒店式床尾电视柜`);
+      if(hotelBedroom&&placedTypeCount('bedroomLoveseat')<1)failures.push(`${label}: 长条卧室明明可行却未挑战正式小沙发`);
+      if(hotelBedroom){
+        const tvId=Object.keys(solution.poses||{}).find(id=>itemById.get(id)?.typeId==='tvbench');
+        if(tvId&&solution.poses[tvId]?.relation!=='bedroom-tv-bed-facing')failures.push(`${label}: 电视柜没有保持床对电视的酒店主轴`);
+        const mediaFlanks=(solution.decorItems||[]).filter(row=>/^电视墙[左右]侧薄柜/.test(row.label||''));
+        if(room.area<20&&mediaFlanks.length<2)failures.push(`${label}: 电视柜两侧薄收纳柜不足 2 组`);
+        if((solution.decorItems||[]).some(row=>row.kind==='activityLoveseat'))failures.push(`${label}: 使用了活动区假沙发，未落正式家具`);
+      }
       if(hotelBedroom&&(solution.evaluation.diagnostics.largestEmptyWallBay??Infinity)>3.20)failures.push(`${label}: 最大连续空墙 ${(solution.evaluation.diagnostics.largestEmptyWallBay||0).toFixed(2)}m，超过 3.20m`);
       if(programId==='living'&&room.area>=34){
         if(placedTypeCount('diningTable')<1||placedTypeCount('diningChair')<2)failures.push(`${label}: 大客厅缺少真实第二功能区（至少 1 桌 2 椅）`);

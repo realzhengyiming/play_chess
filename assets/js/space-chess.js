@@ -1159,6 +1159,9 @@
         [.28,.72],[.50,.72],[.72,.72]
       ];
       if(relation==='floating-sofa')points.unshift([.50,.42],[.50,.58],[.42,.50],[.58,.50]);
+      // 长条异形卧室的可用补座区常落在上半区靠侧墙，而不是九宫格中心。
+      // 增加少量代表点即可覆盖“平移 20~30cm 后通路全通”的解，不铺满细网格。
+      if(relation==='bedroom-lounge-zone')points.unshift([.20,.22],[.36,.22],[.20,.28],[.36,.28],[.20,.34],[.36,.34]);
       // 餐桌不是只能摆在九宫格中心。参考成熟规则系统的“功能区边界 + 靠墙偏好”，
       // 增加一圈离边界约 0.18~0.22 的聚类中心，使沙发前区占掉中央时餐组仍可
       // 落在另一半空间。只增加这些代表点，不按房间面积铺满细网格。
@@ -1333,10 +1336,14 @@
 
     function configuredRuleCandidates(item,state,scene) {
       const rule=furnitureRule(item),candidate=rule?.candidate||{mode:'wall'};let entries=Array.isArray(candidate.rules)&&candidate.rules.length?candidate.rules.filter(entry=>entry.enabled!==false):[candidate];
+      const bedroomAspect=Math.max(scene.width/Math.max(scene.depth,EPS),scene.depth/Math.max(scene.width,EPS));
+      const hotelBedroom=currentProgram==='bedroom'&&scene.shape==='recognized'&&bedroomAspect>=1.65;
       // 20㎡以上若库存已选择完整小沙发会客组，电视柜仍作为会客锚点先贴墙，
       // 后续小沙发再正对它；酒店式“正对床”只服务没有小沙发的长条卧室。
-      if(item.typeId==='tvbench'&&(CONFIGS.bedroom.counts.bedroomLoveseat||0)>0)entries=entries.filter(entry=>entry.relativeTo!=='bed');
-      if(item.typeId==='bedroomLoveseat'&&state.poses.tvbench){const related=entries.filter(entry=>entry.mode==='relation'&&entry.relativeTo==='tvbench');if(related.length)entries=related;}
+      if(item.typeId==='tvbench'&&(CONFIGS.bedroom.counts.bedroomLoveseat||0)>0&&!hotelBedroom)entries=entries.filter(entry=>entry.relativeTo!=='bed');
+      // 酒店型长卧室中，电视柜继续服务床；小沙发是独立的第二落座点，可以
+      // 正对电视，也可以贴剩余墙角。不能因为已有电视柜就删掉它的墙面候选。
+      if(item.typeId==='bedroomLoveseat'&&state.poses.tvbench&&!hotelBedroom){const related=entries.filter(entry=>entry.mode==='relation'&&entry.relativeTo==='tvbench');if(related.length)entries=related;}
       const totalLimit=Math.min(rule?.infill?24:72,Math.max(4,Math.round(Number(candidate.maxCandidates)||32))),buckets=[];
       if(rule?.infill)return customInfillCandidates(item,scene,state).slice(0,totalLimit);
       for(const entry of entries){const mode=entry.mode||'wall',relation=entry.relation||'custom-zone',perRule=Math.min(48,Math.max(1,Math.round(Number(entry.maxSamples)||12)));let rows=[];
@@ -1344,8 +1351,7 @@
         // 超大卧室的电视柜先于沙发落子，必须从四面墙均匀找锚点。若仍按轮廓
         // 顺序截前 N 个，第一面墙被床占满后就会误判“无位置”。只在这一档启用
         // 按墙轮采，避免改变普通房间已经稳定的墙面落子排序。
-        const bedroomAspect=Math.max(scene.width/Math.max(scene.depth,EPS),scene.depth/Math.max(scene.width,EPS));
-        if(mode==='wall'&&item.typeId==='tvbench'&&(roomAreaTier('bedroom',scene.area).id==='studio'||bedroomAspect>=1.65)&&rows.length>perRule){const wallBuckets=new Map();for(const pose of rows){const key=Number.isFinite(pose.wallIndex)?pose.wallIndex:-1;if(!wallBuckets.has(key))wallBuckets.set(key,[]);wallBuckets.get(key).push(pose)}const distributed=[];for(let index=0;distributed.length<rows.length;index++){let added=false;for(const bucket of wallBuckets.values())if(bucket[index]){distributed.push(bucket[index]);added=true}if(!added)break}rows=distributed}
+        if(mode==='wall'&&['tvbench','bedroomLoveseat'].includes(item.typeId)&&(roomAreaTier('bedroom',scene.area).id==='studio'||bedroomAspect>=1.65)&&rows.length>perRule){const wallBuckets=new Map();for(const pose of rows){const key=Number.isFinite(pose.wallIndex)?pose.wallIndex:-1;if(!wallBuckets.has(key))wallBuckets.set(key,[]);wallBuckets.get(key).push(pose)}const distributed=[];for(let index=0;distributed.length<rows.length;index++){let added=false;for(const bucket of wallBuckets.values())if(bucket[index]){distributed.push(bucket[index]);added=true}if(!added)break}rows=distributed}
         // 墙面按轮廓顺序生成，异形房间的窗边墙常排在最后。书桌若直接截取
         // 前 N 个候选，窗边位置甚至进不了评分。先把自然采光候选提到桶前面，
         // 其余位置仍由后续合法性、椅子和通路共同筛选。
@@ -1606,7 +1612,8 @@
         if (windowOverlap(item,pose,scene)) score -= 48;
       }
       const bedroomMediaAspect=Math.max(scene.width/Math.max(scene.depth,EPS),scene.depth/Math.max(scene.width,EPS));
-      if(item.typeId==='tvbench'&&currentProgram==='bedroom'&&(roomAreaTier('bedroom',scene.area).id==='studio'||bedroomMediaAspect>=1.65)&&(CONFIGS.bedroom.counts.bedroomLoveseat||0)>0){
+      const recognizedHotelBedroom=currentProgram==='bedroom'&&scene.shape==='recognized'&&bedroomMediaAspect>=1.65;
+      if(item.typeId==='tvbench'&&currentProgram==='bedroom'&&!recognizedHotelBedroom&&roomAreaTier('bedroom',scene.area).id==='studio'&&(CONFIGS.bedroom.counts.bedroomLoveseat||0)>0){
         // 超大卧室里电视柜是会客组的第一手，不能只看“自己贴墙是否漂亮”。
         // 在候选进入 Beam 前做一次很小的后继可行性检查：柜前若完全放不下
         // 正对的小沙发，这个锚点就是死棋；能形成会客组的墙位则大幅优先。
@@ -1637,6 +1644,11 @@
         // 休闲椅优先背靠墙，墙面候选的实体后沿由 wallPose 精确落在线上；
         // 自由活动区仍保留为异形/满房时的兜底，但不再压过可用的贴墙方案。
         score+=pose.anchor==='wall'?34+(pose.wallEndGap<=.04?7:0):pose.relation==='reading-open-zone'?-12:-6;
+      }
+      if(item.typeId==='bedroomLoveseat'&&recognizedHotelBedroom){
+        // 酒店式长卧室里的小沙发是独立补座，不要求抢走床对电视的主轴。
+        // 背靠剩余墙面最稳定，其次才是开放区；只要通行合法就应压过 skip。
+        score+=pose.anchor==='wall'?52:pose.relation==='bedroom-seat-media-facing'?34:22;
       }
       if(pose.anchor==='wall'&&Number.isFinite(pose.wallEndGap)&&['wardrobe','desk','chest','shelf','tvbench','bedroomDisplay','lounge','sideboard','bookcase','display','console'].includes(item.typeId)){
         // 成品家具的小/中/大模数不仅参与面积适配，也参与“墙端收口”评分。
@@ -1802,6 +1814,13 @@
       // 若几何上放不下，外层会回退较小库存，而不是输出名义完整、实际缺件的方案。
       if(currentProgram==='bedroom'&&item.typeId==='desk'&&item.slotIndex===0&&(CONFIGS.bedroom.counts.desk||0)>0)return true;
       if(currentProgram==='bedroom'&&item.typeId==='night'&&item.slotIndex===0&&(CONFIGS.bedroom.counts.night||0)>0&&state.poses.bed)return true;
+      const bedroomAspect=Math.max(scene.width/Math.max(scene.depth,EPS),scene.depth/Math.max(scene.width,EPS));
+      const selectedHotelAnchor=currentProgram==='bedroom'&&scene.shape==='recognized'&&bedroomAspect>=1.65&&item.slotIndex===0&&
+        (CONFIGS.bedroom.counts[item.typeId]||0)>0&&['tvbench','bedroomLoveseat'].includes(item.typeId);
+      // 识别出的长条酒店型卧室把“床对电视墙 + 一处补座”当作两个锚点。
+      // 若任一锚点确实无合法位置，本轮库存自然失败并回退；不再因为 skip 分高
+      // 就在明明放得下时偷懒。茶几和其它小件仍保持逐件可跳过。
+      if(selectedHotelAnchor)return true;
       if(item.typeId==='chair'&&state.poses.desk&&item.slotIndex===0)return true;
       if(item.typeId==='vanityStool'&&state.poses.vanity&&item.slotIndex===0)return true;
       if(item.typeId==='diningChair'&&state.poses.diningTable){
@@ -1818,16 +1837,12 @@
       if(currentProgram==='living'&&layoutDensityMode==='rich'&&item.slotIndex===0&&scene.area>=24&&
         ['sideboard','bookcase','display','side','arm'].includes(item.typeId)&&
         (CONFIGS.living.counts[item.typeId]||0)>0)return true;
-      // 大卧室会客组是一条可选但不可拆散的语义链。电视柜在落子顺序中早于
-      // 小沙发和圆几，因此不能等后两件已经落下才设为必放；库存一旦选中完整
-      // 会客组，三个锚点都必须落下，几何不可行时交给外层换下一套库存。
+      // 只有 studio 明确选择的三件套不可拆。普通卧室里的沙发、圆几、电视柜
+      // 都是逐件挑战：能放就继续，放不下只跳过这一件，不能连带删掉后续家具。
       if(currentProgram==='bedroom'&&item.slotIndex===0&&(CONFIGS.bedroom.counts[item.typeId]||0)>0){
-        const hasPlaced=typeId=>Object.keys(state.poses).some(id=>ITEM_BY_ID[id]?.typeId===typeId);
         const completeStudioGroup=roomAreaTier('bedroom',scene.area).id==='studio'&&(CONFIGS.bedroom.counts.bedroomLoveseat||0)>0&&
           (CONFIGS.bedroom.counts.bedroomTeaTable||0)>0&&(CONFIGS.bedroom.counts.tvbench||0)>0;
         if(completeStudioGroup&&['tvbench','bedroomLoveseat','bedroomTeaTable'].includes(item.typeId))return true;
-        if(item.typeId==='bedroomTeaTable'&&hasPlaced('bedroomLoveseat'))return true;
-        if(item.typeId==='tvbench'&&hasPlaced('bedroomLoveseat')&&hasPlaced('bedroomTeaTable'))return true;
       }
       // 床头柜配置为 0–2 时，两个槽位都只是数量上限。床存在并不代表必须
       // 摆满床头柜；每个槽位都应保留“跳过并继续搜索后续家具”的分支。
@@ -3048,7 +3063,8 @@
         }
         let nextStates=[...hashes.values()].sort((a,b)=>b.partialScore-a.partialScore);
         nextStates.forEach((state,index)=>state._treeNode.rank=index+1);
-        if (!nextStates.length) {stats.pruned++;break;}
+        // 必放槽位无解时不能拿“上一回合的半盘棋”冒充完整方案。
+        if (!nextStates.length) {stats.pruned++;beam=[];break;}
 
         // Forward checking is itself one matrix batch. Only the strongest 2× beam
         // reaches it; weak branches are cut before allocating occupancy arrays.
@@ -3093,7 +3109,7 @@
             next._treeNode.status='flow-pruned';next._treeNode.reason=flow.islandPass?'关键家具不可达，0.50m 水漫失败':`形成 ${flow.unreachableArea.toFixed(2)}㎡ 孤岛，或通行缝小于 0.50m`;
             stats.flowPruned++;stats.pruned++;return false;
           });
-          if(!nextStates.length)break;
+          if(!nextStates.length){beam=[];break;}
         }
         if (depth<FURNITURE.length-1) {
           const future=FURNITURE[depth+1];
@@ -3522,6 +3538,16 @@
         if(area>=8&&area<9){micro.night=1;micro.desk=1;micro.chair=1;}
         // 通行版先保证睡眠、收纳、工作三个基本组可用。
         rows.push(make(micro));
+        // “丰富”不再先用面积表删掉可选家具。先把所有有意义的模块交给同一盘
+        // 棋：合法且改善构图就落下；放不下时走该槽位的 skip，继续尝试后面的
+        // 家具。这样面积是几何搜索的结果，而不是人为写死的准入条件。
+        const richChallenge={...core,tvbench:1,bedroomLoveseat:1,bedroomTeaTable:1,bench:1,
+          chest:1,shelf:1,bedroomDisplay:1,lounge:1,vanity:1,vanityStool:1};
+        rows.push({...make(richChallenge),autoChallenge:true});
+        // 锚点先单独成盘，避免十个后续可选槽位的前瞻分反过来干扰床、电视墙
+        // 和沙发的主构图。它没有面积门槛；是否可用完全由真实几何决定。
+        rows.push({...make({...core,night:1,tvbench:1,bedroomLoveseat:1}),hotelAnchorChallenge:true});
+        rows.push({...make({bed:1,wardrobe:1,night:0,desk:1,chair:1,tvbench:1}),hotelMediaFallback:true});
         // 长条卧室优先尝试酒店式“床尾壁挂电视 + 超薄电视柜”。它是睡眠组的
         // 延伸，不要求先摆小沙发，也不会把 0.4m 深普通电视柜硬塞进窄通道。
         const bedroomAspect=Math.max(scene.width/Math.max(scene.depth,EPS),scene.depth/Math.max(scene.width,EPS));
@@ -3540,6 +3566,9 @@
         // 展示柜优先用于消化连续空墙；大卧室再尝试与一个休闲中心组合。
         if(area>=13.5)rows.push(make({...core,bedroomDisplay:1}));
         if(area>=18)rows.push(make({...core,bench:1,bedroomDisplay:1}));
+        // 真正的几何兜底必须也是一盘走完的棋。过去依赖“必放槽位无解后返回
+        // 上一回合”伪造床+衣柜方案；修正搜索终止后在这里显式保留基础清单。
+        rows.push({...make({bed:1,wardrobe:1}),essentialFallback:true});
       }else{
         const conversation={sofa:1,tv:1,coffee:1},core={...conversation};
         if(area>=14){core.arm=2;core.side=1;core.floorLamp=1;}
@@ -3568,6 +3597,8 @@
         const recognizedHotelMediaPreferred=scene.shape==='recognized'&&hotelMediaPreferred;
         const preferred=area>=6.2&&area<9
           ?rows.find(row=>(row.counts.night||0)>=1&&(row.counts.desk||0)>0&&(row.counts.chair||0)>0)
+          :layoutDensityMode==='rich'&&recognizedHotelMediaPreferred?rows.find(row=>row.hotelAnchorChallenge)
+          :layoutDensityMode==='rich'?rows.find(row=>row.autoChallenge)
           :recognizedHotelMediaPreferred?rows.find(row=>(row.counts.tvbench||0)>0&&(row.counts.bedroomLoveseat||0)===0)
           :area>=20
           ?rows.find(row=>(row.counts.bedroomLoveseat||0)>0&&(row.counts.bedroomTeaTable||0)>0&&(row.counts.tvbench||0)>0)
@@ -3609,6 +3640,9 @@
       let mode='standard';
       if (forceCompact||candidate.estimate.density>densityTarget+.035) mode='compact';
       else if (candidate.estimate.density<densityTarget-.10&&scene.area>18&&candidate.estimate.pieces<candidate.estimate.softPieceCapacity*.72) mode='generous';
+      // 全清单挑战中的多数家具本来就允许 skip，不能把“名义件数”误判为一定
+      // 全部落地并整体缩小。长卧室先用真实常规模数下棋，放不下的单件再跳过。
+      if(programId==='bedroom'&&candidate.autoChallenge&&!forceCompact)mode='standard';
       // 大客厅的功能方案已经通过“更多件数”表达丰富度，再把每件家具放大为 generous
       // 会同时挤死餐组和沿墙柜，导致同一配置在标准模数可行、放大模数却连续失败。
       if(programId==='living'&&scene.area>=30&&candidate.estimate.pieces>=10&&mode==='generous')mode='standard';
@@ -3665,7 +3699,10 @@
       // 先挡掉必定会被 strictOk 否决的配置，避免过去“完整试摆后再判失败”的浪费。
       const passesInventoryGates=(candidate,objectiveId)=>{
         if(!candidate?.estimate)return false;
-        if(layoutDensityMode==='rich'&&candidate.estimate.missingCompletionPenalty>16)return false;
+        if(candidate.essentialFallback||candidate.hotelMediaFallback)return true;
+        // 酒店锚点方案允许“一只床头柜换一张沙发”。这是设计取舍，不是缺件；
+        // 真实可行性继续交给 0.50m 通路、孤岛和完整质量评分。
+        if(layoutDensityMode==='rich'&&candidate.estimate.missingCompletionPenalty>16&&!candidate.hotelAnchorChallenge)return false;
         if(candidate.estimate.coverage+EPS<coverageFloorFor(objectiveId))return false;
         return true;
       };
@@ -3680,8 +3717,9 @@
         const largeLiving=programId==='living'&&trialScene.area>=28,largeRoom=trialScene.area>=28;
         const trialBedroomAspect=Math.max(trialScene.width/Math.max(trialScene.depth,EPS),trialScene.depth/Math.max(trialScene.width,EPS));
         const largeBedroomLounge=programId==='bedroom'&&(candidate.counts.bedroomLoveseat||0)>0&&(largeRoom||trialBedroomAspect>=1.65);
+        const bedroomMediaFallback=programId==='bedroom'&&candidate.hotelMediaFallback;
         const qualityDining=programId==='living'&&diningTier;
-        const beamWidth=largeBedroomLounge?(trialBedroomAspect>=1.65&&trialScene.area<28?120:72):qualityDining&&largeRoom?152:(richFinal||qualityDining
+        const beamWidth=bedroomMediaFallback?120:largeBedroomLounge?(trialBedroomAspect>=1.65&&trialScene.area<28?120:72):qualityDining&&largeRoom?152:(richFinal||qualityDining
           ?(largeRoom?Math.min(52,34+Math.round(FURNITURE.length*.8)):(FURNITURE.length>=20?92:Math.min(62,44+Math.round(FURNITURE.length*1.2))))
           :(largeRoom?Math.min(36,24+Math.round(FURNITURE.length*.55)):(compactLivingBudget||(FURNITURE.length>=20?52:Math.min(44,28+Math.round(FURNITURE.length*.8))))));
         // 超大客厅仍使用精确矩形复核；这里只把 Bitset broad-phase 的格网从
@@ -3689,7 +3727,7 @@
         const adaptiveGridStep=trialScene.area>=40?.15:.12;
         const probe=search(trialScene,{beamWidth,gridStep:adaptiveGridStep});
         const coverageFloor=coverageFloorFor(objectiveId);
-        const completionOk=layoutDensityMode!=='rich'||candidate.estimate.missingCompletionPenalty<=16;
+        const completionOk=layoutDensityMode!=='rich'||candidate.estimate.missingCompletionPenalty<=16||candidate.hotelAnchorChallenge||candidate.hotelMediaFallback||candidate.essentialFallback;
         const strictOk=completionOk&&candidate.estimate.coverage>=coverageFloor&&probe.solutions.some(passesHardFurniturePhase);
         attempts++;totalNodes+=probe.stats.nodes;totalTimeMs+=probe.stats.timeMs;totalBatches+=probe.stats.batches||0;totalMatrixCandidates+=probe.stats.matrixCandidates||probe.stats.nodes;
         trials.push({objective:objectiveId,pieces:FURNITURE.length,counts:{...candidate.counts},mode:profile.mode,ok:strictOk,timeMs:probe.stats.timeMs,bestReach:probe.stats.bestReach,bestEvaluation:probe.solutions[0]?.evaluation?{qualityPass:probe.solutions[0].evaluation.qualityPass,scores:{...probe.solutions[0].evaluation.scores},reach:{hardPass:probe.solutions[0].evaluation.reach.hardPass,hardReachableRatio:probe.solutions[0].evaluation.reach.hardReachableRatio,islandArea:probe.solutions[0].evaluation.reach.unreachableArea},placed:Object.keys(probe.solutions[0].poses||{}).length}:null});
@@ -3735,7 +3773,9 @@
         const functionFloor=balancedPieces?Math.max(inventoryPieceCount(baseInventoryCounts(programId)),balancedPieces-4):0;
         const staged=stagedInventoryCandidates(programId,trialScene,objectiveId);
         let candidateSequence=[...staged,...inventoryCandidateSequence(programId,frontier,7)];
-        candidateSequence=[...new Map(candidateSequence.map(candidate=>[inventoryCountsSignature(programId,candidate.counts),candidate])).values()];
+        // 阶梯候选携带“酒店锚点/真实兜底”等语义；同数量的 Frontier 只能排在
+        // 后面，不能用普通对象覆盖这些标记。
+        const candidateBySignature=new Map();for(const candidate of candidateSequence){const signature=inventoryCountsSignature(programId,candidate.counts);if(!candidateBySignature.has(signature))candidateBySignature.set(signature,candidate)}candidateSequence=[...candidateBySignature.values()];
         if (objectiveId==='circulation'&&balancedPieces) candidateSequence=candidateSequence.filter(candidate=>candidate.estimate.pieces<=balancedPieces);
         if (objectiveId==='function'&&balancedPieces) candidateSequence=candidateSequence.filter(candidate=>candidate.estimate.pieces>=functionFloor);
         candidateSequence=candidateSequence.filter(candidate=>passesInventoryGates(candidate,objectiveId));
@@ -3839,7 +3879,8 @@
         // 0.10–0.59m 不是一件独立家具，而是定制柜的封板/窄柜模块；它专门解决
         // 角落和柜间死缝。仍作为实体参加最终通行复核，不能偷偷侵占走道。
         const depth=currentProgram==='living'?.38:.34,minWidth=.10,maxWidth=currentProgram==='living'?2.8:2.4;
-        const candidates=[],faux={id:'postWallDisplay',typeId:currentProgram==='living'?'display':'bedroomDisplay',w:1,d:depth,shape:'box'};
+        const candidates=[],tvFlanks=[],faux={id:'postWallDisplay',typeId:currentProgram==='living'?'display':'bedroomDisplay',w:1,d:depth,shape:'box'};
+        const tvEntry=currentProgram==='bedroom'?first('tvbench'):null,tvBody=bodyOf(tvEntry),tvWallIndex=tvEntry?.pose?.wallIndex;
         for(const wall of roomScene.walls){
           if(Math.abs(wall.dx)>1e-5&&Math.abs(wall.dy)>1e-5)continue;
           let intervals=freeWallIntervals(wall,state,roomScene,faux,0);
@@ -3851,6 +3892,20 @@
           }
           for(const [start,end] of intervals){
             const available=end-start;if(available<minWidth-EPS)continue;
+            // 电视柜两侧优先用同深度的窄收纳柜收边。旧逻辑一律按 0.34m 深、
+            // 2.4m 长生成大柜，常把本来可行的 0.7m 填缝柜误判成堵路。
+            if(tvBody&&wall.index===tvWallIndex){
+              const tvAlong=dot({x:tvEntry.pose.x-wall.a.x,y:tvEntry.pose.y-wall.a.y},wall.dir),horizontal=Math.abs(wall.dir.x)>Math.abs(wall.dir.y),tvRun=horizontal?tvBody.w:tvBody.d;
+              const tvStart=tvAlong-tvRun/2,tvEnd=tvAlong+tvRun/2,left=end<=tvStart+.06,right=start>=tvEnd-.06;
+              if(left||right){
+                const width=round(Math.floor(Math.min(.80,available)*10+EPS)/10,1),mediaDepth=clamp(horizontal?tvBody.d:tvBody.w,.22,.30);
+                if(width>=.30){
+                  const t=left?end-width/2:start+width/2,wallPoint={x:wall.a.x+wall.dir.x*t,y:wall.a.y+wall.dir.y*t},center={x:wallPoint.x+wall.normal.x*mediaDepth/2,y:wallPoint.y+wall.normal.y*mediaDepth/2};
+                  const rect={x:center.x,y:center.y,w:horizontal?width:mediaDepth,d:horizontal?mediaDepth:width,rotation:0};
+                  if(rectInsidePolygon(rect,roomScene.polygon)&&!overlapsDoorClearance(rect,roomScene,.025)&&!baseOccupied.some(body=>rectsOverlap(rect,body,-.005))&&!baseHard.some(zone=>rectsOverlap(rect,zone,0)))tvFlanks.push({...rect,wallIndex:wall.index,runWidth:width,available,gapKind:'media-flank',mediaSide:left?'左':'右',score:180+width*12});
+                }
+              }
+            }
             const width=round(Math.floor(Math.min(maxWidth,available)*10+EPS)/10,1);if(width<minWidth)continue;
             const slots=available>width+.32?[start+width/2,(start+end)/2,end-width/2]:[(start+end)/2];
             for(const t of slots){
@@ -3872,8 +3927,8 @@
         const selected=[],append=rows=>{for(const candidate of rows){if(selected.some(row=>rectsOverlap(candidate,row,.08)))continue;selected.push(candidate);if(selected.length>=target*3)break}};
         // 一整面空墙比十几厘米收口更影响视觉。至少先保留一个 1.2m 以上的
         // 有效墙段候选，再用剩余预算修角落，避免两个小封板耗尽全部补全名额。
-        append(useful.filter(row=>row.runWidth>=1.2).slice(0,1));append(closures.slice(0,Math.min(2,target)));append(useful);append(closures.slice(Math.min(2,target)));
-        return selected.map((body,index)=>({kind:'postDisplayCabinet',label:`${body.runWidth<.6?'定制收口':'定制展示柜'} ${body.runWidth.toFixed(1)} m`,x:body.x,y:body.y,w:body.w,d:body.d,runWidth:body.runWidth,rotation:0,color:body.runWidth<.6?'#789087':index?'#71877e':'#5d7f78',layer:'overlay',collision:'post-layout',wallIndex:body.wallIndex,postLayoutBudget:target}));
+        append(tvFlanks.sort((a,b)=>a.mediaSide.localeCompare(b.mediaSide)||b.runWidth-a.runWidth));append(useful.filter(row=>row.runWidth>=1.2).slice(0,1));append(closures.slice(0,Math.min(2,target)));append(useful);append(closures.slice(Math.min(2,target)));
+        return selected.map((body,index)=>({kind:'postDisplayCabinet',label:body.gapKind==='media-flank'?`电视墙${body.mediaSide}侧薄柜 ${body.runWidth.toFixed(1)} m`:`${body.runWidth<.6?'定制收口':'定制展示柜'} ${body.runWidth.toFixed(1)} m`,x:body.x,y:body.y,w:body.w,d:body.d,runWidth:body.runWidth,rotation:0,color:body.gapKind==='media-flank'?'#607d75':body.runWidth<.6?'#789087':index?'#71877e':'#5d7f78',layer:'overlay',collision:'post-layout',wallIndex:body.wallIndex,postLayoutBudget:target}));
       };
 
       // 若 Beam 没有保留硬休闲椅，则用最多 8 个墙角候选做一次收尾；实体背边/侧边

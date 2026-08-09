@@ -205,7 +205,9 @@ setTimeout(() => {
   assert(!(recognizedSolution.inventoryItems || []).some(item=>item.typeId==='bedroomInfillCabinet'), '户型样例长条卧室：填缝柜仍进入了 Beam 硬家具库存');
   // 预算是上限而不是强制数量：长条房间若硬家具已经占满合法墙段，可以为 0；
   // 关键是填缝不得为了凑数重新进入 Beam 或覆盖已完成的家具/通道。
-  assert(new Set(recognizedInfills.map(item => item.wallIndex)).size === recognizedInfills.length, '户型样例长条卧室：后处理定制柜重复占用同一墙段');
+  const repeatedCabinetBody=recognizedInfills.some((left,index)=>recognizedInfills.slice(index+1).some(right=>
+    left.wallIndex===right.wallIndex&&Math.abs(left.x-right.x)<(left.w+right.w)/2-.005&&Math.abs(left.y-right.y)<(left.d+right.d)/2-.005));
+  assert(!repeatedCabinetBody, '户型样例长条卧室：后处理定制柜重复占用同一墙段');
   results.push({room:'recognized bedroom #1', milliseconds:+recognizedResult.totalTimeMs.toFixed(1), attempts:recognizedResult.attempts, score:recognizedSolution.evaluation.total, placed:recognizedCounts});
 
   console.table(results.map(row => ({room:row.room, ms:row.milliseconds, attempts:row.attempts, score:row.score, placed:Object.values(row.placed).reduce((a,b)=>a+b,0)})));
