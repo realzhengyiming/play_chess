@@ -62,6 +62,7 @@ setTimeout(() => {
         ?Math.hypot(deskPose.x-result.scene.window.mid.x,deskPose.y-result.scene.window.mid.y):null;
       const itemById=new Map(engine.getFurniture().map(item=>[item.id,item]));
       const placedTypeCount=typeId=>Object.keys(solution.poses||{}).filter(id=>itemById.get(id)?.typeId===typeId).length;
+      const elevatedDecor=(solution.decorItems||[]).filter(row=>!['rug','postDisplayCabinet'].includes(row.kind));
       const wallDetails=solution.evaluation.diagnostics.wallDetails||{},groundDetails=solution.evaluation.diagnostics.ground||{};
       const roomAspect=Math.max(room.width/Math.max(room.depth,.001),room.depth/Math.max(room.width,.001));
       const hotelBedroom=programId==='bedroom'&&room.area>=15&&roomAspect>=1.65;
@@ -87,12 +88,16 @@ setTimeout(() => {
       if(hotelBedroom&&(solution.evaluation.diagnostics.largestEmptyWallBay??Infinity)>3.20)failures.push(`${label}: 最大连续空墙 ${(solution.evaluation.diagnostics.largestEmptyWallBay||0).toFixed(2)}m，超过 3.20m`);
       if(programId==='living'&&room.area>=34){
         if(placedTypeCount('diningTable')<1||placedTypeCount('diningChair')<2)failures.push(`${label}: 大客厅缺少真实第二功能区（至少 1 桌 2 椅）`);
+        const diningId=Object.keys(solution.poses||{}).find(id=>itemById.get(id)?.typeId==='diningTable');
+        if(diningId&&(solution.poses[diningId].overrideW||itemById.get(diningId)?.w||0)<1.6)failures.push(`${label}: 大客厅没有使用 1.6m 大模数餐桌`);
         if((wallDetails.unusedWallRatio??1)>.46)failures.push(`${label}: 可用空墙占比 ${((wallDetails.unusedWallRatio||0)*100).toFixed(1)}%，超过 46%`);
         if((wallDetails.emptyWallScore??0)<.12)failures.push(`${label}: 空墙评分 ${((wallDetails.emptyWallScore||0)*100).toFixed(0)}，低于 12`);
         if((groundDetails.largestVoidRatio??1)>.54)failures.push(`${label}: 最大连续空地占比 ${((groundDetails.largestVoidRatio||0)*100).toFixed(1)}%，超过 54%`);
       }
+      if(programId==='bedroom'&&room.area>=10&&room.area<12&&(placedTypeCount('desk')<1||placedTypeCount('chair')<1))failures.push(`${label}: 10–12㎡卧室仍缺少紧凑书桌椅组`);
+      if(elevatedDecor.length)failures.push(`${label}: 仍生成非落地陈设 ${elevatedDecor.map(row=>row.kind).join('|')}`);
       if (assertSpeed && result.totalTimeMs > 2000) failures.push(`${label}: 搜索 ${result.totalTimeMs.toFixed(0)}ms，超过 2s 目标`);
-      if (verbose && !solution.evaluation.qualityPass) console.dir({label, plans:result.plans, trials:result.trials, scores:solution.evaluation.scores, diagnostics:solution.evaluation.diagnostics, poses:Object.keys(solution.poses)}, {depth:5});
+      if (verbose) console.dir({label, plans:result.plans, trials:result.trials, scores:solution.evaluation.scores, diagnostics:solution.evaluation.diagnostics, poses:Object.keys(solution.poses), decor:(solution.decorItems||[]).map(row=>({kind:row.kind,label:row.label}))}, {depth:5});
       if (!reach.hardPass) failures.push(`${label}: 存在不可达家具或孤岛`);
       if (islandArea > .08) failures.push(`${label}: 孤岛面积 ${islandArea.toFixed(2)}㎡`);
       if (reach.minimumPassage < .5) failures.push(`${label}: 最小通路低于 0.50m`);

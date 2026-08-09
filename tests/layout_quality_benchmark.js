@@ -8,6 +8,7 @@ const source = fs.readFileSync(path.join(root, 'assets/js/space-chess.js'), 'utf
 new Function(source)();
 
 const CASES = [
+  ['bedroom', 'rect', 3.4, 3.6],
   ['bedroom', 'rect', 3.2, 4.7],
   ['bedroom', 'rect', 3.6, 3.8],
   ['bedroom', 'lshape', 4.2, 4.6],
@@ -46,6 +47,7 @@ setTimeout(() => {
     const ground = diagnostics.ground || {};
     const wall = diagnostics.wallDetails || {};
     const modules = diagnostics.modules || {};
+    const placedIds=Object.keys(solution.poses||{}),decor=solution.decorItems||[];
     return {
       case: `${programId}/${shape}/${width}x${depth}`,
       milliseconds: rounded(result.totalTimeMs),
@@ -71,6 +73,16 @@ setTimeout(() => {
       wallSevereGaps: wall.severeGaps ?? null,
       completeModules: modules.completeCount ?? null,
       moduleScore: rounded(modules.score),
+      regression:{
+        hasBench:placedIds.some(id=>id==='bench'||id.startsWith('bench')),
+        hasTvbench:placedIds.some(id=>id==='tvbench'||id.startsWith('tvbench')),
+        hasArm:placedIds.some(id=>id.startsWith('arm')),
+        hasDiningTable:Boolean(solution.poses?.diningTable),
+        diningChairs:placedIds.filter(id=>id.startsWith('diningChair')).length,
+        diningWall:solution.poses?.diningTable?.candidateRuleId==='dining-wall',
+        diningWidth:rounded(solution.poses?.diningTable?.overrideW),
+        elevatedDecor:decor.filter(row=>!['rug','postDisplayCabinet'].includes(row.kind)).map(row=>row.kind),
+      },
       ...(process.argv.includes('--debug') ? {
         emptyGround: engine.evaluateFull({ poses: {} }, result.scene).diagnostics.ground,
         incompleteModules: modules.incomplete || [],
@@ -102,6 +114,14 @@ setTimeout(() => {
     const failures = rows.filter(row => !row.qualityPass || row.wallSevereGaps > 0 || row.ground < 58 || row.wall < 50);
     const grandLiving = rows.find(row => row.case === 'living/rect/7.2x5.5');
     if (grandLiving && grandLiving.modules < 85) failures.push(grandLiving);
+    const compactBedroom=rows.find(row=>row.case==='bedroom/rect/3.4x3.6');
+    if(compactBedroom&&!compactBedroom.regression.hasBench)failures.push(compactBedroom);
+    const mediaBedroom=rows.find(row=>row.case==='bedroom/rect/3.6x3.8');
+    if(mediaBedroom&&!mediaBedroom.regression.hasTvbench)failures.push(mediaBedroom);
+    const compactDining=rows.find(row=>row.case==='living/rect/4.8x4.2');
+    if(compactDining&&(!compactDining.regression.hasArm||!compactDining.regression.hasDiningTable||compactDining.regression.diningChairs<1||!compactDining.regression.diningWall))failures.push(compactDining);
+    if(grandLiving&&(grandLiving.regression.diningWidth??0)<1.6)failures.push(grandLiving);
+    for(const row of rows)if(row.regression.elevatedDecor.length)failures.push(row);
     if (failures.length) throw new Error(`质量基准失败：${[...new Set(failures.map(row => row.case))].join(', ')}`);
   }
 

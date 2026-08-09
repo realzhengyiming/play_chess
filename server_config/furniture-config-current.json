@@ -1,8 +1,8 @@
 {
   "schemaVersion": 8,
-  "baselineVersion": 12,
+  "baselineVersion": 13,
   "profileName": "全局家具配置",
-  "updatedAt": "2026-08-09T10:35:47.028Z",
+  "updatedAt": "2026-08-09T11:23:59.443Z",
   "richBedroomDefaultsV1": true,
   "richBedroomDefaultsV2": true,
   "wallCabinetFirstV1": true,
@@ -13,9 +13,9 @@
   "designQualityRules": {
     "version": 2,
     "weights": {
-      "function": 0.25,
-      "ground": 0.25,
-      "wall": 0.2,
+      "function": 0.22,
+      "ground": 0.26,
+      "wall": 0.22,
       "relation": 0.15,
       "circulation": 0.15
     },
@@ -145,6 +145,67 @@
       }
     },
     "inventory": {
+      "variantModeByArea": {
+        "living": {
+          "diningTable": [
+            {
+              "minArea": 34,
+              "mode": "generous"
+            }
+          ]
+        },
+        "bedroom": {}
+      },
+      "focusChallenges": {
+        "bedroom": [
+          {
+            "minArea": 11.5,
+            "maxArea": 13.19,
+            "target": {
+              "bench": 1
+            }
+          },
+          {
+            "minArea": 13.2,
+            "maxArea": 14.5,
+            "target": {
+              "tvbench": 1
+            },
+            "challenge": {
+              "tvbench": 1,
+              "bench": 1
+            }
+          }
+        ],
+        "living": []
+      },
+      "stagedSupport": {
+        "living": [
+          {
+            "minArea": 0,
+            "target": {}
+          },
+          {
+            "minArea": 24,
+            "target": {
+              "sideboard": 1
+            }
+          },
+          {
+            "minArea": 34,
+            "target": {
+              "sideboard": 1,
+              "display": 1
+            }
+          }
+        ],
+        "bedroom": [
+          {
+            "minArea": 0,
+            "target": {}
+          }
+        ]
+      },
       "roomAreaModules": {
         "bedroom": [
           {
@@ -166,7 +227,7 @@
           {
             "id": "work-bedroom",
             "label": "工作卧室",
-            "minArea": 12,
+            "minArea": 10,
             "modules": [
               "sleep",
               "work"
@@ -215,7 +276,7 @@
           {
             "id": "living-dining",
             "label": "客餐厅",
-            "minArea": 24,
+            "minArea": 19,
             "modules": [
               "conversation",
               "guest-seating",
@@ -249,12 +310,12 @@
           },
           {
             "minArea": 10,
-            "value": 4,
-            "irregular": 4
+            "value": 5,
+            "irregular": 5
           },
           {
             "minArea": 15,
-            "value": 6,
+            "value": 7,
             "irregular": 6
           },
           {
@@ -264,7 +325,7 @@
           },
           {
             "minArea": 20,
-            "value": 7,
+            "value": 8,
             "irregular": 7
           }
         ],
@@ -278,6 +339,11 @@
             "minArea": 16,
             "value": 6,
             "irregular": 6
+          },
+          {
+            "minArea": 19,
+            "value": 8,
+            "irregular": 7
           },
           {
             "minArea": 24,
@@ -311,6 +377,10 @@
           {
             "minArea": 0,
             "value": 65
+          },
+          {
+            "minArea": 19,
+            "value": 85
           },
           {
             "minArea": 34,
@@ -372,6 +442,7 @@
               "diningChair",
               "sideboard"
             ],
+            "minimumChairs": 1,
             "compact": [
               0.1,
               0.25
@@ -461,6 +532,7 @@
             "anchor": "bedroomLoveseat",
             "members": [
               "bedroomLoveseat",
+              "tvbench",
               "bedroomTeaTable",
               "lounge"
             ],
@@ -516,6 +588,94 @@
       "preserveEachFurnitureType": true,
       "representativesPerFurnitureType": 8,
       "typeSignatureReserve": 24,
+      "orderByShape": {
+        "recognized": {
+          "living": [
+            "sofa",
+            "tv",
+            "coffee",
+            "arm",
+            "side",
+            "diningTable",
+            "diningChair",
+            "ottoman",
+            "sideboard",
+            "bookcase",
+            "display",
+            "console",
+            "floorLamp",
+            "plant",
+            "infillCabinet"
+          ]
+        }
+      },
+      "orderByArea": {
+        "bedroom": [
+          {
+            "minArea": 0,
+            "types": [
+              "bed",
+              "night",
+              "wardrobe",
+              "desk",
+              "chair",
+              "tvbench",
+              "bench",
+              "bedroomLoveseat",
+              "bedroomTeaTable",
+              "chest",
+              "shelf",
+              "bedroomDisplay",
+              "lounge",
+              "vanity",
+              "vanityStool",
+              "bedroomInfillCabinet"
+            ]
+          }
+        ],
+        "living": [
+          {
+            "minArea": 0,
+            "types": [
+              "sofa",
+              "tv",
+              "coffee",
+              "arm",
+              "side",
+              "diningTable",
+              "diningChair",
+              "ottoman",
+              "sideboard",
+              "bookcase",
+              "display",
+              "console",
+              "floorLamp",
+              "plant",
+              "infillCabinet"
+            ]
+          },
+          {
+            "minArea": 34,
+            "types": [
+              "sofa",
+              "tv",
+              "coffee",
+              "diningTable",
+              "diningChair",
+              "arm",
+              "side",
+              "ottoman",
+              "sideboard",
+              "bookcase",
+              "display",
+              "console",
+              "floorLamp",
+              "plant",
+              "infillCabinet"
+            ]
+          }
+        ]
+      },
       "auto": {
         "attemptLimit": {
           "normal": 12,
@@ -572,6 +732,7 @@
       }
     },
     "postLayout": {
+      "floorOnly": true,
       "wallComplements": {
         "enabled": true,
         "countTowardRichMinimum": true,
@@ -718,6 +879,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -753,6 +915,7 @@
             "relation": "wall-end-corner",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -790,6 +953,7 @@
         "relation": "",
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -892,6 +1056,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -929,6 +1094,7 @@
         "relation": "",
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -1054,6 +1220,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -1084,6 +1251,7 @@
         "enabled": true,
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -1188,6 +1356,7 @@
             "relation": "desk-front",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -1225,6 +1394,7 @@
         "relation": "desk-front",
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -1335,6 +1505,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -1365,6 +1536,7 @@
         "enabled": true,
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -1469,6 +1641,7 @@
             "relation": "vanity-seat",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -1506,6 +1679,7 @@
         "relation": "vanity-seat",
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -1608,6 +1782,7 @@
             "relation": "bed-side",
             "side": "left",
             "crossAlign": "back",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -1643,6 +1818,7 @@
             "relation": "bed-side",
             "side": "right",
             "crossAlign": "back",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -1680,6 +1856,7 @@
         "relation": "bed-side",
         "side": "left",
         "crossAlign": "back",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -1771,7 +1948,7 @@
       "candidate": {
         "rules": [
           {
-            "id": "bench-bed-foot-near",
+            "id": "bench-bed-foot-center",
             "enabled": true,
             "mode": "relation",
             "rotations": [
@@ -1782,6 +1959,7 @@
             "relation": "bed-foot",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0.1,
               "max": 0.15,
@@ -1793,12 +1971,94 @@
             "maxSamples": 4,
             "weight": 1.42,
             "collisionClearance": 0.025,
-            "allowFunctionalOverlap": true
+            "allowFunctionalOverlap": true,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": null,
+                "lateralSide": null,
+                "frontAlign": null
+              }
+            },
+            "lShapeCrossAlign": null,
+            "excludeForLShape": null,
+            "avoidChaiseSide": null
+          },
+          {
+            "id": "bench-bed-foot-left",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "bed",
+            "relation": "bed-foot",
+            "side": "front",
+            "crossAlign": "left",
+            "crossOffset": -0.25,
+            "distance": {
+              "min": 0.08,
+              "max": 0.12,
+              "step": 0.05
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 4,
+            "weight": 1.5,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": true,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": null,
+                "lateralSide": null,
+                "frontAlign": null
+              }
+            },
+            "lShapeCrossAlign": null,
+            "excludeForLShape": null,
+            "avoidChaiseSide": null
+          },
+          {
+            "id": "bench-bed-foot-right",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "bed",
+            "relation": "bed-foot",
+            "side": "front",
+            "crossAlign": "right",
+            "crossOffset": 0.25,
+            "distance": {
+              "min": 0.08,
+              "max": 0.12,
+              "step": 0.05
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 4,
+            "weight": 1.5,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": true,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": null,
+                "lateralSide": null,
+                "frontAlign": null
+              }
+            },
+            "lShapeCrossAlign": null,
+            "excludeForLShape": null,
+            "avoidChaiseSide": null
           }
         ],
-        "maxCandidates": 4,
+        "maxCandidates": 12,
         "ruleListVersion": 2,
-        "id": "bench-bed-foot-near",
+        "id": "bench-bed-foot-center",
         "enabled": true,
         "mode": "relation",
         "rotations": [
@@ -1809,6 +2069,7 @@
         "relation": "bed-foot",
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0.1,
           "max": 0.15,
@@ -1921,6 +2182,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -1951,6 +2213,7 @@
         "enabled": true,
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -2069,6 +2332,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -2099,6 +2363,7 @@
         "enabled": true,
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -2192,7 +2457,7 @@
       "accessTarget": true,
       "preferences": {
         "defaultCount": 0,
-        "weight": 1,
+        "weight": 1.65,
         "priority": 110
       },
       "candidate": {
@@ -2209,6 +2474,7 @@
             "relation": "bedroom-tv-bed-facing",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0.45,
               "max": 2.8,
@@ -2218,7 +2484,7 @@
               "toward"
             ],
             "maxSamples": 24,
-            "weight": 2.2,
+            "weight": 2.4,
             "collisionClearance": 0.025,
             "allowFunctionalOverlap": false,
             "referenceShapePolicy": {
@@ -2244,6 +2510,7 @@
             "relation": "bedroom-media-facing",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0.55,
               "max": 2.8,
@@ -2253,7 +2520,7 @@
               "toward"
             ],
             "maxSamples": 18,
-            "weight": 1.55,
+            "weight": 2.1,
             "collisionClearance": 0.025,
             "allowFunctionalOverlap": false,
             "referenceShapePolicy": {
@@ -2279,6 +2546,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -2288,7 +2556,7 @@
               "parallel"
             ],
             "maxSamples": 40,
-            "weight": 1,
+            "weight": 1.15,
             "collisionClearance": 0.025,
             "allowFunctionalOverlap": false,
             "referenceShapePolicy": {
@@ -2316,6 +2584,7 @@
         "relation": "bedroom-tv-bed-facing",
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0.45,
           "max": 2.8,
@@ -2325,7 +2594,7 @@
           "toward"
         ],
         "maxSamples": 24,
-        "weight": 2.2,
+        "weight": 2.4,
         "collisionClearance": 0.025,
         "allowFunctionalOverlap": false,
         "referenceShapePolicy": {
@@ -2426,6 +2695,7 @@
             "relation": "reading-wall",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -2461,6 +2731,7 @@
             "relation": "reading-open-zone",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -2498,6 +2769,7 @@
         "relation": "reading-wall",
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -2600,6 +2872,7 @@
             "relation": "bedroom-seat-media-facing",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0.55,
               "max": 2.8,
@@ -2635,6 +2908,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -2670,6 +2944,7 @@
             "relation": "bedroom-lounge-zone",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -2707,6 +2982,7 @@
         "relation": "bedroom-seat-media-facing",
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0.55,
           "max": 2.8,
@@ -2809,6 +3085,7 @@
             "relation": "lounge-table",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0.3,
               "max": 0.4,
@@ -2844,6 +3121,7 @@
             "relation": "lounge-table",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0.24,
               "max": 0.34,
@@ -2881,6 +3159,7 @@
         "relation": "lounge-table",
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0.3,
           "max": 0.4,
@@ -2983,6 +3262,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -3020,6 +3300,7 @@
         "relation": "",
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -3115,6 +3396,7 @@
             "relation": "utility-corner",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -3145,6 +3427,7 @@
         "enabled": true,
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -3232,6 +3515,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -3262,6 +3546,7 @@
         "enabled": true,
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -3386,6 +3671,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -3421,6 +3707,7 @@
             "relation": "floating-sofa",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -3458,6 +3745,7 @@
         "relation": "",
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -3560,6 +3848,7 @@
             "relation": "sofa-facing",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 1.55,
               "max": 3.2,
@@ -3595,6 +3884,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -3632,6 +3922,7 @@
         "relation": "sofa-facing",
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 1.55,
           "max": 3.2,
@@ -3734,6 +4025,7 @@
             "relation": "sofa-front",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0.3,
               "max": 0.4,
@@ -3772,6 +4064,7 @@
         "relation": "sofa-front",
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0.3,
           "max": 0.4,
@@ -3864,6 +4157,78 @@
       "candidate": {
         "rules": [
           {
+            "id": "arm-sofa-left",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "sofa",
+            "relation": "conversation-side",
+            "side": "left",
+            "crossAlign": "center",
+            "crossOffset": 0,
+            "distance": {
+              "min": 0.14,
+              "max": 0.34,
+              "step": 0.1
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 6,
+            "weight": 2.15,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": false,
+                "lateralSide": "any",
+                "frontAlign": "body-center"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": true,
+            "avoidChaiseSide": false
+          },
+          {
+            "id": "arm-sofa-right",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "sofa",
+            "relation": "conversation-side",
+            "side": "right",
+            "crossAlign": "center",
+            "crossOffset": 0,
+            "distance": {
+              "min": 0.14,
+              "max": 0.34,
+              "step": 0.1
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 6,
+            "weight": 2.15,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": false,
+                "lateralSide": "any",
+                "frontAlign": "body-center"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": true,
+            "avoidChaiseSide": false
+          },
+          {
             "id": "arm-sofa-opposite",
             "enabled": true,
             "mode": "relation",
@@ -3875,6 +4240,7 @@
             "relation": "conversation-opposite",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0.7,
               "max": 1.3,
@@ -3884,7 +4250,7 @@
               "toward"
             ],
             "maxSamples": 8,
-            "weight": 1.2,
+            "weight": 1.35,
             "collisionClearance": 0.025,
             "allowFunctionalOverlap": false,
             "referenceShapePolicy": {
@@ -3910,6 +4276,7 @@
             "relation": "sofa-side-chair-chain",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0.04,
               "max": 0.16,
@@ -3950,6 +4317,7 @@
             "relation": "conversation-open-zone",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -3958,8 +4326,8 @@
             "facing": [
               "parallel"
             ],
-            "maxSamples": 16,
-            "weight": 1.05,
+            "maxSamples": 12,
+            "weight": 0.72,
             "collisionClearance": 0.025,
             "allowFunctionalOverlap": false,
             "referenceShapePolicy": {
@@ -3985,6 +4353,7 @@
             "relation": "conversation-wall",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -3993,8 +4362,8 @@
             "facing": [
               "parallel"
             ],
-            "maxSamples": 16,
-            "weight": 0.92,
+            "maxSamples": 12,
+            "weight": 0.68,
             "collisionClearance": 0.025,
             "allowFunctionalOverlap": false,
             "referenceShapePolicy": {
@@ -4009,9 +4378,9 @@
             "avoidChaiseSide": false
           }
         ],
-        "maxCandidates": 36,
+        "maxCandidates": 42,
         "ruleListVersion": 2,
-        "id": "arm-sofa-opposite",
+        "id": "arm-sofa-left",
         "enabled": true,
         "mode": "relation",
         "rotations": [
@@ -4019,19 +4388,20 @@
           90
         ],
         "relativeTo": "sofa",
-        "relation": "conversation-opposite",
-        "side": "front",
+        "relation": "conversation-side",
+        "side": "left",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
-          "min": 0.7,
-          "max": 1.3,
-          "step": 0.2
+          "min": 0.14,
+          "max": 0.34,
+          "step": 0.1
         },
         "facing": [
           "toward"
         ],
-        "maxSamples": 8,
-        "weight": 1.2,
+        "maxSamples": 6,
+        "weight": 2.15,
         "collisionClearance": 0.025,
         "allowFunctionalOverlap": false,
         "referenceShapePolicy": {
@@ -4132,6 +4502,7 @@
             "relation": "sofa-side",
             "side": "left",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0.07,
               "max": 0.07,
@@ -4167,6 +4538,7 @@
             "relation": "sofa-side",
             "side": "right",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0.07,
               "max": 0.07,
@@ -4197,6 +4569,7 @@
         "enabled": true,
         "side": "left",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0.07,
           "max": 0.07,
@@ -4307,6 +4680,7 @@
             "relation": "seat-ottoman",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0.34,
               "max": 0.34,
@@ -4337,6 +4711,7 @@
         "enabled": true,
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0.34,
           "max": 0.34,
@@ -4422,21 +4797,49 @@
       "accessTarget": true,
       "preferences": {
         "defaultCount": 0,
-        "weight": 1,
+        "weight": 1.5,
         "priority": 240
       },
       "candidate": {
-        "mode": "zone",
-        "rotations": [
-          0,
-          90
-        ],
-        "relativeTo": "",
-        "relation": "dining-zone",
-        "gap": 0,
         "rules": [
           {
-            "id": "candidate-1",
+            "id": "dining-wall",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "dining-wall",
+            "side": "front",
+            "crossAlign": "center",
+            "crossOffset": 0,
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 28,
+            "weight": 1.7,
+            "collisionClearance": 0,
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
+          },
+          {
+            "id": "dining-zone",
             "enabled": true,
             "mode": "zone",
             "rotations": [
@@ -4447,6 +4850,7 @@
             "relation": "dining-zone",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -4455,9 +4859,9 @@
             "facing": [
               "parallel"
             ],
-            "maxSamples": 12,
-            "weight": 1,
-            "collisionClearance": 0.025,
+            "maxSamples": 20,
+            "weight": 1.25,
+            "collisionClearance": 0,
             "allowFunctionalOverlap": false,
             "referenceShapePolicy": {
               "lShape": {
@@ -4471,12 +4875,20 @@
             "avoidChaiseSide": false
           }
         ],
+        "maxCandidates": 44,
         "ruleListVersion": 2,
-        "maxCandidates": 32,
-        "id": "candidate-1",
+        "id": "dining-wall",
         "enabled": true,
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "dining-wall",
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -4485,9 +4897,9 @@
         "facing": [
           "parallel"
         ],
-        "maxSamples": 12,
-        "weight": 1,
-        "collisionClearance": 0.025,
+        "maxSamples": 28,
+        "weight": 1.7,
+        "collisionClearance": 0,
         "allowFunctionalOverlap": false,
         "referenceShapePolicy": {
           "lShape": {
@@ -4503,7 +4915,7 @@
       "placement": {
         "requiredAnchor": "none",
         "avoidWindow": false,
-        "allowCorner": false
+        "allowCorner": true
       },
       "service": {
         "sharedCirculation": false,
@@ -4579,6 +4991,7 @@
             "relation": "dining-seat",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -4614,6 +5027,7 @@
             "relation": "dining-seat",
             "side": "back",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -4649,6 +5063,7 @@
             "relation": "dining-seat",
             "side": "left",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -4684,6 +5099,7 @@
             "relation": "dining-seat",
             "side": "right",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -4721,6 +5137,7 @@
         "relation": "dining-seat",
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -4831,6 +5248,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -4861,6 +5279,7 @@
         "enabled": true,
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -4979,6 +5398,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -5009,6 +5429,7 @@
         "enabled": true,
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -5127,6 +5548,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -5157,6 +5579,7 @@
         "enabled": true,
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -5275,6 +5698,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -5305,6 +5729,7 @@
         "enabled": true,
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -5415,6 +5840,7 @@
             "relation": "seat-light",
             "side": "left",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0.04,
               "max": 0.18,
@@ -5450,6 +5876,7 @@
             "relation": "seat-light",
             "side": "right",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0.04,
               "max": 0.18,
@@ -5485,6 +5912,7 @@
             "relation": "seat-light",
             "side": "left",
             "crossAlign": "front",
+            "crossOffset": 0,
             "distance": {
               "min": 0.04,
               "max": 0.18,
@@ -5520,6 +5948,7 @@
             "relation": "seat-light",
             "side": "right",
             "crossAlign": "front",
+            "crossOffset": 0,
             "distance": {
               "min": 0.04,
               "max": 0.18,
@@ -5557,6 +5986,7 @@
         "relation": "seat-light",
         "side": "left",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0.04,
           "max": 0.18,
@@ -5667,6 +6097,7 @@
             "relation": "corner-accent",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -5697,6 +6128,7 @@
         "enabled": true,
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -5784,6 +6216,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -5814,6 +6247,7 @@
         "enabled": true,
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -5924,6 +6358,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -5954,6 +6389,7 @@
         "enabled": true,
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -6014,8 +6450,8 @@
       "wardrobe",
       "desk",
       "chair",
-      "bench",
       "tvbench",
+      "bench",
       "bedroomLoveseat",
       "bedroomTeaTable",
       "chest",
@@ -6030,11 +6466,11 @@
       "sofa",
       "tv",
       "coffee",
+      "diningTable",
+      "diningChair",
       "arm",
       "side",
       "floorLamp",
-      "diningTable",
-      "diningChair",
       "sideboard",
       "bookcase",
       "display",
@@ -6122,7 +6558,7 @@
         "max": 1,
         "defaultCount": 0,
         "weight": 1,
-        "priority": 60
+        "priority": 70
       },
       "chest": {
         "min": 0,
@@ -6142,8 +6578,8 @@
         "min": 0,
         "max": 1,
         "defaultCount": 0,
-        "weight": 1,
-        "priority": 70
+        "weight": 1.65,
+        "priority": 60
       },
       "lounge": {
         "min": 0,
@@ -6187,14 +6623,14 @@
         "max": 4,
         "defaultCount": 2,
         "weight": 1,
-        "priority": 40
+        "priority": 60
       },
       "side": {
         "min": 0,
         "max": 2,
         "defaultCount": 1,
         "weight": 1,
-        "priority": 50
+        "priority": 70
       },
       "ottoman": {
         "min": 0,
@@ -6207,15 +6643,15 @@
         "min": 0,
         "max": 1,
         "defaultCount": 0,
-        "weight": 1,
-        "priority": 70
+        "weight": 1.5,
+        "priority": 40
       },
       "diningChair": {
         "min": 0,
         "max": 6,
         "defaultCount": 0,
         "weight": 1,
-        "priority": 80
+        "priority": 50
       },
       "sideboard": {
         "min": 0,
@@ -6250,7 +6686,7 @@
         "max": 2,
         "defaultCount": 1,
         "weight": 1,
-        "priority": 60
+        "priority": 80
       },
       "plant": {
         "min": 0,
@@ -6337,6 +6773,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -6372,6 +6809,7 @@
             "relation": "wall-end-corner",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -6409,6 +6847,7 @@
         "relation": "",
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -6511,6 +6950,7 @@
             "relation": "bed-side",
             "side": "left",
             "crossAlign": "back",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -6546,6 +6986,7 @@
             "relation": "bed-side",
             "side": "right",
             "crossAlign": "back",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -6583,6 +7024,7 @@
         "relation": "bed-side",
         "side": "left",
         "crossAlign": "back",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -6685,6 +7127,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -6722,6 +7165,7 @@
         "relation": "",
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -6847,6 +7291,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -6877,6 +7322,7 @@
         "enabled": true,
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -6981,6 +7427,7 @@
             "relation": "desk-front",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -7018,6 +7465,7 @@
         "relation": "desk-front",
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -7054,137 +7502,6 @@
         "spanExtra": 0,
         "hard": false,
         "allowBodyTypes": [],
-        "alignStart": false
-      },
-      "run": null,
-      "infill": false
-    },
-    {
-      "schemaVersion": 1,
-      "program": "bedroom",
-      "id": "bench",
-      "label": "床尾凳",
-      "category": "床组与座椅",
-      "role": "床尾辅助",
-      "color": "#6686a2",
-      "geometry": {
-        "width": 1.1,
-        "depth": 0.4,
-        "shape": "box",
-        "variants": [
-          {
-            "id": "bench-m1",
-            "label": "床尾凳 1号",
-            "width": 0.9,
-            "depth": 0.36,
-            "shape": "box"
-          },
-          {
-            "id": "bench-m2",
-            "label": "床尾凳 2号",
-            "width": 1.1,
-            "depth": 0.4,
-            "shape": "box"
-          },
-          {
-            "id": "bench-m3",
-            "label": "床尾凳 3号",
-            "width": 1.3,
-            "depth": 0.42,
-            "shape": "box"
-          }
-        ],
-        "searchVariants": true
-      },
-      "quantity": {
-        "min": 0,
-        "max": 1
-      },
-      "accessTarget": false,
-      "preferences": {
-        "defaultCount": 0,
-        "weight": 1,
-        "priority": 60
-      },
-      "candidate": {
-        "rules": [
-          {
-            "id": "bench-bed-foot-near",
-            "enabled": true,
-            "mode": "relation",
-            "rotations": [
-              0,
-              90
-            ],
-            "relativeTo": "bed",
-            "relation": "bed-foot",
-            "side": "front",
-            "crossAlign": "center",
-            "distance": {
-              "min": 0.1,
-              "max": 0.15,
-              "step": 0.05
-            },
-            "facing": [
-              "toward"
-            ],
-            "maxSamples": 4,
-            "weight": 1.42,
-            "collisionClearance": 0.025,
-            "allowFunctionalOverlap": true
-          }
-        ],
-        "maxCandidates": 4,
-        "ruleListVersion": 2,
-        "id": "bench-bed-foot-near",
-        "enabled": true,
-        "mode": "relation",
-        "rotations": [
-          0,
-          90
-        ],
-        "relativeTo": "bed",
-        "relation": "bed-foot",
-        "side": "front",
-        "crossAlign": "center",
-        "distance": {
-          "min": 0.1,
-          "max": 0.15,
-          "step": 0.05
-        },
-        "facing": [
-          "toward"
-        ],
-        "maxSamples": 4,
-        "weight": 1.42,
-        "collisionClearance": 0.025,
-        "allowFunctionalOverlap": true,
-        "referenceShapePolicy": {
-          "lShape": {
-            "enabled": null,
-            "lateralSide": null,
-            "frontAlign": null
-          }
-        },
-        "lShapeCrossAlign": null,
-        "excludeForLShape": null,
-        "avoidChaiseSide": null
-      },
-      "placement": {
-        "requiredAnchor": "none",
-        "avoidWindow": false,
-        "allowCorner": false
-      },
-      "service": {
-        "sharedCirculation": true,
-        "label": "床尾凳共享落脚区",
-        "side": "front",
-        "depth": 0.42,
-        "spanExtra": 0,
-        "hard": false,
-        "allowBodyTypes": [],
-        "adaptiveFootZone": true,
-        "adaptiveGapThreshold": 0.3,
         "alignStart": false
       },
       "run": null,
@@ -7234,8 +7551,8 @@
       "accessTarget": true,
       "preferences": {
         "defaultCount": 0,
-        "weight": 1,
-        "priority": 70
+        "weight": 1.65,
+        "priority": 60
       },
       "candidate": {
         "rules": [
@@ -7251,6 +7568,7 @@
             "relation": "bedroom-tv-bed-facing",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0.45,
               "max": 2.8,
@@ -7260,7 +7578,7 @@
               "toward"
             ],
             "maxSamples": 24,
-            "weight": 2.2,
+            "weight": 2.4,
             "collisionClearance": 0.025,
             "allowFunctionalOverlap": false,
             "referenceShapePolicy": {
@@ -7286,6 +7604,7 @@
             "relation": "bedroom-media-facing",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0.55,
               "max": 2.8,
@@ -7295,7 +7614,7 @@
               "toward"
             ],
             "maxSamples": 18,
-            "weight": 1.55,
+            "weight": 2.1,
             "collisionClearance": 0.025,
             "allowFunctionalOverlap": false,
             "referenceShapePolicy": {
@@ -7321,6 +7640,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -7330,7 +7650,7 @@
               "parallel"
             ],
             "maxSamples": 40,
-            "weight": 1,
+            "weight": 1.15,
             "collisionClearance": 0.025,
             "allowFunctionalOverlap": false,
             "referenceShapePolicy": {
@@ -7358,6 +7678,7 @@
         "relation": "bedroom-tv-bed-facing",
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0.45,
           "max": 2.8,
@@ -7367,7 +7688,7 @@
           "toward"
         ],
         "maxSamples": 24,
-        "weight": 2.2,
+        "weight": 2.4,
         "collisionClearance": 0.025,
         "allowFunctionalOverlap": false,
         "referenceShapePolicy": {
@@ -7405,6 +7726,221 @@
           0.9
         ]
       },
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "bench",
+      "label": "床尾凳",
+      "category": "床组与座椅",
+      "role": "床尾辅助",
+      "color": "#6686a2",
+      "geometry": {
+        "width": 1.1,
+        "depth": 0.4,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "bench-m1",
+            "label": "床尾凳 1号",
+            "width": 0.9,
+            "depth": 0.36,
+            "shape": "box"
+          },
+          {
+            "id": "bench-m2",
+            "label": "床尾凳 2号",
+            "width": 1.1,
+            "depth": 0.4,
+            "shape": "box"
+          },
+          {
+            "id": "bench-m3",
+            "label": "床尾凳 3号",
+            "width": 1.3,
+            "depth": 0.42,
+            "shape": "box"
+          }
+        ],
+        "searchVariants": true
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 70
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "bench-bed-foot-center",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "bed",
+            "relation": "bed-foot",
+            "side": "front",
+            "crossAlign": "center",
+            "crossOffset": 0,
+            "distance": {
+              "min": 0.1,
+              "max": 0.15,
+              "step": 0.05
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 4,
+            "weight": 1.42,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": true,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": null,
+                "lateralSide": null,
+                "frontAlign": null
+              }
+            },
+            "lShapeCrossAlign": null,
+            "excludeForLShape": null,
+            "avoidChaiseSide": null
+          },
+          {
+            "id": "bench-bed-foot-left",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "bed",
+            "relation": "bed-foot",
+            "side": "front",
+            "crossAlign": "left",
+            "crossOffset": -0.25,
+            "distance": {
+              "min": 0.08,
+              "max": 0.12,
+              "step": 0.05
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 4,
+            "weight": 1.5,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": true,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": null,
+                "lateralSide": null,
+                "frontAlign": null
+              }
+            },
+            "lShapeCrossAlign": null,
+            "excludeForLShape": null,
+            "avoidChaiseSide": null
+          },
+          {
+            "id": "bench-bed-foot-right",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "bed",
+            "relation": "bed-foot",
+            "side": "front",
+            "crossAlign": "right",
+            "crossOffset": 0.25,
+            "distance": {
+              "min": 0.08,
+              "max": 0.12,
+              "step": 0.05
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 4,
+            "weight": 1.5,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": true,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": null,
+                "lateralSide": null,
+                "frontAlign": null
+              }
+            },
+            "lShapeCrossAlign": null,
+            "excludeForLShape": null,
+            "avoidChaiseSide": null
+          }
+        ],
+        "maxCandidates": 12,
+        "ruleListVersion": 2,
+        "id": "bench-bed-foot-center",
+        "enabled": true,
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "bed",
+        "relation": "bed-foot",
+        "side": "front",
+        "crossAlign": "center",
+        "crossOffset": 0,
+        "distance": {
+          "min": 0.1,
+          "max": 0.15,
+          "step": 0.05
+        },
+        "facing": [
+          "toward"
+        ],
+        "maxSamples": 4,
+        "weight": 1.42,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": true,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": null,
+            "lateralSide": null,
+            "frontAlign": null
+          }
+        },
+        "lShapeCrossAlign": null,
+        "excludeForLShape": null,
+        "avoidChaiseSide": null
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "sharedCirculation": true,
+        "label": "床尾凳共享落脚区",
+        "side": "front",
+        "depth": 0.42,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "adaptiveFootZone": true,
+        "adaptiveGapThreshold": 0.3,
+        "alignStart": false
+      },
+      "run": null,
       "infill": false
     },
     {
@@ -7468,6 +8004,7 @@
             "relation": "bedroom-seat-media-facing",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0.55,
               "max": 2.8,
@@ -7503,6 +8040,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -7538,6 +8076,7 @@
             "relation": "bedroom-lounge-zone",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -7575,6 +8114,7 @@
         "relation": "bedroom-seat-media-facing",
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0.55,
           "max": 2.8,
@@ -7677,6 +8217,7 @@
             "relation": "lounge-table",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0.3,
               "max": 0.4,
@@ -7712,6 +8253,7 @@
             "relation": "lounge-table",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0.24,
               "max": 0.34,
@@ -7749,6 +8291,7 @@
         "relation": "lounge-table",
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0.3,
           "max": 0.4,
@@ -7859,6 +8402,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -7889,6 +8433,7 @@
         "enabled": true,
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -8007,6 +8552,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -8037,6 +8583,7 @@
         "enabled": true,
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -8147,6 +8694,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -8184,6 +8732,7 @@
         "relation": "",
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -8294,6 +8843,7 @@
             "relation": "reading-wall",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -8329,6 +8879,7 @@
             "relation": "reading-open-zone",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -8366,6 +8917,7 @@
         "relation": "reading-wall",
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -8476,6 +9028,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -8506,6 +9059,7 @@
         "enabled": true,
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -8610,6 +9164,7 @@
             "relation": "vanity-seat",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -8647,6 +9202,7 @@
         "relation": "vanity-seat",
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -8734,6 +9290,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -8764,6 +9321,7 @@
         "enabled": true,
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -8888,6 +9446,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -8923,6 +9482,7 @@
             "relation": "floating-sofa",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -8960,6 +9520,7 @@
         "relation": "",
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -9062,6 +9623,7 @@
             "relation": "sofa-facing",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 1.55,
               "max": 3.2,
@@ -9097,6 +9659,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -9134,6 +9697,7 @@
         "relation": "sofa-facing",
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 1.55,
           "max": 3.2,
@@ -9236,6 +9800,7 @@
             "relation": "sofa-front",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0.3,
               "max": 0.4,
@@ -9274,6 +9839,7 @@
         "relation": "sofa-front",
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0.3,
           "max": 0.4,
@@ -9308,6 +9874,432 @@
         "label": "茶几取用区",
         "side": "front",
         "depth": 0.6,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "diningTable",
+      "label": "餐桌",
+      "category": "客餐家具",
+      "role": "客餐厅用餐",
+      "color": "#8f704d",
+      "geometry": {
+        "width": 1.4,
+        "depth": 0.8,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "diningTable-m1",
+            "label": "餐桌 1号",
+            "width": 1.1,
+            "depth": 0.7,
+            "shape": "box"
+          },
+          {
+            "id": "diningTable-m2",
+            "label": "餐桌 2号",
+            "width": 1.4,
+            "depth": 0.8,
+            "shape": "box"
+          },
+          {
+            "id": "diningTable-m3",
+            "label": "餐桌 3号",
+            "width": 1.6,
+            "depth": 0.85,
+            "shape": "box"
+          }
+        ],
+        "searchVariants": true
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": true,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1.5,
+        "priority": 40
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "dining-wall",
+            "enabled": true,
+            "mode": "wall",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "dining-wall",
+            "side": "front",
+            "crossAlign": "center",
+            "crossOffset": 0,
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 28,
+            "weight": 1.7,
+            "collisionClearance": 0,
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
+          },
+          {
+            "id": "dining-zone",
+            "enabled": true,
+            "mode": "zone",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "dining-zone",
+            "side": "front",
+            "crossAlign": "center",
+            "crossOffset": 0,
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 20,
+            "weight": 1.25,
+            "collisionClearance": 0,
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
+          }
+        ],
+        "maxCandidates": 44,
+        "ruleListVersion": 2,
+        "id": "dining-wall",
+        "enabled": true,
+        "mode": "wall",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "dining-wall",
+        "side": "front",
+        "crossAlign": "center",
+        "crossOffset": 0,
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 28,
+        "weight": 1.7,
+        "collisionClearance": 0,
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": true
+      },
+      "service": {
+        "sharedCirculation": false,
+        "label": "餐桌使用区",
+        "side": "front",
+        "depth": 0.6,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
+      "program": "living",
+      "id": "diningChair",
+      "label": "餐椅",
+      "category": "客餐家具",
+      "role": "餐桌组",
+      "color": "#b08a64",
+      "geometry": {
+        "width": 0.46,
+        "depth": 0.5,
+        "shape": "box",
+        "variants": [
+          {
+            "id": "diningChair-m1",
+            "label": "餐椅 1号",
+            "width": 0.42,
+            "depth": 0.46,
+            "shape": "box"
+          },
+          {
+            "id": "diningChair-m2",
+            "label": "餐椅 2号",
+            "width": 0.46,
+            "depth": 0.5,
+            "shape": "box"
+          },
+          {
+            "id": "diningChair-m3",
+            "label": "餐椅 3号",
+            "width": 0.5,
+            "depth": 0.54,
+            "shape": "box"
+          }
+        ],
+        "searchVariants": true
+      },
+      "quantity": {
+        "min": 0,
+        "max": 6
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 0,
+        "weight": 1,
+        "priority": 50
+      },
+      "candidate": {
+        "rules": [
+          {
+            "id": "dining-front",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "diningTable",
+            "relation": "dining-seat",
+            "side": "front",
+            "crossAlign": "center",
+            "crossOffset": 0,
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.05
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 4,
+            "weight": 1,
+            "collisionClearance": 0,
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
+          },
+          {
+            "id": "dining-back",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "diningTable",
+            "relation": "dining-seat",
+            "side": "back",
+            "crossAlign": "center",
+            "crossOffset": 0,
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.05
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 4,
+            "weight": 1,
+            "collisionClearance": 0,
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
+          },
+          {
+            "id": "dining-left",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "diningTable",
+            "relation": "dining-seat",
+            "side": "left",
+            "crossAlign": "center",
+            "crossOffset": 0,
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.05
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 4,
+            "weight": 1,
+            "collisionClearance": 0,
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
+          },
+          {
+            "id": "dining-right",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "diningTable",
+            "relation": "dining-seat",
+            "side": "right",
+            "crossAlign": "center",
+            "crossOffset": 0,
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.05
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 4,
+            "weight": 1,
+            "collisionClearance": 0,
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
+          }
+        ],
+        "maxCandidates": 20,
+        "ruleListVersion": 2,
+        "id": "dining-front",
+        "enabled": true,
+        "mode": "relation",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "diningTable",
+        "relation": "dining-seat",
+        "side": "front",
+        "crossAlign": "center",
+        "crossOffset": 0,
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.05
+        },
+        "facing": [
+          "toward"
+        ],
+        "maxSamples": 4,
+        "weight": 1,
+        "collisionClearance": 0,
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "sharedCirculation": true,
+        "label": "餐椅后侧共享通行区",
+        "side": "back",
+        "depth": 0.5,
         "spanExtra": 0,
         "hard": false,
         "allowBodyTypes": [],
@@ -9361,10 +10353,82 @@
       "preferences": {
         "defaultCount": 2,
         "weight": 1,
-        "priority": 40
+        "priority": 60
       },
       "candidate": {
         "rules": [
+          {
+            "id": "arm-sofa-left",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "sofa",
+            "relation": "conversation-side",
+            "side": "left",
+            "crossAlign": "center",
+            "crossOffset": 0,
+            "distance": {
+              "min": 0.14,
+              "max": 0.34,
+              "step": 0.1
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 6,
+            "weight": 2.15,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": false,
+                "lateralSide": "any",
+                "frontAlign": "body-center"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": true,
+            "avoidChaiseSide": false
+          },
+          {
+            "id": "arm-sofa-right",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "sofa",
+            "relation": "conversation-side",
+            "side": "right",
+            "crossAlign": "center",
+            "crossOffset": 0,
+            "distance": {
+              "min": 0.14,
+              "max": 0.34,
+              "step": 0.1
+            },
+            "facing": [
+              "toward"
+            ],
+            "maxSamples": 6,
+            "weight": 2.15,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": false,
+                "lateralSide": "any",
+                "frontAlign": "body-center"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": true,
+            "avoidChaiseSide": false
+          },
           {
             "id": "arm-sofa-opposite",
             "enabled": true,
@@ -9377,6 +10441,7 @@
             "relation": "conversation-opposite",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0.7,
               "max": 1.3,
@@ -9386,7 +10451,7 @@
               "toward"
             ],
             "maxSamples": 8,
-            "weight": 1.2,
+            "weight": 1.35,
             "collisionClearance": 0.025,
             "allowFunctionalOverlap": false,
             "referenceShapePolicy": {
@@ -9412,6 +10477,7 @@
             "relation": "sofa-side-chair-chain",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0.04,
               "max": 0.16,
@@ -9452,6 +10518,7 @@
             "relation": "conversation-open-zone",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -9460,8 +10527,8 @@
             "facing": [
               "parallel"
             ],
-            "maxSamples": 16,
-            "weight": 1.05,
+            "maxSamples": 12,
+            "weight": 0.72,
             "collisionClearance": 0.025,
             "allowFunctionalOverlap": false,
             "referenceShapePolicy": {
@@ -9487,6 +10554,7 @@
             "relation": "conversation-wall",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -9495,8 +10563,8 @@
             "facing": [
               "parallel"
             ],
-            "maxSamples": 16,
-            "weight": 0.92,
+            "maxSamples": 12,
+            "weight": 0.68,
             "collisionClearance": 0.025,
             "allowFunctionalOverlap": false,
             "referenceShapePolicy": {
@@ -9511,9 +10579,9 @@
             "avoidChaiseSide": false
           }
         ],
-        "maxCandidates": 36,
+        "maxCandidates": 42,
         "ruleListVersion": 2,
-        "id": "arm-sofa-opposite",
+        "id": "arm-sofa-left",
         "enabled": true,
         "mode": "relation",
         "rotations": [
@@ -9521,19 +10589,20 @@
           90
         ],
         "relativeTo": "sofa",
-        "relation": "conversation-opposite",
-        "side": "front",
+        "relation": "conversation-side",
+        "side": "left",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
-          "min": 0.7,
-          "max": 1.3,
-          "step": 0.2
+          "min": 0.14,
+          "max": 0.34,
+          "step": 0.1
         },
         "facing": [
           "toward"
         ],
-        "maxSamples": 8,
-        "weight": 1.2,
+        "maxSamples": 6,
+        "weight": 2.15,
         "collisionClearance": 0.025,
         "allowFunctionalOverlap": false,
         "referenceShapePolicy": {
@@ -9610,7 +10679,7 @@
       "preferences": {
         "defaultCount": 1,
         "weight": 1,
-        "priority": 50
+        "priority": 70
       },
       "candidate": {
         "mode": "relation",
@@ -9634,6 +10703,7 @@
             "relation": "sofa-side",
             "side": "left",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0.07,
               "max": 0.07,
@@ -9669,6 +10739,7 @@
             "relation": "sofa-side",
             "side": "right",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0.07,
               "max": 0.07,
@@ -9699,6 +10770,7 @@
         "enabled": true,
         "side": "left",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0.07,
           "max": 0.07,
@@ -9785,7 +10857,7 @@
       "preferences": {
         "defaultCount": 1,
         "weight": 1,
-        "priority": 60
+        "priority": 80
       },
       "candidate": {
         "rules": [
@@ -9801,6 +10873,7 @@
             "relation": "seat-light",
             "side": "left",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0.04,
               "max": 0.18,
@@ -9836,6 +10909,7 @@
             "relation": "seat-light",
             "side": "right",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0.04,
               "max": 0.18,
@@ -9871,6 +10945,7 @@
             "relation": "seat-light",
             "side": "left",
             "crossAlign": "front",
+            "crossOffset": 0,
             "distance": {
               "min": 0.04,
               "max": 0.18,
@@ -9906,6 +10981,7 @@
             "relation": "seat-light",
             "side": "right",
             "crossAlign": "front",
+            "crossOffset": 0,
             "distance": {
               "min": 0.04,
               "max": 0.18,
@@ -9943,6 +11019,7 @@
         "relation": "seat-light",
         "side": "left",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0.04,
           "max": 0.18,
@@ -9976,390 +11053,6 @@
         "label": "灯具维护区",
         "side": "front",
         "depth": 0.3,
-        "spanExtra": 0,
-        "hard": false,
-        "allowBodyTypes": [],
-        "alignStart": false
-      },
-      "run": null,
-      "infill": false
-    },
-    {
-      "schemaVersion": 1,
-      "program": "living",
-      "id": "diningTable",
-      "label": "餐桌",
-      "category": "客餐家具",
-      "role": "客餐厅用餐",
-      "color": "#8f704d",
-      "geometry": {
-        "width": 1.4,
-        "depth": 0.8,
-        "shape": "box",
-        "variants": [
-          {
-            "id": "diningTable-m1",
-            "label": "餐桌 1号",
-            "width": 1.1,
-            "depth": 0.7,
-            "shape": "box"
-          },
-          {
-            "id": "diningTable-m2",
-            "label": "餐桌 2号",
-            "width": 1.4,
-            "depth": 0.8,
-            "shape": "box"
-          },
-          {
-            "id": "diningTable-m3",
-            "label": "餐桌 3号",
-            "width": 1.6,
-            "depth": 0.85,
-            "shape": "box"
-          }
-        ],
-        "searchVariants": true
-      },
-      "quantity": {
-        "min": 0,
-        "max": 1
-      },
-      "accessTarget": true,
-      "preferences": {
-        "defaultCount": 0,
-        "weight": 1,
-        "priority": 70
-      },
-      "candidate": {
-        "mode": "zone",
-        "rotations": [
-          0,
-          90
-        ],
-        "relativeTo": "",
-        "relation": "dining-zone",
-        "gap": 0,
-        "rules": [
-          {
-            "id": "candidate-1",
-            "enabled": true,
-            "mode": "zone",
-            "rotations": [
-              0,
-              90
-            ],
-            "relativeTo": "",
-            "relation": "dining-zone",
-            "side": "front",
-            "crossAlign": "center",
-            "distance": {
-              "min": 0,
-              "max": 0,
-              "step": 0.2
-            },
-            "facing": [
-              "parallel"
-            ],
-            "maxSamples": 12,
-            "weight": 1,
-            "collisionClearance": 0.025,
-            "allowFunctionalOverlap": false,
-            "referenceShapePolicy": {
-              "lShape": {
-                "enabled": true,
-                "lateralSide": "any",
-                "frontAlign": "bbox"
-              }
-            },
-            "lShapeCrossAlign": "bbox",
-            "excludeForLShape": false,
-            "avoidChaiseSide": false
-          }
-        ],
-        "ruleListVersion": 2,
-        "maxCandidates": 32,
-        "id": "candidate-1",
-        "enabled": true,
-        "side": "front",
-        "crossAlign": "center",
-        "distance": {
-          "min": 0,
-          "max": 0,
-          "step": 0.2
-        },
-        "facing": [
-          "parallel"
-        ],
-        "maxSamples": 12,
-        "weight": 1,
-        "collisionClearance": 0.025,
-        "allowFunctionalOverlap": false,
-        "referenceShapePolicy": {
-          "lShape": {
-            "enabled": true,
-            "lateralSide": "any",
-            "frontAlign": "bbox"
-          }
-        },
-        "lShapeCrossAlign": "bbox",
-        "excludeForLShape": false,
-        "avoidChaiseSide": false
-      },
-      "placement": {
-        "requiredAnchor": "none",
-        "avoidWindow": false,
-        "allowCorner": false
-      },
-      "service": {
-        "sharedCirculation": false,
-        "label": "餐桌使用区",
-        "side": "front",
-        "depth": 0.6,
-        "spanExtra": 0,
-        "hard": false,
-        "allowBodyTypes": [],
-        "alignStart": false
-      },
-      "run": null,
-      "infill": false
-    },
-    {
-      "schemaVersion": 1,
-      "program": "living",
-      "id": "diningChair",
-      "label": "餐椅",
-      "category": "客餐家具",
-      "role": "餐桌组",
-      "color": "#b08a64",
-      "geometry": {
-        "width": 0.46,
-        "depth": 0.5,
-        "shape": "box",
-        "variants": [
-          {
-            "id": "diningChair-m1",
-            "label": "餐椅 1号",
-            "width": 0.42,
-            "depth": 0.46,
-            "shape": "box"
-          },
-          {
-            "id": "diningChair-m2",
-            "label": "餐椅 2号",
-            "width": 0.46,
-            "depth": 0.5,
-            "shape": "box"
-          },
-          {
-            "id": "diningChair-m3",
-            "label": "餐椅 3号",
-            "width": 0.5,
-            "depth": 0.54,
-            "shape": "box"
-          }
-        ],
-        "searchVariants": true
-      },
-      "quantity": {
-        "min": 0,
-        "max": 6
-      },
-      "accessTarget": false,
-      "preferences": {
-        "defaultCount": 0,
-        "weight": 1,
-        "priority": 80
-      },
-      "candidate": {
-        "rules": [
-          {
-            "id": "dining-front",
-            "enabled": true,
-            "mode": "relation",
-            "rotations": [
-              0,
-              90
-            ],
-            "relativeTo": "diningTable",
-            "relation": "dining-seat",
-            "side": "front",
-            "crossAlign": "center",
-            "distance": {
-              "min": 0,
-              "max": 0,
-              "step": 0.05
-            },
-            "facing": [
-              "toward"
-            ],
-            "maxSamples": 4,
-            "weight": 1,
-            "collisionClearance": 0,
-            "allowFunctionalOverlap": false,
-            "referenceShapePolicy": {
-              "lShape": {
-                "enabled": true,
-                "lateralSide": "any",
-                "frontAlign": "bbox"
-              }
-            },
-            "lShapeCrossAlign": "bbox",
-            "excludeForLShape": false,
-            "avoidChaiseSide": false
-          },
-          {
-            "id": "dining-back",
-            "enabled": true,
-            "mode": "relation",
-            "rotations": [
-              0,
-              90
-            ],
-            "relativeTo": "diningTable",
-            "relation": "dining-seat",
-            "side": "back",
-            "crossAlign": "center",
-            "distance": {
-              "min": 0,
-              "max": 0,
-              "step": 0.05
-            },
-            "facing": [
-              "toward"
-            ],
-            "maxSamples": 4,
-            "weight": 1,
-            "collisionClearance": 0,
-            "allowFunctionalOverlap": false,
-            "referenceShapePolicy": {
-              "lShape": {
-                "enabled": true,
-                "lateralSide": "any",
-                "frontAlign": "bbox"
-              }
-            },
-            "lShapeCrossAlign": "bbox",
-            "excludeForLShape": false,
-            "avoidChaiseSide": false
-          },
-          {
-            "id": "dining-left",
-            "enabled": true,
-            "mode": "relation",
-            "rotations": [
-              0,
-              90
-            ],
-            "relativeTo": "diningTable",
-            "relation": "dining-seat",
-            "side": "left",
-            "crossAlign": "center",
-            "distance": {
-              "min": 0,
-              "max": 0,
-              "step": 0.05
-            },
-            "facing": [
-              "toward"
-            ],
-            "maxSamples": 4,
-            "weight": 1,
-            "collisionClearance": 0,
-            "allowFunctionalOverlap": false,
-            "referenceShapePolicy": {
-              "lShape": {
-                "enabled": true,
-                "lateralSide": "any",
-                "frontAlign": "bbox"
-              }
-            },
-            "lShapeCrossAlign": "bbox",
-            "excludeForLShape": false,
-            "avoidChaiseSide": false
-          },
-          {
-            "id": "dining-right",
-            "enabled": true,
-            "mode": "relation",
-            "rotations": [
-              0,
-              90
-            ],
-            "relativeTo": "diningTable",
-            "relation": "dining-seat",
-            "side": "right",
-            "crossAlign": "center",
-            "distance": {
-              "min": 0,
-              "max": 0,
-              "step": 0.05
-            },
-            "facing": [
-              "toward"
-            ],
-            "maxSamples": 4,
-            "weight": 1,
-            "collisionClearance": 0,
-            "allowFunctionalOverlap": false,
-            "referenceShapePolicy": {
-              "lShape": {
-                "enabled": true,
-                "lateralSide": "any",
-                "frontAlign": "bbox"
-              }
-            },
-            "lShapeCrossAlign": "bbox",
-            "excludeForLShape": false,
-            "avoidChaiseSide": false
-          }
-        ],
-        "maxCandidates": 20,
-        "ruleListVersion": 2,
-        "id": "dining-front",
-        "enabled": true,
-        "mode": "relation",
-        "rotations": [
-          0,
-          90
-        ],
-        "relativeTo": "diningTable",
-        "relation": "dining-seat",
-        "side": "front",
-        "crossAlign": "center",
-        "distance": {
-          "min": 0,
-          "max": 0,
-          "step": 0.05
-        },
-        "facing": [
-          "toward"
-        ],
-        "maxSamples": 4,
-        "weight": 1,
-        "collisionClearance": 0,
-        "allowFunctionalOverlap": false,
-        "referenceShapePolicy": {
-          "lShape": {
-            "enabled": true,
-            "lateralSide": "any",
-            "frontAlign": "bbox"
-          }
-        },
-        "lShapeCrossAlign": "bbox",
-        "excludeForLShape": false,
-        "avoidChaiseSide": false
-      },
-      "placement": {
-        "requiredAnchor": "none",
-        "avoidWindow": false,
-        "allowCorner": false
-      },
-      "service": {
-        "sharedCirculation": true,
-        "label": "餐椅后侧共享通行区",
-        "side": "back",
-        "depth": 0.5,
         "spanExtra": 0,
         "hard": false,
         "allowBodyTypes": [],
@@ -10437,6 +11130,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -10467,6 +11161,7 @@
         "enabled": true,
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -10585,6 +11280,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -10615,6 +11311,7 @@
         "enabled": true,
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -10733,6 +11430,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -10763,6 +11461,7 @@
         "enabled": true,
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -10881,6 +11580,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -10911,6 +11611,7 @@
         "enabled": true,
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -11029,6 +11730,7 @@
             "relation": "seat-ottoman",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0.34,
               "max": 0.34,
@@ -11059,6 +11761,7 @@
         "enabled": true,
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0.34,
           "max": 0.34,
@@ -11169,6 +11872,7 @@
             "relation": "corner-accent",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -11199,6 +11903,7 @@
         "enabled": true,
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -11286,6 +11991,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -11316,6 +12022,7 @@
         "enabled": true,
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
@@ -11426,6 +12133,7 @@
             "relation": "",
             "side": "front",
             "crossAlign": "center",
+            "crossOffset": 0,
             "distance": {
               "min": 0,
               "max": 0,
@@ -11456,6 +12164,7 @@
         "enabled": true,
         "side": "front",
         "crossAlign": "center",
+        "crossOffset": 0,
         "distance": {
           "min": 0,
           "max": 0,
