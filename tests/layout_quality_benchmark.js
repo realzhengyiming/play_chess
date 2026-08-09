@@ -47,12 +47,14 @@ setTimeout(() => {
     const ground = diagnostics.ground || {};
     const wall = diagnostics.wallDetails || {};
     const modules = diagnostics.modules || {};
+    const sizePolicy = diagnostics.sizePolicy || {};
     const placedIds=Object.keys(solution.poses||{}),decor=solution.decorItems||[];
     return {
       case: `${programId}/${shape}/${width}x${depth}`,
       milliseconds: rounded(result.totalTimeMs),
       attempts: result.attempts,
       nodes: result.totalNodes,
+      anchors: result.scene.compiledAnchors?.length ?? 0,
       placed: Object.keys(solution.poses || {}).length,
       total: solution.evaluation.total,
       qualityPass: Boolean(solution.evaluation.qualityPass),
@@ -81,6 +83,8 @@ setTimeout(() => {
         diningChairs:placedIds.filter(id=>id.startsWith('diningChair')).length,
         diningWall:solution.poses?.diningTable?.candidateRuleId==='dining-wall',
         diningWidth:rounded(solution.poses?.diningTable?.overrideW),
+        deskWidth:rounded(solution.poses?.desk?.overrideW),
+        deskTarget:rounded(sizePolicy.details?.find(row=>row.typeId==='desk')?.targetWidth),
         elevatedDecor:decor.filter(row=>!['rug','postDisplayCabinet'].includes(row.kind)).map(row=>row.kind),
       },
       ...(process.argv.includes('--debug') ? {
@@ -116,11 +120,13 @@ setTimeout(() => {
     if (grandLiving && grandLiving.modules < 85) failures.push(grandLiving);
     const compactBedroom=rows.find(row=>row.case==='bedroom/rect/3.4x3.6');
     if(compactBedroom&&!compactBedroom.regression.hasBench)failures.push(compactBedroom);
+    if(compactBedroom&&(compactBedroom.regression.deskWidth??0)<1.2)failures.push(compactBedroom);
     const mediaBedroom=rows.find(row=>row.case==='bedroom/rect/3.6x3.8');
     if(mediaBedroom&&!mediaBedroom.regression.hasTvbench)failures.push(mediaBedroom);
     const compactDining=rows.find(row=>row.case==='living/rect/4.8x4.2');
     if(compactDining&&(!compactDining.regression.hasArm||!compactDining.regression.hasDiningTable||compactDining.regression.diningChairs<1||!compactDining.regression.diningWall))failures.push(compactDining);
     if(grandLiving&&(grandLiving.regression.diningWidth??0)<1.6)failures.push(grandLiving);
+    for(const row of rows)if(row.anchors>140)failures.push(row);
     for(const row of rows)if(row.regression.elevatedDecor.length)failures.push(row);
     if (failures.length) throw new Error(`质量基准失败：${[...new Set(failures.map(row => row.case))].join(', ')}`);
   }

@@ -51,7 +51,7 @@ setTimeout(() => {
       });
       if (!solution) {
         failures.push(`${label}: 无方案`);
-        rows.push({room:label, area:+room.area.toFixed(1), ms:+result.totalTimeMs.toFixed(1), attempts:result.attempts, nodes:result.totalNodes, placed:0, score:'-', ground:'-', wall:'-', relation:'-', path:'-', emptyWall:'-', wallGaps:'-', quality:'-', doors:actualDoorTypes.join('|'), connected:'-', islandM2:'-'});
+        rows.push({room:label, area:+room.area.toFixed(1), ms:+result.totalTimeMs.toFixed(1), attempts:result.attempts, nodes:result.totalNodes, anchors:result.scene.compiledAnchors?.length??0, placed:0, score:'-', ground:'-', wall:'-', relation:'-', path:'-', emptyWall:'-', wallGaps:'-', quality:'-', doors:actualDoorTypes.join('|'), connected:'-', islandM2:'-'});
         return;
       }
       const reach = solution.evaluation.reach || engine.computeReachability(solution, result.scene, [engine.FLOW_RADII[0]]);
@@ -60,6 +60,7 @@ setTimeout(() => {
       const breakdown=engine.traceEvaluationBreakdown(solution.evaluation);
       const deskPose=solution.poses?.desk,deskWindowDistance=deskPose&&result.scene.window?.mid
         ?Math.hypot(deskPose.x-result.scene.window.mid.x,deskPose.y-result.scene.window.mid.y):null;
+      const deskWidth=deskPose?(deskPose.overrideW||engine.getFurniture().find(item=>item.id==='desk')?.w||0):null;
       const itemById=new Map(engine.getFurniture().map(item=>[item.id,item]));
       const placedTypeCount=typeId=>Object.keys(solution.poses||{}).filter(id=>itemById.get(id)?.typeId===typeId).length;
       const elevatedDecor=(solution.decorItems||[]).filter(row=>!['rug','postDisplayCabinet'].includes(row.kind));
@@ -67,8 +68,8 @@ setTimeout(() => {
       const roomAspect=Math.max(room.width/Math.max(room.depth,.001),room.depth/Math.max(room.width,.001));
       const hotelBedroom=programId==='bedroom'&&room.area>=15&&roomAspect>=1.65;
       rows.push({
-        room:label, area:+room.area.toFixed(1), ms:+result.totalTimeMs.toFixed(1), attempts:result.attempts, nodes:result.totalNodes, placed,
-        score:solution.evaluation.total, daylight:breakdown.daylight, deskWin:deskWindowDistance==null?'-':+deskWindowDistance.toFixed(2),
+        room:label, area:+room.area.toFixed(1), ms:+result.totalTimeMs.toFixed(1), attempts:result.attempts, nodes:result.totalNodes, anchors:result.scene.compiledAnchors?.length??0, placed,
+        score:solution.evaluation.total, daylight:breakdown.daylight, deskW:deskWidth==null?'-':+deskWidth.toFixed(2), deskWin:deskWindowDistance==null?'-':+deskWindowDistance.toFixed(2),
         ground:breakdown.ground, wall:breakdown.wall, relation:breakdown.relation, path:breakdown.circulation,
         emptyWall:breakdown.emptyWall, wallGaps:`${breakdown.severeWallGaps}/${breakdown.awkwardWallGaps}`,
         quality:solution.evaluation.qualityPass ? 'pass' : Object.entries(solution.evaluation.scores).filter(([key, value]) => ({modules:solution.evaluation.diagnostics.requiredModuleScore,circulation:55,relation:62,composition:50,storage:50,ground:58,comfort:50,preference:45}[key] ?? -Infinity) > value).map(([key, value]) => `${key}:${value}`).join(','),
@@ -76,6 +77,8 @@ setTimeout(() => {
       });
       if (!solution.evaluation.qualityPass) qualityWarnings.push(`${label}: 未通过质量门槛`);
       if(programId==='bedroom'&&room.area>=15&&deskWindowDistance!=null&&deskWindowDistance>2.3)failures.push(`${label}: 书桌距窗 ${deskWindowDistance.toFixed(2)}m，超过 2.30m`);
+      if(programId==='bedroom'&&room.area>=20&&(deskWidth??0)<1.6)failures.push(`${label}: 20㎡以上卧室仍使用 ${(deskWidth||0).toFixed(2)}m 小书桌，未优先 1.60m 大模数`);
+      if((result.scene.compiledAnchors?.length??0)>140)failures.push(`${label}: 语义锚点 ${result.scene.compiledAnchors.length} 个，超过固定预算 140`);
       if(hotelBedroom&&placedTypeCount('tvbench')<1)failures.push(`${label}: 长条卧室缺少酒店式床尾电视柜`);
       if(hotelBedroom&&placedTypeCount('bedroomLoveseat')<1)failures.push(`${label}: 长条卧室明明可行却未挑战正式小沙发`);
       if(hotelBedroom){
@@ -97,7 +100,7 @@ setTimeout(() => {
       if(programId==='bedroom'&&room.area>=10&&room.area<12&&(placedTypeCount('desk')<1||placedTypeCount('chair')<1))failures.push(`${label}: 10–12㎡卧室仍缺少紧凑书桌椅组`);
       if(elevatedDecor.length)failures.push(`${label}: 仍生成非落地陈设 ${elevatedDecor.map(row=>row.kind).join('|')}`);
       if (assertSpeed && result.totalTimeMs > 2000) failures.push(`${label}: 搜索 ${result.totalTimeMs.toFixed(0)}ms，超过 2s 目标`);
-      if (verbose) console.dir({label, plans:result.plans, trials:result.trials, scores:solution.evaluation.scores, diagnostics:solution.evaluation.diagnostics, poses:Object.keys(solution.poses), decor:(solution.decorItems||[]).map(row=>({kind:row.kind,label:row.label}))}, {depth:5});
+      if (verbose) console.dir({label, plans:result.plans, trials:result.trials, alternatives:(result.probe?.solutions||[]).map(row=>({total:row.evaluation.total,qualityPass:row.evaluation.qualityPass,placed:Object.keys(row.poses||{}).length,deskW:row.poses?.desk?.overrideW,sizePolicy:row.evaluation.diagnostics?.sizePolicy})), scores:solution.evaluation.scores, diagnostics:solution.evaluation.diagnostics, poses:Object.keys(solution.poses), decor:(solution.decorItems||[]).map(row=>({kind:row.kind,label:row.label}))}, {depth:5});
       if (!reach.hardPass) failures.push(`${label}: 存在不可达家具或孤岛`);
       if (islandArea > .08) failures.push(`${label}: 孤岛面积 ${islandArea.toFixed(2)}㎡`);
       if (reach.minimumPassage < .5) failures.push(`${label}: 最小通路低于 0.50m`);

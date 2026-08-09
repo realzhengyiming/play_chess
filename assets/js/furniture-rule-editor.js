@@ -3,7 +3,7 @@
     // 配置只保存在 FastAPI 的唯一全局文件中；浏览器不再读写 cookie/localStorage。
     const ENABLE_LOCAL_CONFIG_PERSISTENCE=false;
     const GLOBAL_CONFIG_API='/api/furniture-config';
-    const BASELINE_VERSION=13;
+    const BASELINE_VERSION=14;
     const STORAGE_KEY='room-chess-furniture-rule-catalog-v1';
     const PROFILE_STORAGE_KEY='room-chess-furniture-rule-profiles-v1';
     const ACTIVE_PROFILE_KEY='room-chess-furniture-rule-active-profile-v1';
@@ -68,6 +68,11 @@
       },
       search:{
         defaultBeamWidth:120,matrixGridStep:.12,skipBranchReserveRatio:.20,preserveQuantityCounts:true,preserveEachFurnitureType:true,representativesPerFurnitureType:8,typeSignatureReserve:24,
+        semanticSampling:{wall:{uniformStep:.36,maxUniformPositions:9,largeRoomArea:28,largeMaxUniformPositions:4,previewLimit:140}},
+        sizePolicies:{
+          bedroom:{desk:{mode:'max-feasible',targetByArea:[{minArea:0,width:.9},{minArea:10,width:1.2},{minArea:16,width:1.4},{minArea:20,width:1.6}],searchMaxByArea:[{minArea:0,width:1.4},{minArea:16,width:1.8},{minArea:22,width:2}],dependentTypes:['chair'],repairCandidateLimit:12,positionBuckets:10,anchorTolerance:.08,fallbacksPerAnchor:1,localPriorityBonus:22,finalPriority:true,maxTotalTradeoff:8}},
+          living:{}
+        },
         orderByShape:{recognized:{living:['sofa','tv','coffee','arm','side','diningTable','diningChair','ottoman','sideboard','bookcase','display','console','floorLamp','plant','infillCabinet']}},
         orderByArea:{
           bedroom:[{minArea:0,types:['bed','night','wardrobe','desk','chair','tvbench','bench','bedroomLoveseat','bedroomTeaTable','chest','shelf','bedroomDisplay','lounge','vanity','vanityStool','bedroomInfillCabinet']}],
@@ -342,6 +347,10 @@
       if(circulation?.requireZeroIslands!==true)errors.push('requireZeroIslands 必须为 true');
       if(modes?.rich?.enabled!==true||modes?.airy?.enabled!==false||modes?.standard?.enabled!==false)errors.push('当前阶段只允许 rich，airy / standard 必须停用');
       if(!layout?.search||!layout?.postLayout||!layout?.inventory||!layout?.qualityPass||!layout?.designGrammar)errors.push('layoutConstraints 缺少 search / postLayout / inventory / qualityPass / designGrammar');
+      if(!(Number(layout?.search?.semanticSampling?.wall?.maxUniformPositions)>0))errors.push('search.semanticSampling.wall.maxUniformPositions 必须为正数');
+      const deskSizePolicy=layout?.search?.sizePolicies?.bedroom?.desk;
+      if(!deskSizePolicy)errors.push('search.sizePolicies.bedroom.desk 不能为空');
+      else if(!Array.isArray(deskSizePolicy.targetByArea)||!deskSizePolicy.targetByArea.length||!Array.isArray(deskSizePolicy.searchMaxByArea)||!deskSizePolicy.searchMaxByArea.length||!(Number(deskSizePolicy.repairCandidateLimit)>0))errors.push('书桌模数策略缺少面积目标、搜索上限或末轮候选预算');
       return errors;
     }
     function renderGlobalConstraints(){

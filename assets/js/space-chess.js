@@ -105,6 +105,10 @@
         if(!Array.isArray(value?.circulation?.searchChecks?.[key]?.[programId]))errors.push(`缺少 circulation.searchChecks.${key}.${programId}`);
       }
       if(!value?.densityModes?.rich)errors.push('缺少 densityModes.rich');
+      if(!(Number(value?.search?.semanticSampling?.wall?.maxUniformPositions)>0))errors.push('search.semanticSampling.wall.maxUniformPositions 必须为正数');
+      const deskSizePolicy=value?.search?.sizePolicies?.bedroom?.desk;
+      if(!deskSizePolicy)errors.push('缺少 search.sizePolicies.bedroom.desk');
+      else if(!Array.isArray(deskSizePolicy.targetByArea)||!deskSizePolicy.targetByArea.length||!Array.isArray(deskSizePolicy.searchMaxByArea)||!deskSizePolicy.searchMaxByArea.length||!(Number(deskSizePolicy.repairCandidateLimit)>0))errors.push('书桌模数策略不完整');
       for(const programId of ['bedroom','living']){
         if(!Array.isArray(value?.inventory?.roomAreaModules?.[programId])||!value.inventory.roomAreaModules[programId].length)errors.push(`缺少 inventory.roomAreaModules.${programId}`);
         if(!Array.isArray(value?.inventory?.richMinimum?.[programId])||!value.inventory.richMinimum[programId].length)errors.push(`缺少 inventory.richMinimum.${programId}`);
@@ -673,7 +677,9 @@
         const normalDepth = item.d;
         const margin = span/2;
         const available=Math.max(0,wall.length-margin*2);
-        const slots=Math.max(1,Math.ceil(available/.36));
+        const sampling=LAYOUT_CONSTRAINTS.search.semanticSampling.wall,uniformStep=Math.max(.12,Number(sampling.uniformStep)||.36),rawSlots=Math.max(1,Math.ceil(available/uniformStep));
+        const uniformCap=scene.area>=Number(sampling.largeRoomArea||Infinity)?Number(sampling.largeMaxUniformPositions)||4:Number(sampling.maxUniformPositions)||9;
+        const slots=Math.max(1,Math.min(rawSlots,Math.round(uniformCap)));
         const positions=[margin,wall.length-margin,wall.length/2,wall.length/3,wall.length*2/3,wall.length/4,wall.length*3/4];
         // 把已经落下的同墙家具边缘也作为吸附点。这样不同模长的书桌会真实尝试
         // “贴墙端”“贴床组/柜体”两种闭合方式，而不是只落在等分网格上留下随机缝。
@@ -731,7 +737,7 @@
           }
         }
       }
-      return points;
+      return points.slice(0,Math.max(1,Math.round(Number(LAYOUT_CONSTRAINTS.search.semanticSampling.wall.previewLimit)||140)));
     }
 
     function relativeNightstandCandidates(item, state) {
@@ -1618,15 +1624,56 @@
       return configuredRuleCandidates(item,state,scene);
     }
 
+    function sizePolicyFor(item,scene) {
+      const policy=LAYOUT_CONSTRAINTS.search.sizePolicies?.[currentProgram]?.[item.typeId];
+      if(!policy||policy.mode!=='max-feasible'||!item.sizeVariants?.length)return null;
+      const targetRow=[...(policy.targetByArea||[])].sort((a,b)=>Number(b.minArea)-Number(a.minArea)).find(row=>scene.area+EPS>=Number(row.minArea));
+      return {...policy,targetWidth:Number(targetRow?.width)||Math.max(...item.sizeVariants.map(row=>Number(row.w)||0))};
+    }
+
+    function semanticSizeAnchorKey(item,pose,scene,policy) {
+      const rule=pose.candidateRuleId||pose.relation||pose.anchor||'candidate';
+      if(Number.isInteger(pose.wallIndex)&&pose.wallIndex>=0){
+        const wall=scene.walls[pose.wallIndex],dims=itemLocalDims(item,pose),along=dot({x:pose.x-wall.a.x,y:pose.y-wall.a.y},wall.dir);
+        const startGap=along-dims.w/2,endGap=wall.length-(along+dims.w/2),tolerance=Math.max(.025,Number(policy.anchorTolerance)||.08);
+        let slot=startGap<=tolerance?'start':endGap<=tolerance?'end':Math.abs(along-wall.length/2)<=tolerance?'center':null;
+        if(!slot){const buckets=Math.max(4,Math.round(Number(policy.positionBuckets)||10));slot=`q${Math.round(clamp(along/Math.max(wall.length,EPS),0,1)*buckets)}`;}
+        return `${rule}|wall-${pose.wallIndex}|${slot}`;
+      }
+      if(pose.anchor==='relation')return `${rule}|relation|${pose.relationTarget||''}|${pose.relationSide??''}|${pose.slot||''}|${round(pose.relationOffset||0,2)}`;
+      const buckets=Math.max(4,Math.round(Number(policy.positionBuckets)||10));
+      return `${rule}|zone|${Math.round(clamp(pose.x/Math.max(scene.width,EPS),0,1)*buckets)}:${Math.round(clamp(pose.y/Math.max(scene.depth,EPS),0,1)*buckets)}|${pose.rotation||0}`;
+    }
+
+    function sizePolicyMerit(item,pose,scene) {
+      const policy=sizePolicyFor(item,scene);if(!policy||pose.skip)return 0;
+      const width=Number(pose.overrideW)||item.w,target=Math.max(EPS,policy.targetWidth),ratio=clamp(width/target,0,1);
+      return ratio*Math.max(0,Number(policy.localPriorityBonus)||0);
+    }
+
+    function semanticSizeSelection(indices,poses,item,scene) {
+      const policy=sizePolicyFor(item,scene);if(!policy)return indices;
+      const groups=new Map();
+      for(const index of indices){const pose=poses[index];if(pose.skip)continue;const key=semanticSizeAnchorKey(item,pose,scene,policy);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(index);}
+      const keep=new Set(indices.filter(index=>poses[index].skip)),fallbacks=Math.max(0,Math.round(Number(policy.fallbacksPerAnchor)||0));
+      for(const rows of groups.values()){
+        rows.sort((a,b)=>(Number(poses[b].overrideW)||item.w)-(Number(poses[a].overrideW)||item.w));
+        rows.slice(0,1+fallbacks).forEach(index=>keep.add(index));
+      }
+      return indices.filter(index=>keep.has(index));
+    }
+
     function rawCandidatesForItem(item,state,scene) {
       if(!item.sizeVariants?.length) return rawCandidatesForFixedItem(item,state,scene);
       const configuredLimit=Math.max(4,Math.round(Number(furnitureRule(item)?.candidate?.maxCandidates)||32));
       // 多模数不是把同一份 32 个位置越分越薄：每个书桌尺寸至少保留 8 个墙面落点，
       // 但总量仍封顶 56，避免 0.9~2.0m 六种模数把搜索量无界放大。
-      const eligibleVariants=item.typeId==='desk'
-        ?item.sizeVariants.filter(variant=>variant.w<=(scene.area<16?1.40:scene.area<22?1.80:2.00)+1e-6)
+      const sizePolicy=sizePolicyFor(item,scene);
+      const searchMaxRow=sizePolicy?[...(sizePolicy.searchMaxByArea||[])].sort((a,b)=>Number(b.minArea)-Number(a.minArea)).find(row=>scene.area+EPS>=Number(row.minArea)):null;
+      const eligibleVariants=sizePolicy&&Number(searchMaxRow?.width)>0
+        ?item.sizeVariants.filter(variant=>variant.w<=Number(searchMaxRow.width)+EPS)
         :item.sizeVariants;
-      const variantFloor=item.typeId==='desk'?Math.min(56,eligibleVariants.length*9):configuredLimit;
+      const variantFloor=sizePolicy?Math.min(56,eligibleVariants.length*9):configuredLimit;
       const buckets=[],limit=Math.min(72,Math.max(configuredLimit,variantFloor));
       for(const variant of eligibleVariants) {
         const sized={...item,w:variant.w,d:variant.d,sizeVariants:null};
@@ -1649,9 +1696,10 @@
         if (seen.has(key)) continue;
         seen.add(key);
         if (!isLegal(item,pose,state,scene)) continue;
-        valid.push({pose, merit:candidateStaticScore(item,pose,state,scene)});
+        valid.push({pose, merit:candidateStaticScore(item,pose,state,scene)+sizePolicyMerit(item,pose,scene)});
       }
-      valid.sort((a,b) => b.merit-a.merit);
+      const reduced=semanticSizeSelection(valid.map((_,index)=>index),valid.map(row=>row.pose),item,scene).map(index=>valid[index]);
+      valid.splice(0,valid.length,...reduced);valid.sort((a,b) => b.merit-a.merit);
       if(item.optional&&!mustPlaceDependentSlot(item,state,scene)) {
         const top=valid[0]?.merit||18;
         valid.push({pose:{skip:true,relation:'optional-skip'},merit:top-optionalSkipCost(item,state,scene)});
@@ -2189,6 +2237,19 @@
       return {score:weightTotal?weighted/weightTotal:1,details};
     }
 
+    function sizePolicySatisfaction(state,scene) {
+      const policies=LAYOUT_CONSTRAINTS.search.sizePolicies?.[currentProgram]||{},details=[];
+      for(const [typeId,policy] of Object.entries(policies)){
+        if(policy.mode!=='max-feasible'||policy.finalPriority!==true)continue;
+        const targetRow=[...(policy.targetByArea||[])].sort((a,b)=>Number(b.minArea)-Number(a.minArea)).find(row=>scene.area+EPS>=Number(row.minArea));
+        const targetWidth=Number(targetRow?.width)||0;if(!(targetWidth>0))continue;
+        const placed=FURNITURE.filter(item=>item.typeId===typeId&&state.poses[item.id]).map(item=>Number(state.poses[item.id].overrideW)||item.w);
+        const width=placed.length?Math.max(...placed):0,ratio=clamp(width/targetWidth,0,1);
+        details.push({typeId,width:round(width,2),targetWidth:round(targetWidth,2),ratio,maxTotalTradeoff:Math.max(0,Number(policy.maxTotalTradeoff)||0)});
+      }
+      return {score:details.length?details.reduce((sum,row)=>sum+row.ratio,0)/details.length:1,details};
+    }
+
     function largestUnactivatedVoidRatio(state,scene,step=.30) {
       const cols=Math.max(1,Math.ceil(scene.width/step)),rows=Math.max(1,Math.ceil(scene.depth/step)),cells=new Uint8Array(cols*rows),poses=Object.entries(state.poses);
       let roomCells=0;
@@ -2384,6 +2445,7 @@
       }
       const design=designMetrics(state,scene,reach);
       const preference=preferenceSatisfaction(state);
+      const sizePolicy=sizePolicySatisfaction(state,scene);
       const activation=spaceActivationMetrics(state,scene,design);
       const ground=groundPlaneMetrics(state,scene,design);
       const circulation=clamp(reach.hardReachableRatio*.34+reach.reachableRatio*.22+reach.normalHardRatio*.16+reach.normalRatio*.10+
@@ -2445,7 +2507,7 @@
       const qualityPass=allPlaced&&diningCoherent&&guestSeatingCoherent&&focusChallengeCoherent&&densityCoherent&&largeRoomGroundCoherent&&bedroomWallFinishable&&reach.hardPass&&!searchSevereFieldDefect&&
         scores.modules>=requiredModuleScore&&scores.circulation>=quality.minimumScores.circulation&&scores.relation>=quality.minimumScores.relation&&scores.composition>=quality.minimumScores.composition&&
         scores.storage>=DESIGN_QUALITY_RULES.gates.minWall&&scores.ground>=DESIGN_QUALITY_RULES.gates.minGround&&scores.comfort>=quality.minimumScores.comfort&&scores.preference>=quality.minimumScores.preference;
-      diagnostics={...diagnostics,...design,modules,preference,activation,ground,functionCoverage:stateCoverage.coverage,diningCoherent,guestSeatingCoherent,focusChallengeCoherent,placedDiningChairs,richMinimum,densityCoherent,potentialPostFurniture,largeRoomGroundCoherent,longBedroomWallRequired,largestEmptyWallBay,bedroomWallCoherent,requiredModuleScore,severeFieldDefect,weakField};
+      diagnostics={...diagnostics,...design,modules,preference,sizePolicy,activation,ground,functionCoverage:stateCoverage.coverage,diningCoherent,guestSeatingCoherent,focusChallengeCoherent,placedDiningChairs,richMinimum,densityCoherent,potentialPostFurniture,largeRoomGroundCoherent,longBedroomWallRequired,largestEmptyWallBay,bedroomWallCoherent,requiredModuleScore,severeFieldDefect,weakField};
       return { total:round(total,1), scores, reach, qualityPass, diagnostics };
     }
 
@@ -2510,9 +2572,68 @@
         if(layoutDensityMode==='rich'){
           const pieceDelta=Object.keys(b.poses||{}).length-Object.keys(a.poses||{}).length;if(pieceDelta)return pieceDelta;
         }
-        const totalDelta=(b.evaluation?.total??-Infinity)-(a.evaluation?.total??-Infinity);if(totalDelta)return totalDelta;
+        const sizeA=a.evaluation?.diagnostics?.sizePolicy,sizeB=b.evaluation?.diagnostics?.sizePolicy,sizeDelta=(sizeB?.score??1)-(sizeA?.score??1);
+        const sizeTradeoff=Math.max(0,...[...(sizeA?.details||[]),...(sizeB?.details||[])].map(row=>Number(row.maxTotalTradeoff)||0));
+        const totalDelta=(b.evaluation?.total??-Infinity)-(a.evaluation?.total??-Infinity);
+        if(Math.abs(sizeDelta)>=.08&&Math.abs(totalDelta)<=sizeTradeoff)return sizeDelta;
+        if(totalDelta)return totalDelta;
         return Object.keys(b.poses||{}).length-Object.keys(a.poses||{}).length;
       }).slice(0,3);
+    }
+
+    function upgradeSelectedSizePolicies(states,scene) {
+      return states.map(state=>{
+        let upgraded=state;
+        for(const [typeId,policy] of Object.entries(LAYOUT_CONSTRAINTS.search.sizePolicies?.[currentProgram]||{})){
+          if(policy.mode!=='max-feasible'||policy.finalPriority!==true)continue;
+          const item=FURNITURE.find(row=>row.typeId===typeId&&upgraded.poses?.[row.id]);
+          if(!item?.sizeVariants?.length)continue;
+          const pose=upgraded.poses[item.id],currentWidth=Number(pose.overrideW)||item.w;
+          const targetRow=[...(policy.targetByArea||[])].sort((a,b)=>Number(b.minArea)-Number(a.minArea)).find(row=>scene.area+EPS>=Number(row.minArea));
+          const targetWidth=Number(targetRow?.width)||currentWidth;
+          if(currentWidth+EPS>=targetWidth)continue;
+          const variants=item.sizeVariants.filter(row=>row.w>currentWidth+EPS&&row.w<=targetWidth+EPS).sort((a,b)=>b.w-a.w);
+          const baseline=upgraded.evaluation||evaluateFull(upgraded,scene),tradeoff=Math.max(0,Number(policy.maxTotalTradeoff)||0);
+          for(const variant of variants){
+            const anchoredPose={...pose,overrideW:variant.w,overrideD:variant.d,overrideShape:variant.shape||item.shape,sizeVariant:variant.id,sizeLabel:variant.label};
+            if(Number.isInteger(pose.wallIndex)&&pose.wallIndex>=0){
+              const wall=scene.walls[pose.wallIndex],oldDims=itemLocalDims(item,pose),newDims=itemLocalDims(item,anchoredPose);
+              if(wall){
+                const along=dot({x:pose.x-wall.a.x,y:pose.y-wall.a.y},wall.dir),startGap=along-oldDims.w/2,endGap=wall.length-(along+oldDims.w/2);
+                let nextAlong=along;
+                if(startGap<=.16&&startGap<=endGap)nextAlong=newDims.w/2+Math.max(0,startGap);
+                else if(endGap<=.16)nextAlong=wall.length-newDims.w/2-Math.max(0,endGap);
+                anchoredPose.x+=wall.dir.x*(nextAlong-along);anchoredPose.y+=wall.dir.y*(nextAlong-along);
+              }
+            }
+            const dependentIds=FURNITURE.filter(row=>(policy.dependentTypes||[]).includes(row.typeId)&&upgraded.poses?.[row.id]).map(row=>row.id);
+            const basePoses={...upgraded.poses};delete basePoses[item.id];dependentIds.forEach(id=>delete basePoses[id]);
+            const sized={...item,w:variant.w,d:variant.d,sizeVariants:null,shape:variant.shape||item.shape};
+            const generated=rawCandidatesForFixedItem(sized,{poses:basePoses},scene).map(row=>({...row,overrideW:variant.w,overrideD:variant.d,overrideShape:variant.shape||item.shape,sizeVariant:variant.id,sizeLabel:variant.label}));
+            const unique=new Map();for(const candidatePose of [anchoredPose,...generated])unique.set(poseIdentity(candidatePose),candidatePose);
+            const poses=[...unique.values()].filter(candidatePose=>isLegal(item,candidatePose,{poses:basePoses},scene)).sort((a,b)=>{
+              const anchorA=(a.wallIndex===pose.wallIndex?4:0)+(a.candidateRuleId===pose.candidateRuleId?2:0)-dist(a,pose)*.25;
+              const anchorB=(b.wallIndex===pose.wallIndex?4:0)+(b.candidateRuleId===pose.candidateRuleId?2:0)-dist(b,pose)*.25;
+              return anchorB-anchorA;
+            }).slice(0,Math.max(1,Math.round(Number(policy.repairCandidateLimit)||12)));
+            let best=null;
+            for(const nextPose of poses){
+              const nextPoses={...basePoses,[item.id]:nextPose};let dependentPass=true;
+              for(const dependentId of dependentIds){
+                const dependent=ITEM_BY_ID[dependentId],oldDependent=upgraded.poses[dependentId];
+                const candidates=rawCandidatesForFixedItem(dependent,{poses:nextPoses},scene).filter(row=>isLegal(dependent,row,{poses:nextPoses},scene)).sort((a,b)=>candidateStaticScore(dependent,b,{poses:nextPoses},scene)-candidateStaticScore(dependent,a,{poses:nextPoses},scene)||dist(a,oldDependent)-dist(b,oldDependent));
+                if(!candidates.length){dependentPass=false;break;}nextPoses[dependentId]=candidates[0];
+              }
+              if(!dependentPass)continue;
+              const candidate={...upgraded,poses:nextPoses},evaluation=evaluateFull(candidate,scene);
+              if(!evaluation.reach.hardPass||(baseline.qualityPass&&!evaluation.qualityPass)||evaluation.total+EPS<baseline.total-tradeoff)continue;
+              if(!best||evaluation.total>best.evaluation.total)best={...candidate,evaluation};
+            }
+            if(best){upgraded=best;break;}
+          }
+        }
+        return upgraded;
+      });
     }
 
     function solutionPoolFromEvaluated(evaluatedAll) {
@@ -2590,7 +2711,7 @@
       stats.qualityRejected=evaluatedAll.length-strictCount;
       const bestReach=evaluatedAll.slice().sort((a,b)=>Number(b.evaluation.reach.hardPass)-Number(a.evaluation.reach.hardPass)||a.evaluation.reach.unreachableArea-b.evaluation.reach.unreachableArea||b.evaluation.reach.hardReachableRatio-a.evaluation.reach.hardReachableRatio)[0]?.evaluation.reach;
       stats.bestReach=bestReach?{hardPass:bestReach.hardPass,hardReachableRatio:bestReach.hardReachableRatio,islandArea:round(bestReach.unreachableArea,3),connectedRatio:round(bestReach.connectedRatio,3),targetStatus:{...bestReach.targetStatus}}:null;
-      const selected=chooseObjectiveSolutions(solutionPoolFromEvaluated(evaluatedAll));
+      const selected=upgradeSelectedSizePolicies(chooseObjectiveSolutions(solutionPoolFromEvaluated(evaluatedAll)),scene);
       stats.timeMs=performance.now()-startTime;
       stats.avgUs=stats.nodes?stats.timeMs*1000/stats.nodes:0;
       return {solutions:selected,trace,stats,scene};
@@ -2717,13 +2838,14 @@
           if (exactProfileFunctionalConflict(item,pose,profile,state)) {rejectCounts[parent].functional++;continue;}
         }
         legalMask[i]=1;
-        meritVector[i]=scoreCandidates?candidateStaticScore(item,pose,state,scene):0;
+        meritVector[i]=scoreCandidates?candidateStaticScore(item,pose,state,scene)+sizePolicyMerit(item,pose,scene):0;
         grouped[parent].push(i);
       }
       const records=[];
       const counts=new Uint16Array(beam.length);
       for (let parent=0;parent<grouped.length;parent++) {
-        const indices=grouped[parent];
+        let indices=grouped[parent];
+        indices=semanticSizeSelection(indices,poses,item,scene);
         const skipIndex=indices.find(index=>poses[index].skip);
         if(skipIndex>=0) {
           const placed=indices.filter(index=>!poses[index].skip);
@@ -2758,7 +2880,7 @@
       const outputPool=dedupeFinalLayouts(qualifiedPool,.36);
       stats.outputDuplicateRejected=qualifiedPool.length-outputPool.length;
       stats.outputRecords=outputPool.map(state=>({treeId:state._treeId,total:state.evaluation.total,qualityTier:state.evaluation.qualityTier||'strict'}));
-      return chooseObjectiveSolutions(outputPool).map(state=>{
+      return upgradeSelectedSizePolicies(chooseObjectiveSolutions(outputPool),stats.scene).map(state=>{
         const qualityTier=state.evaluation.qualityTier;
         return {...state,evaluation:{...evaluateFull(state,stats.scene),qualityTier}};
       });
