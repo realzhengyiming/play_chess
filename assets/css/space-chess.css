@@ -313,6 +313,11 @@
       height: 640px;
     }
 
+    #board { cursor: zoom-in; touch-action: none; }
+    .canvas-wrap.is-pannable #board { cursor: grab; }
+    .canvas-wrap.is-panning #board { cursor: grabbing; }
+    #board:focus-visible { outline: 3px solid rgba(47,138,120,.42); outline-offset: -3px; }
+
     .canvas-badge {
       position: absolute;
       top: 16px;
@@ -348,6 +353,40 @@
     }
 
     .candidate-badge strong { color: var(--ink); }
+
+    .board-zoom-controls {
+      position: absolute;
+      left: 16px;
+      bottom: 16px;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 7px;
+      border: 1px solid rgba(24,35,31,.10);
+      border-radius: 12px;
+      background: rgba(255,255,255,.94);
+      box-shadow: 0 8px 24px rgba(20,30,25,.09);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 750;
+    }
+
+    .board-zoom-controls button {
+      min-width: 27px;
+      height: 27px;
+      padding: 0 7px;
+      border: 1px solid rgba(24,35,31,.12);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      font: 850 13px/1 system-ui;
+      cursor: pointer;
+    }
+
+    .board-zoom-controls button:hover { border-color: rgba(47,138,120,.5); color: var(--teal); }
+    .board-zoom-controls output { min-width: 40px; color: var(--ink); text-align: center; }
+    .board-zoom-controls .board-zoom-reset { font-size: 10px; }
 
     .pulse-dot {
       width: 8px;
@@ -714,6 +753,7 @@
       .check-row { width: 100%; margin: 0; }
       .legend { display: none; }
       .candidate-badge { top: 58px; left: 16px; right: auto; max-width: calc(100% - 32px); }
+      .board-zoom-controls > span { display: none; }
       .stage-progress { padding: 10px; }
       .stage-progress .trace-range-label span { max-width: 76%; }
       .candidate-key-row { align-items: flex-start; gap: 7px 12px; }

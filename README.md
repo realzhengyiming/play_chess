@@ -116,7 +116,7 @@ python -m py_compile floorplan_api.py
 
 上述回归默认读取实际生效的 `furniture-config-current.json`。如需验证另一份配置，显式设置 `ROOM_CHESS_CONFIG=/absolute/path/to/config.json`，测试不会再悄悄改用 default。
 
-两阶段改进目标见 [`docs/codex-layout-goal.md`](docs/codex-layout-goal.md)，设计距离与资料来源见 [`docs/design-rules-sources.md`](docs/design-rules-sources.md)。
+两阶段改进目标见 [`docs/codex-layout-goal.md`](docs/codex-layout-goal.md)，设计距离与资料来源见 [`docs/design-rules-sources.md`](docs/design-rules-sources.md)。7 张卧室/融合客厅俯视参考图提炼出的配置、局部评分和全局评分建议见 [`docs/designer-top-view-layout-patterns.md`](docs/designer-top-view-layout-patterns.md)。
 
 还应在浏览器检查：
 

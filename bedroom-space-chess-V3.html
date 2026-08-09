@@ -68,9 +68,16 @@
           </div>
 
           <div class="canvas-wrap">
-            <canvas id="board" aria-label="居住空间家具排布棋盘"></canvas>
+            <canvas id="board" tabindex="0" aria-label="居住空间家具排布棋盘，可使用滚轮缩放并拖动平移" aria-describedby="boardZoomHint"></canvas>
             <div class="canvas-badge"><span class="pulse-dot"></span><span id="boardStatus">场景已编译 · 等待搜索</span></div>
             <div class="candidate-badge" id="candidateBadge" aria-live="polite">等待第一步采样</div>
+            <div class="board-zoom-controls" id="boardZoomHint" aria-label="棋盘缩放控制">
+              <button id="boardZoomOut" type="button" aria-label="缩小棋盘">−</button>
+              <output id="boardZoomOutput" aria-live="polite">100%</output>
+              <button id="boardZoomIn" type="button" aria-label="放大棋盘">＋</button>
+              <button class="board-zoom-reset" id="boardZoomReset" type="button">复位</button>
+              <span>滚轮缩放 · 放大后拖动</span>
+            </div>
             <div class="legend" id="legend" aria-hidden="true"></div>
           </div>
 

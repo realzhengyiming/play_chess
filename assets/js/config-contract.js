@@ -21,7 +21,7 @@
     if(!Number.isInteger(Number(config.schemaVersion))||Number(config.schemaVersion)<1)errors.push('schemaVersion 必须是正整数');
     requireObject('designQualityRules');
     const weights=requireObject('designQualityRules.weights')||{};
-    ['function','ground','wall','relation','circulation'].forEach(key=>requireFinite(`designQualityRules.weights.${key}`,{min:0,max:1}));
+    ['function','ground','wall','relation','circulation','composition','activation'].forEach(key=>requireFinite(`designQualityRules.weights.${key}`,{min:0,max:1}));
     if(Object.values(weights).filter(finite).reduce((sum,value)=>sum+Number(value),0)<=0)errors.push('designQualityRules.weights 总和必须大于 0');
     requireObject('designQualityRules.floor');
     requireObject('designQualityRules.wall');
@@ -56,12 +56,48 @@
     requireObject('layoutConstraints.qualityPass');
     requireArray('layoutConstraints.relationPolicies');
     requireObject('layoutConstraints.designGrammar');
+    requireObject('layoutConstraints.layoutIntelligence');
+    const stepScore=requireObject('layoutConstraints.layoutIntelligence.stepScore')||{};
+    requireObject('layoutConstraints.layoutIntelligence.stepScore.functionalGroup');
+    requireObject('layoutConstraints.layoutIntelligence.stepScore.partialField');
+    const globalScore=requireObject('layoutConstraints.layoutIntelligence.globalScore')||{};
+    for(const key of ['functionWeights','compositionWeights','groundWeights','groupSpread'])requireObject(`layoutConstraints.layoutIntelligence.globalScore.${key}`);
+    const functionalGroups=requireObject('layoutConstraints.layoutIntelligence.functionalGroups')||{};
     requireObject('layoutConstraints.search');
     requireObject('layoutConstraints.postLayout');
     for(const programId of PROGRAM_IDS){
       requireArray(`layoutConstraints.inventory.roomAreaModules.${programId}`,{nonEmpty:true});
       requireArray(`layoutConstraints.inventory.richMinimum.${programId}`,{nonEmpty:true});
       requireObject(`layoutConstraints.designGrammar.${programId}`);
+      const groups=requireArray(`layoutConstraints.layoutIntelligence.functionalGroups.${programId}`,{nonEmpty:true});
+      const groupIds=new Set();
+      for(const [index,group] of groups.entries()){
+        const prefix=`layoutConstraints.layoutIntelligence.functionalGroups.${programId}[${index}]`;
+        if(!String(group?.id||'').trim())errors.push(`${prefix} 缺少 id`);
+        else if(groupIds.has(group.id))errors.push(`${programId} 功能组 id 重复：${group.id}`);else groupIds.add(group.id);
+        if(!String(group?.anchor||'').trim())errors.push(`${prefix} 缺少 anchor`);
+        if(!finite(group?.weight)||Number(group.weight)<=0)errors.push(`${prefix}.weight 必须大于 0`);
+        if(!Array.isArray(group?.activeModules)||!group.activeModules.length)errors.push(`${prefix}.activeModules 必须是非空数组`);
+        const members=Array.isArray(group?.members)?group.members:[];if(!members.length)errors.push(`${prefix}.members 必须是非空数组`);
+        for(const [memberIndex,member] of members.entries()){
+          const memberPrefix=`${prefix}.members[${memberIndex}]`;
+          if(!String(member?.typeId||'').trim())errors.push(`${memberPrefix} 缺少 typeId`);
+          if(!finite(member?.target)||Number(member.target)<=0)errors.push(`${memberPrefix}.target 必须大于 0`);
+          if(!finite(member?.weight)||Number(member.weight)<=0)errors.push(`${memberPrefix}.weight 必须大于 0`);
+          if(typeof member?.required!=='boolean')errors.push(`${memberPrefix}.required 必须是布尔值`);
+        }
+        const challenges=Array.isArray(group?.inventoryChallenges)?group.inventoryChallenges:[];
+        for(const [challengeIndex,challenge] of challenges.entries()){
+          const challengePrefix=`${prefix}.inventoryChallenges[${challengeIndex}]`;
+          if(!String(challenge?.id||'').trim())errors.push(`${challengePrefix} 缺少 id`);
+          if(!finite(challenge?.richPriority)||Number(challenge.richPriority)<0)errors.push(`${challengePrefix}.richPriority 必须是非负数`);
+          const minArea=Number(challenge?.minArea??0),maxArea=Number(challenge?.maxArea??Infinity),minAspect=Number(challenge?.minAspect??0),maxAspect=Number(challenge?.maxAspect??Infinity);
+          if(minArea<0||maxArea<minArea)errors.push(`${challengePrefix} 面积范围无效`);
+          if(minAspect<0||maxAspect<minAspect)errors.push(`${challengePrefix} 长宽比范围无效`);
+          if(!isObject(challenge?.counts))errors.push(`${challengePrefix}.counts 必须是对象`);
+          else for(const [typeId,count] of Object.entries(challenge.counts))if(!String(typeId).trim()||!Number.isInteger(Number(count))||Number(count)<0)errors.push(`${challengePrefix}.counts.${typeId} 必须是非负整数`);
+        }
+      }
     }
 
     const roomTypes=requireArray('roomTypes',{nonEmpty:true});

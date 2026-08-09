@@ -65,7 +65,7 @@ setTimeout(() => {
     }
     if (counts.diningTable && (counts.diningChair || 0) < 2) fail(`${label}: 餐桌没有成组餐椅`);
     if (programId === 'bedroom') {
-      if (solution.decorItems?.some(item => item.kind === 'rug')) fail(`${label}: 卧室出现地毯`);
+      for(const rug of solution.decorItems?.filter(item=>item.kind==='rug')||[])if(rug.collision!=='ignore')fail(`${label}: 地毯错误参与硬碰撞`);
     }
     if (solution.decorItems?.some(item => item.kind === 'activityZone')) fail(`${label}: 仍用活动区图形掩盖空白`);
     if (result.totalTimeMs > 10000) fail(`${label}: 搜索超过 10 秒 (${result.totalTimeMs.toFixed(0)} ms)`);

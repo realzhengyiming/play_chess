@@ -29,4 +29,12 @@ const missingPolicy=clone(read('current'));
 delete missingPolicy.layoutConstraints.qualityPass;
 expectError('缺少全局质量门槛',missingPolicy,/qualityPass.*对象/);
 
+const missingIntelligence=clone(read('current'));
+delete missingIntelligence.layoutConstraints.layoutIntelligence;
+expectError('缺少棋谱智能层',missingIntelligence,/layoutIntelligence/);
+
+const invalidChallengeProfile=clone(read('current'));
+invalidChallengeProfile.layoutConstraints.layoutIntelligence.functionalGroups.living.find(group=>group.id==='dining').inventoryChallenges[0].counts.arm=-1;
+expectError('功能组棋谱变体数量越界',invalidChallengeProfile,/inventoryChallenges.*counts\.arm.*非负整数/);
+
 console.log('PASS: current/default 配置有效；不安全通路、悬空引用、数量越界和缺失策略均被拒绝');

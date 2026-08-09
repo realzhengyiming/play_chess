@@ -13,11 +13,13 @@
   "designQualityRules": {
     "version": 2,
     "weights": {
-      "function": 0.22,
-      "ground": 0.26,
-      "wall": 0.22,
-      "relation": 0.15,
-      "circulation": 0.15
+      "function": 0.18,
+      "ground": 0.2,
+      "wall": 0.18,
+      "relation": 0.13,
+      "circulation": 0.13,
+      "composition": 0.1,
+      "activation": 0.08
     },
     "floor": {
       "gridStep": 0.24,
@@ -176,26 +178,7 @@
         }
       },
       "focusChallenges": {
-        "bedroom": [
-          {
-            "minArea": 11.5,
-            "maxArea": 13.19,
-            "target": {
-              "bench": 1
-            }
-          },
-          {
-            "minArea": 13.2,
-            "maxArea": 14.5,
-            "target": {
-              "tvbench": 1
-            },
-            "challenge": {
-              "tvbench": 1,
-              "bench": 1
-            }
-          }
-        ],
+        "bedroom": [],
         "living": []
       },
       "stagedSupport": {
@@ -631,6 +614,202 @@
         }
       }
     },
+    "layoutIntelligence": {
+      "version": 1,
+      "stepScore": {
+        "functionalGroup": {
+          "progressBonus": 18,
+          "completionBonus": 28,
+          "anchorMissingPenalty": 20
+        },
+        "partialField": {
+          "scoreWeight": 24,
+          "unreachablePenalty": 95,
+          "deadPocketPenalty": 7,
+          "severePenalty": 24
+        }
+      },
+      "globalScore": {
+        "functionWeights": {
+          "modules": 0.52,
+          "inventoryCoverage": 0.18,
+          "functionalGroups": 0.30
+        },
+        "compositionWeights": {
+          "alignment": 0.16,
+          "compactness": 0.14,
+          "zoning": 0.11,
+          "symmetry": 0.08,
+          "massBalance": 0.12,
+          "connectedVoid": 0.10,
+          "functionalGroups": 0.18,
+          "groupSpread": 0.11
+        },
+        "groundWeights": {
+          "density": 0.16,
+          "purposefulVoid": 0.20,
+          "balance": 0.25,
+          "topology": 0.39
+        },
+        "groupSpread": {
+          "min": 0.24,
+          "max": 0.70,
+          "tolerance": 0.26
+        }
+      },
+      "functionalGroups": {
+        "bedroom": [
+          {
+            "id": "sleep",
+            "label": "睡眠组",
+            "anchor": "bed",
+            "activeModules": ["sleep"],
+            "weight": 2.4,
+            "completionThreshold": 0.82,
+            "members": [
+              {"typeId": "bed", "target": 1, "weight": 0.42, "required": true},
+              {"typeId": "wardrobe", "target": 1, "weight": 0.28, "required": true},
+              {"typeId": "night", "target": 2, "weight": 0.30, "required": true}
+            ]
+          },
+          {
+            "id": "work",
+            "label": "工作组",
+            "anchor": "desk",
+            "activeModules": ["work", "micro-work"],
+            "weight": 1.3,
+            "completionThreshold": 0.98,
+            "members": [
+              {"typeId": "desk", "target": 1, "weight": 0.56, "required": true},
+              {"typeId": "chair", "target": 1, "weight": 0.44, "required": true}
+            ]
+          },
+          {
+            "id": "lounge",
+            "label": "卧室会客组",
+            "anchor": "bedroomLoveseat",
+            "activeModules": ["lounge"],
+            "weight": 1.55,
+            "completionThreshold": 0.82,
+            "members": [
+              {"typeId": "bedroomLoveseat", "target": 1, "weight": 0.40, "required": true},
+              {"typeId": "tvbench", "target": 1, "weight": 0.34, "required": true},
+              {"typeId": "bedroomTeaTable", "target": 1, "weight": 0.16, "required": false},
+              {"typeId": "lounge", "target": 1, "weight": 0.10, "required": false}
+            ]
+          },
+          {
+            "id": "vanity",
+            "label": "梳妆组",
+            "anchor": "vanity",
+            "orderAfter": "chair",
+            "orderOnlyForChallenge": true,
+            "inventoryChallenge": true,
+            "richPriority": 80,
+            "challengeCounts": {"night": 1, "bench": 1},
+            "challengeMinArea": 13,
+            "challengeMaxArea": 14.5,
+            "challengeMaxAspect": 1.2,
+            "activeModules": ["work"],
+            "activateWhenSelected": true,
+            "weight": 0.7,
+            "completionThreshold": 0.98,
+            "members": [
+              {"typeId": "vanity", "target": 1, "weight": 0.58, "required": true},
+              {"typeId": "vanityStool", "target": 1, "weight": 0.42, "required": true}
+            ]
+          },
+          {
+            "id": "storage",
+            "label": "真实收纳墙",
+            "anchor": "bedroomDisplay",
+            "activeModules": ["storage"],
+            "weight": 0.85,
+            "minimumKinds": 2,
+            "completionThreshold": 1,
+            "members": [
+              {"typeId": "bedroomDisplay", "target": 1, "weight": 1, "required": false},
+              {"typeId": "chest", "target": 1, "weight": 1, "required": false},
+              {"typeId": "shelf", "target": 1, "weight": 1, "required": false}
+            ]
+          }
+        ],
+        "living": [
+          {
+            "id": "conversation",
+            "label": "视听会客组",
+            "anchor": "sofa",
+            "activeModules": ["conversation"],
+            "weight": 2.5,
+            "completionThreshold": 0.98,
+            "members": [
+              {"typeId": "sofa", "target": 1, "weight": 0.40, "required": true},
+              {"typeId": "tv", "target": 1, "weight": 0.34, "required": true},
+              {"typeId": "coffee", "target": 1, "weight": 0.26, "required": true}
+            ]
+          },
+          {
+            "id": "guest-seating",
+            "label": "围合座位组",
+            "anchor": "arm",
+            "activeModules": ["guest-seating"],
+            "weight": 1.15,
+            "completionThreshold": 0.72,
+            "members": [
+              {"typeId": "arm", "target": 1, "weight": 0.56, "required": true},
+              {"typeId": "side", "target": 1, "weight": 0.27, "required": false},
+              {"typeId": "floorLamp", "target": 1, "weight": 0.17, "required": false}
+            ]
+          },
+          {
+            "id": "dining",
+            "label": "餐饮组",
+            "anchor": "diningTable",
+            "inventoryChallenges": [
+              {
+                "id": "medium-rect-dining",
+                "richPriority": 85,
+                "minArea": 20.5,
+                "maxArea": 22,
+                "maxAspect": 1.2,
+                "counts": {"arm": 2, "bookcase": 0}
+              },
+              {
+                "id": "medium-square-dining",
+                "richPriority": 80,
+                "minArea": 22,
+                "maxArea": 30,
+                "maxAspect": 1.15,
+                "counts": {"arm": 1, "bookcase": 0}
+              }
+            ],
+            "activeModules": ["dining"],
+            "weight": 1.7,
+            "completionThreshold": 0.98,
+            "members": [
+              {"typeId": "diningTable", "target": 1, "weight": 0.42, "required": true},
+              {"typeId": "diningChair", "target": 2, "weight": 0.46, "required": true},
+              {"typeId": "sideboard", "target": 1, "weight": 0.12, "required": false}
+            ]
+          },
+          {
+            "id": "storage",
+            "label": "真实收纳墙",
+            "anchor": "sideboard",
+            "activeModules": ["storage"],
+            "weight": 0.9,
+            "minimumKinds": 2,
+            "completionThreshold": 1,
+            "members": [
+              {"typeId": "sideboard", "target": 1, "weight": 1, "required": false},
+              {"typeId": "bookcase", "target": 1, "weight": 1, "required": false},
+              {"typeId": "display", "target": 1, "weight": 1, "required": false},
+              {"typeId": "console", "target": 1, "weight": 1, "required": false}
+            ]
+          }
+        ]
+      }
+    },
     "search": {
       "defaultBeamWidth": 120,
       "matrixGridStep": 0.12,
@@ -790,7 +969,11 @@
         "attemptLimit": {
           "normal": 12,
           "large": 6,
-          "largeArea": 28
+          "largeArea": 28,
+          "geometryProfiles": [
+            {"shape": "recognized", "minAspect": 1.65, "value": 1},
+            {"shape": "recognized", "minAspect": 0, "value": 2}
+          ]
         },
         "richMinimumBeamWidthByArea": [
           {
@@ -2108,8 +2291,8 @@
             "crossAlign": "left",
             "crossOffset": -0.25,
             "distance": {
-              "min": 0.08,
-              "max": 0.12,
+              "min": 0.1,
+              "max": 0.15,
               "step": 0.05
             },
             "facing": [
@@ -2144,8 +2327,8 @@
             "crossAlign": "right",
             "crossOffset": 0.25,
             "distance": {
-              "min": 0.08,
-              "max": 0.12,
+              "min": 0.1,
+              "max": 0.15,
               "step": 0.05
             },
             "facing": [
@@ -8076,8 +8259,8 @@
             "crossAlign": "left",
             "crossOffset": -0.25,
             "distance": {
-              "min": 0.08,
-              "max": 0.12,
+              "min": 0.1,
+              "max": 0.15,
               "step": 0.05
             },
             "facing": [
@@ -8112,8 +8295,8 @@
             "crossAlign": "right",
             "crossOffset": 0.25,
             "distance": {
-              "min": 0.08,
-              "max": 0.12,
+              "min": 0.1,
+              "max": 0.15,
               "step": 0.05
             },
             "facing": [

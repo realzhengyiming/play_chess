@@ -117,7 +117,10 @@
         if(!Array.isArray(value?.inventory?.roomAreaModules?.[programId])||!value.inventory.roomAreaModules[programId].length)errors.push(`缺少 inventory.roomAreaModules.${programId}`);
         if(!Array.isArray(value?.inventory?.richMinimum?.[programId])||!value.inventory.richMinimum[programId].length)errors.push(`缺少 inventory.richMinimum.${programId}`);
         if(!value?.postLayout?.wallComplements?.programs?.[programId])errors.push(`缺少 postLayout.wallComplements.programs.${programId}`);
+        if(!Array.isArray(value?.layoutIntelligence?.functionalGroups?.[programId])||!value.layoutIntelligence.functionalGroups[programId].length)errors.push(`缺少 layoutIntelligence.functionalGroups.${programId}`);
       }
+      if(!value?.layoutIntelligence?.stepScore?.functionalGroup||!value?.layoutIntelligence?.stepScore?.partialField)errors.push('缺少 layoutIntelligence.stepScore');
+      if(!value?.layoutIntelligence?.globalScore?.functionWeights||!value?.layoutIntelligence?.globalScore?.compositionWeights||!value?.layoutIntelligence?.globalScore?.groundWeights)errors.push('缺少 layoutIntelligence.globalScore');
       return errors;
     }
     function applyLayoutConstraints(value){
@@ -1308,6 +1311,62 @@
       return score;
     }
 
+    function activeFunctionalGroupConfigs(scene) {
+      const rows=LAYOUT_CONSTRAINTS.layoutIntelligence?.functionalGroups?.[currentProgram]||[];
+      const modules=new Set(roomAreaTier(currentProgram,scene.area).modules||[]);
+      return rows.filter(group=>(group.activeModules||[]).some(id=>modules.has(id))&&
+        (!group.activateWhenSelected||(group.members||[]).some(member=>FURNITURE.some(item=>item.typeId===member.typeId))));
+    }
+
+    function stateTypeCount(state,typeId) {
+      return Object.entries(state.poses||{}).filter(([id,pose])=>!pose?.skip&&ITEM_BY_ID[id]?.typeId===typeId).length;
+    }
+
+    function functionalGroupProgress(group,state) {
+      const members=group.members||[];
+      const placedKinds=members.filter(member=>stateTypeCount(state,member.typeId)>0).length;
+      if(Number(group.minimumKinds)>0){
+        const ratio=clamp(placedKinds/Number(group.minimumKinds),0,1),complete=ratio+EPS>=Number(group.completionThreshold||1);
+        return {ratio,requiredRatio:ratio,complete,placedKinds};
+      }
+      let weighted=0,totalWeight=0,required=0,requiredWeight=0;
+      for(const member of members){
+        const ratio=clamp(stateTypeCount(state,member.typeId)/Math.max(1,Number(member.target)||1),0,1),weight=Math.max(EPS,Number(member.weight)||1);
+        weighted+=ratio*weight;totalWeight+=weight;if(member.required){required+=ratio*weight;requiredWeight+=weight}
+      }
+      const ratio=totalWeight?weighted/totalWeight:1,requiredRatio=requiredWeight?required/requiredWeight:ratio;
+      return {ratio,requiredRatio,complete:requiredRatio>=1-EPS&&ratio+EPS>=Number(group.completionThreshold||1),placedKinds};
+    }
+
+    function functionalGroupMetrics(state,scene) {
+      const groups=activeFunctionalGroupConfigs(scene),details=[];let weighted=0,totalWeight=0;
+      for(const group of groups){
+        const progress=functionalGroupProgress(group,state),weight=Math.max(EPS,Number(group.weight)||1),poses=[];
+        for(const member of group.members||[])for(const [id,pose] of Object.entries(state.poses||{}))if(ITEM_BY_ID[id]?.typeId===member.typeId)poses.push(pose);
+        const centroid=poses.length?{x:poses.reduce((sum,pose)=>sum+pose.x,0)/poses.length,y:poses.reduce((sum,pose)=>sum+pose.y,0)/poses.length}:null;
+        weighted+=progress.ratio*weight;totalWeight+=weight;details.push({...progress,id:group.id,label:group.label,weight,centroid});
+      }
+      const spreadRules=LAYOUT_CONSTRAINTS.layoutIntelligence.globalScore.groupSpread;
+      const centroids=details.filter(row=>row.centroid).map(row=>row.centroid);let spread=groups.length<2?1:.15;
+      if(centroids.length>=2){let sum=0,count=0;for(let i=0;i<centroids.length;i++)for(let j=i+1;j<centroids.length;j++){sum+=dist(centroids[i],centroids[j])/Math.max(scene.designField.scale,1);count++}
+        spread=bandScore(sum/Math.max(1,count),Number(spreadRules.min),Number(spreadRules.max),Number(spreadRules.tolerance));
+      }
+      return {score:totalWeight?weighted/totalWeight:1,spread,completeCount:details.filter(row=>row.complete).length,expectedCount:details.length,details};
+    }
+
+    function functionalGroupStepMerit(item,pose,state,scene) {
+      const rules=LAYOUT_CONSTRAINTS.layoutIntelligence.stepScore.functionalGroup,groups=activeFunctionalGroupConfigs(scene).filter(group=>(group.members||[]).some(member=>member.typeId===item.typeId));
+      if(!groups.length||pose.skip)return {total:0,progress:0,completed:[],orphaned:[]};
+      const next={...state,poses:{...(state.poses||{}),[item.id]:pose}};let total=0,progress=0;const completed=[],orphaned=[];
+      for(const group of groups){
+        const before=functionalGroupProgress(group,state),after=functionalGroupProgress(group,next),delta=Math.max(0,after.ratio-before.ratio),groupScale=clamp((Number(group.weight)||1)/2.4,.45,1);
+        progress+=delta;total+=delta*Number(rules.progressBonus||0);
+        if(!before.complete&&after.complete){completed.push(group.label||group.id);total+=Number(rules.completionBonus||0)*groupScale}
+        if(item.typeId!==group.anchor&&stateTypeCount(next,group.anchor)===0){orphaned.push(group.label||group.id);total-=Number(rules.anchorMissingPenalty||0)}
+      }
+      return {total,progress,completed,orphaned};
+    }
+
     function candidateStaticScore(item, pose, state, scene) {
       let score = pose.anchor === 'wall' ? 8 : 15;
       const candidateConfig=furnitureRule(item)?.candidate,candidateRows=Array.isArray(candidateConfig?.rules)?candidateConfig.rules:[],configuredEntry=candidateRows.find(row=>(row.id||row.relation)===pose.candidateRuleId)||candidateRows.find(row=>row.relation&&row.relation===pose.relation);if(configuredEntry)score+=24+(clamp(Number(configuredEntry.weight)||1,0,3)-1)*14;
@@ -1522,17 +1581,9 @@
 
       const corridorPoint = {x:scene.door.entry.x,y:(scene.door.entry.y+roomCenter.y)/2};
       if (pointInRect(corridorPoint,rect,.18)) score -= 18;
-      // 单件分数之外，再奖励“这一手把一组家具补完整”。这相当于下棋时不只看
-      // 当前棋子的价值，也看它是否完成了一块阵地，避免 Beam 总偏爱孤立的小件。
-      const has=typeId=>Object.entries(state.poses).some(([id])=>ITEM_BY_ID[id]?.typeId===typeId);
-      const count=typeId=>Object.entries(state.poses).filter(([id])=>ITEM_BY_ID[id]?.typeId===typeId).length;
-      if(item.typeId==='tv'&&has('sofa'))score+=18;
-      if(item.typeId==='coffee'&&has('sofa')&&has('tv'))score+=24;
-      if(item.typeId==='chair'&&has('desk'))score+=22;
-      if(item.typeId==='night'&&has('bed'))score+=count('night')?14:9;
-      if(item.typeId==='diningChair'&&has('diningTable'))score+=count('diningChair')===1?22:10;
-      if(item.typeId==='side'&&has('sofa'))score+=10;
-      if(item.typeId==='floorLamp'&&(has('sofa')||has('arm')))score+=8;
+      // 组团推进分完全读取 layoutIntelligence.functionalGroups；新增家具或修改组员
+      // 只调配置，不再为床组、沙发组、餐组分别追加 if/else。
+      score+=functionalGroupStepMerit(item,pose,state,scene).total;
       score += ((item.preferenceWeight??furnitureRule(item).preferenceWeight??1)-1)*18;
       return score;
     }
@@ -2346,23 +2397,26 @@
         }
         components.push({count,unclaimedCount,area:unclaimedCount*step*step,x:sumX/count,y:sumY/count});
       }
-      components.sort((a,b)=>b.count-a.count);const main=components[0]||{count:0,area:0,x:scene.designField.centroid.x,y:scene.designField.centroid.y};
+      components.sort((a,b)=>b.count-a.count);const main=components[0]||{count:0,unclaimedCount:0,area:0,x:scene.designField.centroid.x,y:scene.designField.centroid.y};
       const disconnected=components.slice(1),unreachableCells=disconnected.reduce((sum,row)=>sum+row.unclaimedCount,0);
       const deadRows=disconnected.filter(row=>row.area>=rules.pocketMinArea&&row.area<=rules.pocketMaxArea),deadPocketCells=deadRows.reduce((sum,row)=>sum+row.unclaimedCount,0);
       let mass=0,massX=0,massY=0;for(const rect of bodies){const area=Math.max(.01,rect.w*rect.d);mass+=area;massX+=rect.x*area;massY+=rect.y*area;}
       const center=scene.designField.centroid,scale=Math.max(scene.designField.scale,1),massCenter=mass?{x:massX/mass,y:massY/mass}:center;
       const massDistance=dist(massCenter,center)/scale,freeDistance=dist(main,center)/scale,balanceDistance=massDistance*.62+freeDistance*.38;
       const balance=bandScore(balanceDistance,0,rules.balanceIdeal,Math.max(.05,rules.balanceSevere-rules.balanceIdeal));
-      const largestVoidRatio=roomCells?main.count/roomCells:0,voidCompletion=bandScore(largestVoidRatio,rules.largestOpenMin,rules.largestOpenMax,.24);
+      // 家具使用区覆盖的自由格属于“有用途留白”，不再和无功能归属的大洞混算。
+      // 连通性仍由 topologyScore 独立把关，因此不会用功能区掩盖孤岛。
+      const largestVoidRatio=roomCells?main.unclaimedCount/roomCells:0,purposefulFreeRatio=roomCells?(main.count-main.unclaimedCount)/roomCells:0,voidCompletion=bandScore(largestVoidRatio,rules.largestOpenMin,rules.largestOpenMax,.24);
       const unreachableFreeRatio=safeCells?unreachableCells/safeCells:0,narrowPocketRatio=freeCells?narrowCells/freeCells:0,deadPocketRatio=freeCells?deadPocketCells/freeCells:0;
       const topologyScore=clamp(1-unreachableFreeRatio*5.8-narrowPocketRatio*3.8-deadRows.length*.11,0,1);
       const density=coverageMetrics.effectiveDensity,target=coverageMetrics.targetDensity,densityScore=bandScore(density,target*.78,target*1.24,Math.max(.10,target*.52));
       const severe=unreachableFreeRatio>rules.severeUnreachableRatio||narrowPocketRatio>rules.severeNarrowRatio||balanceDistance>rules.balanceSevere;
+      const weights=LAYOUT_CONSTRAINTS.layoutIntelligence.globalScore.groundWeights,weightTotal=Object.values(weights).reduce((sum,value)=>sum+Number(value||0),0)||1;
       return {
-        score:clamp(densityScore*.18+voidCompletion*.18+balance*.27+topologyScore*.37,0,1),
+        score:clamp((densityScore*Number(weights.density)+voidCompletion*Number(weights.purposefulVoid)+balance*Number(weights.balance)+topologyScore*Number(weights.topology))/weightTotal,0,1),
         densityScore,voidCompletion,balance,balanceDistance,massDistance,freeDistance,topologyScore,severe,
         deadPockets:deadRows.length,deadPocketRatio,largestVoidRatio,unreachableFreeRatio,narrowPocketRatio,
-        freeRatio:roomCells?freeCells/roomCells:0,safeRatio:roomCells?safeCells/roomCells:0,componentCount:components.length
+        purposefulFreeRatio,freeRatio:roomCells?freeCells/roomCells:0,safeRatio:roomCells?safeCells/roomCells:0,componentCount:components.length
       };
     }
 
@@ -2370,7 +2424,8 @@
       // Beam 中只需要判断趋势，不需要重复跑最终评分使用的 0.24m 精细格网。
       // 0.38m 粗格网保留断连、死角和重心失衡信号，入围方案仍会接受完整精度复核。
       const ground=groundPlaneMetrics(state,scene,stateCoverageAndActivation(state,scene),.38);
-      return ground.score*24-ground.unreachableFreeRatio*95-ground.deadPockets*7-(ground.severe?24:0);
+      const rules=LAYOUT_CONSTRAINTS.layoutIntelligence.stepScore.partialField;
+      return ground.score*Number(rules.scoreWeight)-ground.unreachableFreeRatio*Number(rules.unreachablePenalty)-ground.deadPockets*Number(rules.deadPocketPenalty)-(ground.severe?Number(rules.severePenalty):0);
     }
 
     function spaceActivationMetrics(state,scene,coverageMetrics) {
@@ -2411,7 +2466,7 @@
       const massCenter=layoutMassCenter(state,scene),balanceDistance=dist(massCenter,scene.designField.centroid)/scene.designField.scale;
       const balance=bandScore(balanceDistance,0,.17,.28);
       const voidScore=clamp(reach.connectedRatio*.48+(reach.levels.normal?.connectedRatio||reach.connectedRatio)*.30+(reach.levels.comfortable?.connectedRatio||reach.levels.normal?.connectedRatio||reach.connectedRatio)*.22,0,1);
-      const storage=wallStorageMetrics(state,scene),wall=wallPlaneMetrics(state,scene,storage),activationMetrics=stateCoverageAndActivation(state,scene);
+      const storage=wallStorageMetrics(state,scene),wall=wallPlaneMetrics(state,scene,storage),activationMetrics=stateCoverageAndActivation(state,scene),functionalGroups=functionalGroupMetrics(state,scene);
       let alignment=.65,compact=.65,zoning=.72,symmetry=.72;
       if(currentProgram==='living') {
         const sofa=state.poses.sofa,tv=state.poses.tv,coffee=state.poses.coffee;
@@ -2439,8 +2494,15 @@
         }
         const desk=state.poses.desk;if(bed&&desk)zoning=bandScore(dist(bed,desk)/scene.designField.scale,.28,.68,.25);
       }
-      const composition=clamp(alignment*.24+compact*.21+zoning*.17+symmetry*.11+balance*.13+voidScore*.14,0,1);
-      return {composition,storage:wall.score,alignment,compact,zoning,symmetry,balance,voidScore,storageDetails:storage,wallDetails:wall,...activationMetrics};
+      const weights=LAYOUT_CONSTRAINTS.layoutIntelligence.globalScore.compositionWeights,weightTotal=Object.values(weights).reduce((sum,value)=>sum+Number(value||0),0)||1;
+      const composition=clamp((alignment*Number(weights.alignment)+compact*Number(weights.compactness)+zoning*Number(weights.zoning)+symmetry*Number(weights.symmetry)+balance*Number(weights.massBalance)+voidScore*Number(weights.connectedVoid)+functionalGroups.score*Number(weights.functionalGroups)+functionalGroups.spread*Number(weights.groupSpread))/weightTotal,0,1);
+      return {composition,storage:wall.score,alignment,compact,zoning,symmetry,balance,voidScore,functionalGroups,storageDetails:storage,wallDetails:wall,...activationMetrics};
+    }
+
+    function configuredGlobalTotal(scores) {
+      const weights=DESIGN_QUALITY_RULES.weights,mapping={wall:'storage'};let weighted=0,totalWeight=0;
+      for(const [key,value] of Object.entries(weights)){const weight=Number(value)||0,score=Number(scores[mapping[key]||key]);if(weight<=0||!Number.isFinite(score))continue;weighted+=score*weight;totalWeight+=weight}
+      return totalWeight?weighted/totalWeight:0;
     }
 
     function evaluateFull(state,scene,flowLevels=FLOW_RADII) {
@@ -2461,7 +2523,6 @@
       const modules=moduleCompletionMetrics(state,scene);
       if (currentProgram==='living') {
         const quality=livingMetrics(state,scene,accessScore);
-        functionScore=allPlaced?(modules.score*72+stateCoverage.coverage*28):placedItems.length/Math.max(1,FURNITURE.filter(item=>!item.optional).length)*58;
         relationScore=quality.relation;
         comfortScore=quality.comfort;
         daylightScore=quality.daylight*100;
@@ -2474,10 +2535,12 @@
         const storageItems=FURNITURE.filter(item=>['wardrobe','chest','shelf','tvbench'].includes(item.typeId));
         const placedStorage=storageItems.filter(item=>state.poses[item.id]);
         const storageClearWindow=placedStorage.length?placedStorage.filter(item=>!windowOverlap(item,state.poses[item.id],scene)).length/placedStorage.length:1;
-        functionScore=allPlaced?modules.score*72+stateCoverage.coverage*28:placedItems.length/Math.max(1,FURNITURE.filter(item=>!item.optional).length)*60;
         daylightScore=(vanity?deskNearWindow*.50+vanityNearWindow*.25+storageClearWindow*.25:deskNearWindow*.65+storageClearWindow*.35)*100;
       }
       const design=designMetrics(state,scene,reach);
+      const functionWeights=LAYOUT_CONSTRAINTS.layoutIntelligence.globalScore.functionWeights,functionWeightTotal=Object.values(functionWeights).reduce((sum,value)=>sum+Number(value||0),0)||1;
+      functionScore=allPlaced?100*(modules.score*Number(functionWeights.modules)+stateCoverage.coverage*Number(functionWeights.inventoryCoverage)+design.functionalGroups.score*Number(functionWeights.functionalGroups))/functionWeightTotal:
+        placedItems.length/Math.max(1,FURNITURE.filter(item=>!item.optional).length)*(currentProgram==='living'?58:60);
       const preference=preferenceSatisfaction(state);
       const sizePolicy=sizePolicySatisfaction(state,scene);
       const activation=spaceActivationMetrics(state,scene,design);
@@ -2498,8 +2561,7 @@
         activation: Math.round(activation.score*100),
         ground: Math.round(ground.score*100)
       };
-      const weights=DESIGN_QUALITY_RULES.weights;
-      let total=scores.function*weights.function+scores.ground*weights.ground+scores.storage*weights.wall+scores.relation*weights.relation+scores.circulation*weights.circulation;
+      let total=configuredGlobalTotal(scores);
       // 地面与墙面的严重缺陷采用封顶，而不是靠其它对象高分抵消。
       const severeFieldDefect=ground.severe||design.wallDetails.severe;
       const weakField=scores.ground<DESIGN_QUALITY_RULES.gates.minGround||scores.storage<DESIGN_QUALITY_RULES.gates.minWall;
@@ -2549,6 +2611,7 @@
       const scores=evaluation?.scores||{},diagnostics=evaluation?.diagnostics||{},wall=diagnostics.wallDetails||{};
       const percent=value=>Math.round(clamp(Number.isFinite(value)?value:0,0,1)*100);
       return {
+        function:Number(scores.function)||0,modules:Number(scores.modules)||0,groups:percent(diagnostics.functionalGroups?.score),groupSpread:percent(diagnostics.functionalGroups?.spread),activation:Number(scores.activation)||0,
         ground:Number(scores.ground)||0,wall:Number(scores.storage)||0,relation:Number(scores.relation)||0,
         circulation:Number(scores.circulation)||0,alignment:percent(diagnostics.alignment),daylight:Number(scores.daylight)||0,
         emptyWall:percent(wall.emptyWallScore),corner:percent(wall.cornerClosure),
@@ -3158,6 +3221,21 @@
       if(!types?.length)return;
       const rank=new Map(types.map((typeId,index)=>[typeId,index])),stable=new Map(FURNITURE.map((item,index)=>[item.id,index]));
       FURNITURE.sort((a,b)=>(rank.get(a.typeId)??999)-(rank.get(b.typeId)??999)||(stable.get(a.id)??0)-(stable.get(b.id)??0));
+      // 配置可以要求“先把已选中的功能组连续下完”。这里只执行通用顺序移动，
+      // 不认识梳妆台、餐桌等具体家具；没有选中该组时完全不改变原棋谱。
+      for(const group of activeFunctionalGroupConfigs(scene)){
+        if(!group.orderAfter)continue;
+        if(group.orderOnlyForChallenge){
+          const aspect=Math.max(scene.width/Math.max(scene.depth,EPS),scene.depth/Math.max(scene.width,EPS));
+          if(scene.area+EPS<Number(group.challengeMinArea||0)||scene.area-EPS>Number(group.challengeMaxArea??Infinity)
+            ||aspect+EPS<Number(group.challengeMinAspect||0)||aspect-EPS>Number(group.challengeMaxAspect??Infinity))continue;
+        }
+        const memberTypes=(group.members||[]).map(member=>member.typeId).filter(typeId=>FURNITURE.some(item=>item.typeId===typeId));
+        if(!memberTypes.length)continue;
+        const moving=FURNITURE.filter(item=>memberTypes.includes(item.typeId)),remaining=FURNITURE.filter(item=>!memberTypes.includes(item.typeId));
+        const insertAfter=remaining.map(item=>item.typeId).lastIndexOf(group.orderAfter),insertAt=insertAfter<0?remaining.length:insertAfter+1;
+        FURNITURE.splice(0,FURNITURE.length,...remaining.slice(0,insertAt),...moving,...remaining.slice(insertAt));
+      }
     }
 
     function search(scene,options={}) {
@@ -3494,6 +3572,25 @@
         return {counts,estimate:inventoryEstimate(programId,counts,scene,objectiveId)};
       };
       const area=scene.area,tier=roomAreaTier(programId,area),modules=new Set(tier.modules),rows=[];
+      const configuredGroupChallenges=baseCounts=>{
+        const roomAspect=Math.max(scene.width/Math.max(scene.depth,EPS),scene.depth/Math.max(scene.width,EPS));
+        return (LAYOUT_CONSTRAINTS.layoutIntelligence?.functionalGroups?.[programId]||[])
+          .filter(group=>(group.activeModules||[]).some(moduleId=>modules.has(moduleId)))
+          .flatMap(group=>(group.inventoryChallenges||[]).length
+            ?group.inventoryChallenges.map(profile=>({group,profile}))
+            :group.inventoryChallenge?[{group,profile:group}]:[])
+          .filter(({profile})=>area+EPS>=Number(profile.minArea??profile.challengeMinArea??0)&&area-EPS<=Number(profile.maxArea??profile.challengeMaxArea??Infinity)
+            &&roomAspect+EPS>=Number(profile.minAspect??profile.challengeMinAspect??0)&&roomAspect-EPS<=Number(profile.maxAspect??profile.challengeMaxAspect??Infinity))
+          .sort((a,b)=>Number(b.profile.richPriority??b.group.richPriority??0)-Number(a.profile.richPriority??a.group.richPriority??0))
+          .map(({group,profile})=>{
+            const target={...baseCounts};
+            for(const member of group.members||[])if(member.required!==false)target[member.typeId]=Math.max(target[member.typeId]||0,Number(member.target)||1);
+            for(const [typeId,count] of Object.entries(group.challengeCounts||{}))target[typeId]=count;
+            for(const [typeId,count] of Object.entries(profile.counts||{}))target[typeId]=count;
+            const priority=Number(profile.richPriority??group.richPriority)||0;
+            return {...make(target),moduleChallenge:true,functionalGroupChallenge:`${group.id}:${profile.id||'default'}`,functionalGroupPriority:priority};
+          });
+      };
       if(programId==='bedroom'){
         const core={bed:1,wardrobe:1};
         if(area>=9)core.night=2;
@@ -3506,6 +3603,9 @@
         rows.push(make(micro));
         const focusChallenge=(LAYOUT_CONSTRAINTS.inventory.focusChallenges?.bedroom||[]).find(row=>area+EPS>=Number(row.minArea||0)&&area-EPS<=Number(row.maxArea??Infinity));
         if(focusChallenge)rows.push({...make({...core,...(focusChallenge.challenge||focusChallenge.target)}),moduleChallenge:true,focusChallenge:true});
+        // 功能组可以在配置里声明“值得单独挑战一次”。库存只读取组成员和目标数量，
+        // 不认识梳妆台、餐桌等具体家具，也不写面积门槛或坐标特判。
+        rows.push(...configuredGroupChallenges(core));
         // “丰富”不再先用面积表删掉可选家具。先把所有有意义的模块交给同一盘
         // 棋：合法且改善构图就落下；放不下时走该槽位的 skip，继续尝试后面的
         // 家具。这样面积是几何搜索的结果，而不是人为写死的准入条件。
@@ -3522,7 +3622,7 @@
         // 具体家具数量来自配置，这里不再另外写一套场景规则。
         if(longBedroomChallengeActive)rows.push({...make({...core,...longBedroomConfig.counts}),longBedroomChallenge:true});
         // 少量锚点盘仅作为丰富盘无法通过时的几何退路。
-        rows.push({...make({...core,night:1,tvbench:1,bedroomLoveseat:1}),hotelAnchorChallenge:true});
+        rows.push({...make({...core,tvbench:1,bedroomLoveseat:1}),hotelAnchorChallenge:true});
         rows.push({...make({bed:1,wardrobe:1,night:0,desk:1,chair:1,tvbench:1}),hotelMediaFallback:true});
         // 长条卧室优先尝试酒店式“床尾壁挂电视 + 超薄电视柜”。它是睡眠组的
         // 延伸，不要求先摆小沙发，也不会把 0.4m 深普通电视柜硬塞进窄通道。
@@ -3547,6 +3647,7 @@
       }else{
         const support=stagedSupportCounts(scene),conversation={sofa:1,tv:1,coffee:1},core={...conversation,...support};
         if(area>=14){core.arm=2;core.side=1;core.floorLamp=1;}
+        rows.push(...configuredGroupChallenges({...conversation,...support}));
         rows.push(make(core));
         if(area>=16)rows.push(make({...core,bookcase:1}));
         if(area>=18)rows.push(make({...core,display:1}));
@@ -3570,8 +3671,10 @@
         const bedroomAspect=Math.max(scene.width/Math.max(scene.depth,EPS),scene.depth/Math.max(scene.width,EPS));
         const hotelMediaPreferred=area>=15&&bedroomAspect>=1.65;
         const recognizedHotelMediaPreferred=scene.shape==='recognized'&&hotelMediaPreferred;
+        const configuredGroupPreferred=rows.filter(row=>row.functionalGroupChallenge).sort((a,b)=>b.functionalGroupPriority-a.functionalGroupPriority)[0];
         const preferred=area>=6.2&&area<9
           ?rows.find(row=>(row.counts.night||0)>=1&&(row.counts.desk||0)>0&&(row.counts.chair||0)>0)
+          :layoutDensityMode==='rich'&&configuredGroupPreferred?configuredGroupPreferred
           :layoutDensityMode==='rich'&&rows.some(row=>row.focusChallenge)?rows.find(row=>row.focusChallenge)
           :layoutDensityMode==='rich'&&recognizedHotelMediaPreferred?(rows.find(row=>row.longBedroomChallenge)||rows.find(row=>row.hotelAnchorChallenge))
           :layoutDensityMode==='rich'?rows.find(row=>row.autoChallenge)
@@ -3590,7 +3693,8 @@
         // 不再在这里写死“必须书柜”，避免多门异形客厅被某一柜型堵出孤岛。
         const chairTarget=2;
         const support=stagedSupportCounts(scene);
-        const preferred=rows.find(row=>(row.counts.diningTable||0)>0&&(row.counts.diningChair||0)>=chairTarget&&Object.entries(support).every(([typeId,count])=>(row.counts[typeId]||0)>=count));
+        const configuredGroupPreferred=rows.filter(row=>row.functionalGroupChallenge).sort((a,b)=>b.functionalGroupPriority-a.functionalGroupPriority)[0];
+        const preferred=configuredGroupPreferred||rows.find(row=>(row.counts.diningTable||0)>0&&(row.counts.diningChair||0)>=chairTarget&&Object.entries(support).every(([typeId,count])=>(row.counts[typeId]||0)>=count));
         if(preferred)rows.splice(0,rows.length,preferred,...rows.filter(row=>row!==preferred));
       }
       const unique=new Map();for(const row of rows)unique.set(inventoryCountsSignature(programId,row.counts),row);
@@ -3656,7 +3760,11 @@
       const trialScene=makeCurrentScene(),cache=new Map();
       // 28㎡以上房间采用固定计算预算。超大卧室与超大客厅一样，面积变大只切换
       // 功能模块，不允许把“试多少套库存”或每件家具的采样量同步放大。
-      const autoSearch=LAYOUT_CONSTRAINTS.search.auto,largeRoomBudget=trialScene.area>=autoSearch.attemptLimit.largeArea,attemptLimit=largeRoomBudget?autoSearch.attemptLimit.large:autoSearch.attemptLimit.normal;
+      const autoSearch=LAYOUT_CONSTRAINTS.search.auto,largeRoomBudget=trialScene.area>=autoSearch.attemptLimit.largeArea,baseAttemptLimit=largeRoomBudget?autoSearch.attemptLimit.large:autoSearch.attemptLimit.normal;
+      const trialAspect=Math.max(trialScene.width/Math.max(trialScene.depth,EPS),trialScene.depth/Math.max(trialScene.width,EPS));
+      const geometryAttemptProfile=[...(autoSearch.attemptLimit.geometryProfiles||[])].sort((a,b)=>Number(b.minAspect||0)-Number(a.minAspect||0))
+        .find(profile=>(!profile.shape||profile.shape===trialScene.shape)&&trialScene.area+EPS>=Number(profile.minArea||0)&&trialScene.area-EPS<=Number(profile.maxArea??Infinity)&&trialAspect+EPS>=Number(profile.minAspect||0)&&trialAspect-EPS<=Number(profile.maxAspect??Infinity));
+      const attemptLimit=Math.min(baseAttemptLimit,Number(geometryAttemptProfile?.value)||baseAttemptLimit);
       const passesHardFurniturePhase=solution=>!!solution?.evaluation?.qualityPass;
       // 相同数量在不同目标下使用不同 Beam 宽度与验收阈值，失败结果不能跨目标复用。
       const configurationKey=(counts,profile,objectiveId)=>`${inventoryCountsSignature(programId,counts)}@${profile.mode}:${profile.sofaPreset||'-'}:${objectiveId}`;
@@ -4002,8 +4110,7 @@
       const wall=currentWall||baselineWall;
       const finalReach=computeReachability(plan,scene,FLOW_RADII,solids);
       const scores=plan.evaluation.scores;scores.ground=Math.round((currentGround||baseline).score*100);scores.storage=Math.round(wall.score*100);
-      const weights=DESIGN_QUALITY_RULES.weights;
-      let total=scores.function*weights.function+scores.ground*weights.ground+scores.storage*weights.wall+scores.relation*weights.relation+scores.circulation*weights.circulation;
+      let total=configuredGlobalTotal(scores);
       const severe=(currentGround||baseline).severe||wall.severe;
       if(severe)total=Math.min(total,DESIGN_QUALITY_RULES.gates.severeDefectCap);
       total=Math.min(total,scores.function+14,scores.circulation+14,scores.relation+12,scores.storage+15,scores.ground+15,scores.comfort+18);
@@ -4118,6 +4225,8 @@
 
     const canvas=document.getElementById('board');
     const ctx=canvas.getContext('2d');
+    const boardViewport={scale:1,x:0,y:0};
+    let boardPanState=null;
     const beamCanvas=document.getElementById('beamTreeCanvas');
     const beamCtx=beamCanvas.getContext('2d');
     const ui={
@@ -4135,6 +4244,7 @@
       envelope:document.getElementById('showEnvelope'), anchors:document.getElementById('showAnchors'), stepCandidates:document.getElementById('showStepCandidates'),bitset:document.getElementById('showBitset'),
       boardStatus:document.getElementById('boardStatus'), roomArea:document.getElementById('roomAreaLabel'),
       candidateBadge:document.getElementById('candidateBadge'),
+      boardZoomOut:document.getElementById('boardZoomOut'),boardZoomIn:document.getElementById('boardZoomIn'),boardZoomReset:document.getElementById('boardZoomReset'),boardZoomOutput:document.getElementById('boardZoomOutput'),canvasWrap:document.querySelector('.canvas-wrap'),
       appTitle:document.getElementById('appTitle'), legend:document.getElementById('legend'), furnitureKicker:document.getElementById('furnitureKicker'),
       autoInventory:document.getElementById('autoInventory'),
       customCabinet:document.getElementById('customCabinetEnabled'),
@@ -4392,6 +4502,7 @@
     function compileCurrentScene(autoSearch=false) {
       stopPlay();
       if (searchDebounce) clearTimeout(searchDebounce);
+      resetBoardViewport(false);
       scene=makeScene(shape,Number(ui.width.value),Number(ui.depth.value),Number(ui.multiplier.value));
       result=null; activeState={poses:{}}; activeSolution=0; traceIndex=0;candidateSnapshotCache={key:null,value:null};treeInspectNodeId=null;beamRoundIndex=1;
       ui.multiplierOutput.textContent=`${scene.areaMultiplier.toFixed(2)}×`;
@@ -4422,16 +4533,55 @@
       drawBoard(width,height);
     }
 
-    function transformFor(width,height) {
+    function baseTransformFor(width,height) {
       const pad=Math.min(width,height)*.11;
       const scale=Math.min((width-pad*2)/scene.width,(height-pad*2)/scene.depth);
       const offsetX=(width-scene.width*scale)/2;
       const offsetY=(height-scene.depth*scale)/2;
+      return {scale,offsetX,offsetY};
+    }
+
+    function transformFor(width,height) {
+      const base=baseTransformFor(width,height);
+      const scale=base.scale*boardViewport.scale;
+      const offsetX=base.offsetX+boardViewport.x;
+      const offsetY=base.offsetY+boardViewport.y;
       return {
         scale, offsetX, offsetY,
         p:p=>({x:offsetX+p.x*scale,y:offsetY+p.y*scale}),
         rect:r=>({x:offsetX+(r.x-r.w/2)*scale,y:offsetY+(r.y-r.d/2)*scale,w:r.w*scale,h:r.d*scale})
       };
+    }
+
+    function updateBoardViewportUI() {
+      if(ui.boardZoomOutput)ui.boardZoomOutput.textContent=`${Math.round(boardViewport.scale*100)}%`;
+      ui.canvasWrap?.classList.toggle('is-pannable',boardViewport.scale>1.001);
+    }
+
+    function clampBoardViewport(width,height) {
+      if(!scene||boardViewport.scale<=1.001){boardViewport.x=0;boardViewport.y=0;return;}
+      const base=baseTransformFor(width,height),visibleEdge=Math.min(90,width*.18,height*.18);
+      const roomWidth=scene.width*base.scale*boardViewport.scale,roomHeight=scene.depth*base.scale*boardViewport.scale;
+      boardViewport.x=clamp(boardViewport.x,visibleEdge-roomWidth-base.offsetX,width-visibleEdge-base.offsetX);
+      boardViewport.y=clamp(boardViewport.y,visibleEdge-roomHeight-base.offsetY,height-visibleEdge-base.offsetY);
+    }
+
+    function setBoardZoom(nextScale,anchorX=null,anchorY=null) {
+      if(!scene)return;
+      const rect=canvas.getBoundingClientRect(),width=Math.max(320,Math.floor(rect.width)),height=Math.max(400,Math.floor(rect.height));
+      const oldTransform=transformFor(width,height),base=baseTransformFor(width,height);
+      const x=anchorX??width/2,y=anchorY??height/2;
+      const worldX=(x-oldTransform.offsetX)/oldTransform.scale,worldY=(y-oldTransform.offsetY)/oldTransform.scale;
+      boardViewport.scale=clamp(nextScale,1,4);
+      boardViewport.x=x-base.offsetX-worldX*base.scale*boardViewport.scale;
+      boardViewport.y=y-base.offsetY-worldY*base.scale*boardViewport.scale;
+      clampBoardViewport(width,height);updateBoardViewportUI();resizeAndDraw();
+    }
+
+    function resetBoardViewport(redraw=true) {
+      boardViewport.scale=1;boardViewport.x=0;boardViewport.y=0;boardPanState=null;
+      ui?.canvasWrap?.classList.remove('is-panning');updateBoardViewportUI();
+      if(redraw&&scene)resizeAndDraw();
     }
 
     function drawSoftDecor(drawCtx,tr,state,items,layer) {
@@ -4465,7 +4615,7 @@
           drawCtx.strokeStyle='rgba(255,255,255,.32)';drawCtx.lineWidth=1;
           if(r.w>=r.h){for(let x=r.x+Math.max(12,r.h);x<r.x+r.w-5;x+=Math.max(15,r.h*1.2)){drawCtx.beginPath();drawCtx.moveTo(x,r.y+3);drawCtx.lineTo(x,r.y+r.h-3);drawCtx.stroke();}}
           else{for(let y=r.y+Math.max(12,r.w);y<r.y+r.h-5;y+=Math.max(15,r.w*1.2)){drawCtx.beginPath();drawCtx.moveTo(r.x+3,y);drawCtx.lineTo(r.x+r.w-3,y);drawCtx.stroke();}}
-          if(Math.max(r.w,r.h)>58){drawCtx.fillStyle='#fff';drawCtx.font=`800 ${Math.max(8,Math.min(11,Math.min(r.w,r.h)*.25))}px system-ui`;drawCtx.textAlign='center';drawCtx.textBaseline='middle';drawCtx.fillText(item.label,cx,cy)}
+          if(Math.max(r.w,r.h)>58)drawCenteredFurnitureLabel(drawCtx,item.label,r,{fontMax:11,background:'rgba(20,40,49,.34)'});
           continue;
         }
         if(item.kind==='curtain'){
@@ -4655,10 +4805,22 @@
       ctx.restore();
     }
 
+    function drawCenteredFurnitureLabel(drawCtx,label,labelRect,{fontMin=8,fontMax=14,background='rgba(20,40,49,.34)'}={}){
+      // 只旋转真正的长条窄柜；床等轻微纵向的主体家具仍保持横排，更符合读图习惯。
+      const vertical=labelRect.h>labelRect.w*1.55&&labelRect.h>=42;
+      const availableLength=vertical?labelRect.h:labelRect.w,availableThickness=vertical?labelRect.w:labelRect.h;
+      const fontSize=Math.max(fontMin,Math.min(fontMax,availableThickness*.30,availableLength*.12));
+      const x=labelRect.x+labelRect.w/2,y=labelRect.y+labelRect.h/2;
+      drawCtx.save();drawCtx.translate(x,y);if(vertical)drawCtx.rotate(-Math.PI/2);
+      drawCtx.font=`800 ${fontSize}px system-ui`;drawCtx.textAlign='center';drawCtx.textBaseline='middle';
+      const textWidth=Math.max(8,Math.min(availableLength-4,drawCtx.measureText(label).width+8)),textHeight=Math.min(availableThickness-2,fontSize+5);
+      if(background){drawCtx.fillStyle=background;drawCtx.beginPath();drawCtx.roundRect(-textWidth/2,-textHeight/2,textWidth,textHeight,4);drawCtx.fill();}
+      drawCtx.fillStyle='#fff';drawCtx.fillText(label,0,0,Math.max(8,availableLength-5));drawCtx.restore();
+    }
+
     function drawFurnitureLabel(item,pose,tr){
-      const rect=footprintRects(item,pose)[0],labelRect=tr.rect(rect),label=itemDisplayLabel(item,pose),fontSize=Math.max(9,Math.min(14,labelRect.w*.12));
-      ctx.save();ctx.font=`800 ${fontSize}px system-ui`;ctx.textAlign='center';ctx.textBaseline='middle';const x=labelRect.x+labelRect.w/2,y=labelRect.y+labelRect.h/2,textWidth=Math.min(labelRect.w-4,ctx.measureText(label).width+8),textHeight=fontSize+5;
-      ctx.fillStyle='rgba(20,40,49,.34)';ctx.beginPath();ctx.roundRect(x-textWidth/2,y-textHeight/2,textWidth,textHeight,4);ctx.fill();ctx.fillStyle='#fff';ctx.fillText(label,x,y,Math.max(8,labelRect.w-5));ctx.restore();
+      const rect=footprintRects(item,pose)[0],labelRect=tr.rect(rect),label=itemDisplayLabel(item,pose);
+      drawCenteredFurnitureLabel(ctx,label,labelRect);
     }
 
     function drawRoomLabels(tr) {
@@ -5003,11 +5165,13 @@
         const sizeAction=p.sizeLabel?` · 选择${p.sizeLabel} ${(p.overrideW??item?.w??0).toFixed(2)}×${(p.overrideD??item?.d??0).toFixed(2)} m`:'';
         const ruleAction=p.candidateRuleId?` · 规则 ${p.candidateRuleId}`:'';
         const action=(p.relation==='custom-infill'?`末轮扫描余墙并定尺 ${p.overrideW?.toFixed(2)||''} m · 安装余缝 ${Math.round((p.installationGap||0)*1000)} mm`:p.relation==='wall-run'?`沿墙连续补齐 ${p.overrideW?.toFixed(2)||''} m`:(relationActions[p.relation]||`靠墙 ${p.wallIndex+1} 落子`))+sizeAction+ruleAction;
-        const local=`局部 ${s.lastMove.merit>=0?'+':''}${s.lastMove.merit.toFixed(1)}`,partial=s.partialScore?` · 搜索累计 ${s.partialScore.toFixed(1)}`:'';
+        const previousState=trace[i-1]||{poses:{}},groupStep=functionalGroupStepMerit(item,p,previousState,scene);
+        const groupStepText=groupStep.total?` · 棋谱组团 ${groupStep.total>=0?'+':''}${groupStep.total.toFixed(1)}${groupStep.completed.length?`（完成${groupStep.completed.join('、')}）`:''}`:'';
+        const local=`局部 ${s.lastMove.merit>=0?'+':''}${s.lastMove.merit.toFixed(1)}${groupStepText}`,partial=s.partialScore?` · 搜索累计 ${s.partialScore.toFixed(1)}`:'';
         let vector='';
         if(i===traceIndex&&s._evaluation){
           const previous=trace[i-1]?._evaluation,currentBreakdown=traceEvaluationBreakdown(s._evaluation),previousBreakdown=previous?traceEvaluationBreakdown(previous):null;
-          const keys=[['ground','地面'],['wall','墙面'],['relation','关系'],['circulation','通行'],['alignment','对齐'],['daylight','采光'],['emptyWall','空墙'],['corner','墙角']];
+          const keys=[['function','功能'],['modules','模块'],['groups','组团'],['groupSpread','分区展开'],['activation','空间激活'],['ground','地面'],['wall','墙面'],['relation','关系'],['circulation','通行'],['alignment','对齐'],['daylight','采光'],['emptyWall','空墙'],['corner','墙角']];
           const parts=keys.map(([key,label])=>{const value=currentBreakdown[key],delta=previousBreakdown?value-previousBreakdown[key]:null;return `${label} ${value}${delta==null?'':` (${delta>=0?'+':''}${delta})`}`});
           const totalDelta=previous?s._evaluation.total-previous.total:null;
           const gapText=`墙缝：严重 ${currentBreakdown.severeWallGaps} · 尴尬 ${currentBreakdown.awkwardWallGaps}`;
@@ -5027,7 +5191,10 @@
       traceIndex=clamp(index,0,trace.length-1);
       activeState=trace[traceIndex];
       candidateSnapshotCache={key:null,value:null};
-      const evaluation=evaluateFull(activeState,scene);trace[traceIndex]._evaluation=evaluation;
+      // 最后一手展示经过末轮墙面补齐和复验后的正式终局分，避免“步骤面板 64、
+      // 方案卡 90”这种两个阶段混在一起的假矛盾；中间手仍显示当时的原始局面分。
+      const finalSolution=result?.solutions?.[activeSolution],isFinalStep=traceIndex===trace.length-1;
+      const evaluation=isFinalStep&&finalSolution?.evaluation?finalSolution.evaluation:evaluateFull(activeState,scene);trace[traceIndex]._evaluation=evaluation;
       if(traceIndex>0&&!trace[traceIndex-1]._evaluation)trace[traceIndex-1]._evaluation=evaluateFull(trace[traceIndex-1],scene);
       updateScores(evaluation);
       ui.depthMetric.textContent=`${traceIndex} / ${FURNITURE.length}`;
@@ -5373,6 +5540,32 @@
     ui.next.addEventListener('click',()=>showTraceStep(traceIndex+1));
     ui.play.addEventListener('click',playTrace);
     ui.traceRange.addEventListener('input',()=>{stopPlay();showTraceStep(Number(ui.traceRange.value));});
+    ui.boardZoomOut.addEventListener('click',()=>setBoardZoom(boardViewport.scale/1.25));
+    ui.boardZoomIn.addEventListener('click',()=>setBoardZoom(boardViewport.scale*1.25));
+    ui.boardZoomReset.addEventListener('click',()=>resetBoardViewport());
+    canvas.addEventListener('wheel',event=>{
+      event.preventDefault();
+      const rect=canvas.getBoundingClientRect();
+      setBoardZoom(boardViewport.scale*Math.exp(-event.deltaY*.0014),event.clientX-rect.left,event.clientY-rect.top);
+    },{passive:false});
+    canvas.addEventListener('dblclick',()=>resetBoardViewport());
+    canvas.addEventListener('pointerdown',event=>{
+      canvas.focus({preventScroll:true});
+      if(boardViewport.scale<=1.001||event.button!==0)return;
+      boardPanState={pointerId:event.pointerId,startX:event.clientX,startY:event.clientY,viewX:boardViewport.x,viewY:boardViewport.y};
+      canvas.setPointerCapture(event.pointerId);ui.canvasWrap.classList.add('is-panning');event.preventDefault();
+    });
+    canvas.addEventListener('pointermove',event=>{
+      if(!boardPanState||event.pointerId!==boardPanState.pointerId)return;
+      boardViewport.x=boardPanState.viewX+event.clientX-boardPanState.startX;
+      boardViewport.y=boardPanState.viewY+event.clientY-boardPanState.startY;
+      const rect=canvas.getBoundingClientRect();clampBoardViewport(Math.max(320,Math.floor(rect.width)),Math.max(400,Math.floor(rect.height)));resizeAndDraw();
+    });
+    const finishBoardPan=event=>{
+      if(!boardPanState||event.pointerId!==boardPanState.pointerId)return;
+      boardPanState=null;ui.canvasWrap.classList.remove('is-panning');
+    };
+    canvas.addEventListener('pointerup',finishBoardPan);canvas.addEventListener('pointercancel',finishBoardPan);
     const setAppView=mode=>{const treeMode=mode==='tree';ui.appShell.classList.toggle('tree-mode',treeMode);ui.layoutView.classList.toggle('active',!treeMode);ui.treeView.classList.toggle('active',treeMode);if(treeMode)requestAnimationFrame(renderBeamTree);else requestAnimationFrame(resizeAndDraw);};
     ui.layoutView.addEventListener('click',()=>setAppView('layout'));ui.treeView.addEventListener('click',()=>setAppView('tree'));
     ui.beamBoardMode.addEventListener('click',()=>{beamVisualMode='board';resetBeamBoardView();renderBeamTree();});

@@ -48,7 +48,7 @@ function assertRetainedNodesHaveChildren(beamTree, label) {
 
 function assertScoreAndPruneObservability(engine, solution, beamTree, label) {
   const breakdown = engine.traceEvaluationBreakdown(solution.evaluation);
-  for (const key of ['ground','wall','relation','circulation','alignment','daylight','emptyWall','corner','severeWallGaps','awkwardWallGaps']) {
+  for (const key of ['function','modules','groups','groupSpread','activation','ground','wall','relation','circulation','alignment','daylight','emptyWall','corner','severeWallGaps','awkwardWallGaps']) {
     assert(Number.isFinite(breakdown[key]), `${label}: 步骤评分缺少 ${key}`);
   }
   for (const round of beamTree?.rounds || []) {

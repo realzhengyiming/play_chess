@@ -67,7 +67,10 @@ setTimeout(() => {
       relation: scores.relation,
       circulation: scores.circulation,
       composition: scores.composition,
+      functionalGroups: rounded(diagnostics.functionalGroups?.score),
+      groupSpread: rounded(diagnostics.functionalGroups?.spread),
       largestVoidRatio: rounded(ground.largestVoidRatio),
+      purposefulFreeRatio: rounded(ground.purposefulFreeRatio),
       unreachableFreeRatio: rounded(ground.unreachableFreeRatio),
       narrowPocketRatio: rounded(ground.narrowPocketRatio),
       floorBalanceDistance: rounded(ground.balanceDistance),
@@ -126,10 +129,10 @@ setTimeout(() => {
     const grandLiving = rows.find(row => row.case === 'living/rect/7.2x5.5');
     if (grandLiving && grandLiving.modules < 85) failures.push(grandLiving);
     const compactBedroom=rows.find(row=>row.case==='bedroom/rect/3.4x3.6');
-    if(compactBedroom&&!compactBedroom.regression.hasBench)failures.push(compactBedroom);
+    if(compactBedroom&&(compactBedroom.placed<7||compactBedroom.functionalGroups<.80))failures.push(compactBedroom);
     if(compactBedroom&&(compactBedroom.regression.deskWidth??0)<1.2)failures.push(compactBedroom);
     const mediaBedroom=rows.find(row=>row.case==='bedroom/rect/3.6x3.8');
-    if(mediaBedroom&&!mediaBedroom.regression.hasTvbench)failures.push(mediaBedroom);
+    if(mediaBedroom&&(mediaBedroom.placed<8||mediaBedroom.functionalGroups<.88))failures.push(mediaBedroom);
     const compactDining=rows.find(row=>row.case==='living/rect/4.8x4.2');
     if(compactDining&&(!compactDining.regression.hasArm||!compactDining.regression.hasDiningTable||compactDining.regression.diningChairs<1||!compactDining.regression.diningWall))failures.push(compactDining);
     if(compactDining&&compactDining.placed<8)failures.push(compactDining);
