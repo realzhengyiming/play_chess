@@ -1402,7 +1402,7 @@
             "side": "front",
             "crossAlign": "center",
             "distance": {
-              "min": 1,
+              "min": 0.55,
               "max": 2.8,
               "step": 0.25
             },
@@ -1474,7 +1474,7 @@
         "side": "front",
         "crossAlign": "center",
         "distance": {
-          "min": 1,
+          "min": 0.55,
           "max": 2.8,
           "step": 0.25
         },
@@ -1741,6 +1741,22 @@
       },
       "candidate": {
         "rules": [
+          {
+            "id": "loveseat-tv-facing",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [0, 90],
+            "relativeTo": "tvbench",
+            "relation": "bedroom-seat-media-facing",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {"min": 0.55, "max": 2.8, "step": 0.25},
+            "facing": ["toward"],
+            "maxSamples": 24,
+            "weight": 1.65,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
           {
             "id": "loveseat-wall",
             "enabled": true,
@@ -2793,15 +2809,20 @@
             "side": "front",
             "crossAlign": "center",
             "distance": {
+              "min": 0.3,
+              "max": 0.5,
+              "step": 0.05
+            },
+            "preferredDistance": {
               "min": 0.4,
-              "max": 0.8,
-              "step": 0.2
+              "max": 0.45,
+              "tolerance": 0.12
             },
             "facing": [
               "toward",
               "away"
             ],
-            "maxSamples": 10,
+            "maxSamples": 8,
             "weight": 1.5,
             "collisionClearance": 0.025,
             "allowFunctionalOverlap": false,
@@ -2831,15 +2852,20 @@
         "side": "front",
         "crossAlign": "center",
         "distance": {
+          "min": 0.3,
+          "max": 0.5,
+          "step": 0.05
+        },
+        "preferredDistance": {
           "min": 0.4,
-          "max": 0.8,
-          "step": 0.2
+          "max": 0.45,
+          "tolerance": 0.12
         },
         "facing": [
           "toward",
           "away"
         ],
-        "maxSamples": 10,
+        "maxSamples": 8,
         "weight": 1.5,
         "collisionClearance": 0.025,
         "allowFunctionalOverlap": false,
@@ -3435,7 +3461,7 @@
             "facing": [
               "parallel"
             ],
-            "maxSamples": 12,
+            "maxSamples": 24,
             "weight": 1,
             "collisionClearance": 0.025,
             "allowFunctionalOverlap": false,
@@ -3465,7 +3491,7 @@
         "facing": [
           "parallel"
         ],
-        "maxSamples": 12,
+        "maxSamples": 24,
         "weight": 1,
         "collisionClearance": 0.025,
         "allowFunctionalOverlap": false,
@@ -5458,6 +5484,22 @@
       "candidate": {
         "rules": [
           {
+            "id": "loveseat-tv-facing",
+            "enabled": true,
+            "mode": "relation",
+            "rotations": [0, 90],
+            "relativeTo": "tvbench",
+            "relation": "bedroom-seat-media-facing",
+            "side": "front",
+            "crossAlign": "center",
+            "distance": {"min": 0.55, "max": 2.8, "step": 0.25},
+            "facing": ["toward"],
+            "maxSamples": 24,
+            "weight": 1.65,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false
+          },
+          {
             "id": "loveseat-wall",
             "enabled": true,
             "mode": "wall",
@@ -5791,7 +5833,7 @@
             "side": "front",
             "crossAlign": "center",
             "distance": {
-              "min": 1,
+              "min": 0.55,
               "max": 2.8,
               "step": 0.25
             },
@@ -5863,7 +5905,7 @@
         "side": "front",
         "crossAlign": "center",
         "distance": {
-          "min": 1,
+          "min": 0.55,
           "max": 2.8,
           "step": 0.25
         },
@@ -7713,15 +7755,20 @@
             "side": "front",
             "crossAlign": "center",
             "distance": {
+              "min": 0.3,
+              "max": 0.5,
+              "step": 0.05
+            },
+            "preferredDistance": {
               "min": 0.4,
-              "max": 0.8,
-              "step": 0.2
+              "max": 0.45,
+              "tolerance": 0.12
             },
             "facing": [
               "toward",
               "away"
             ],
-            "maxSamples": 10,
+            "maxSamples": 8,
             "weight": 1.5,
             "collisionClearance": 0.025,
             "allowFunctionalOverlap": false,
@@ -7751,15 +7798,20 @@
         "side": "front",
         "crossAlign": "center",
         "distance": {
+          "min": 0.3,
+          "max": 0.5,
+          "step": 0.05
+        },
+        "preferredDistance": {
           "min": 0.4,
-          "max": 0.8,
-          "step": 0.2
+          "max": 0.45,
+          "tolerance": 0.12
         },
         "facing": [
           "toward",
           "away"
         ],
-        "maxSamples": 10,
+        "maxSamples": 8,
         "weight": 1.5,
         "collisionClearance": 0.025,
         "allowFunctionalOverlap": false,
@@ -8436,7 +8488,7 @@
             "facing": [
               "parallel"
             ],
-            "maxSamples": 12,
+            "maxSamples": 24,
             "weight": 1,
             "collisionClearance": 0.025,
             "allowFunctionalOverlap": false,
@@ -8466,7 +8518,7 @@
         "facing": [
           "parallel"
         ],
-        "maxSamples": 12,
+        "maxSamples": 24,
         "weight": 1,
         "collisionClearance": 0.025,
         "allowFunctionalOverlap": false,

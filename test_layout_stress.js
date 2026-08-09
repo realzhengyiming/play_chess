@@ -64,18 +64,16 @@ setTimeout(() => {
     if (counts.diningTable && (counts.diningChair || 0) < 2) fail(`${label}: 餐桌没有成组餐椅`);
     if (programId === 'bedroom') {
       if (solution.decorItems?.some(item => item.kind === 'rug')) fail(`${label}: 卧室出现地毯`);
-      if (width * depth >= 12 && !solution.decorItems?.some(item => item.kind === 'activityZone')) fail(`${label}: 未解释剩余活动空间`);
     }
+    if (solution.decorItems?.some(item => item.kind === 'activityZone')) fail(`${label}: 仍用活动区图形掩盖空白`);
     if (result.totalTimeMs > 10000) fail(`${label}: 搜索超过 10 秒 (${result.totalTimeMs.toFixed(0)} ms)`);
     rows.push({label,ms:+result.totalTimeMs.toFixed(1),nodes:result.totalNodes,attempts:result.attempts,placed,score:solution.evaluation.total,activity:solution.decorItems?.some(item=>item.kind==='activityZone')?'yes':'-'});
   }
   const micro=engine.autoSelectInventory({programId:'bedroom',shape:'rect',width:2.55,depth:2.68}),microSolution=micro.probe?.solutions?.[0],microCounts=countTypes(microSolution);
   if(!micro.feasible||!microSolution?.evaluation?.qualityPass)fail('bedroom/2.55×2.68 micro: 没有通过质量门槛的微型卧室方案');
-  for(const typeId of ['bed','wardrobe','night','desk','chair'])if(!(microCounts[typeId]>0))fail(`bedroom/2.55×2.68 micro: 缺少 ${typeId}`);
-  const microItems=new Map(microSolution.inventoryItems.map(item=>[item.typeId,item]));
-  if(microSolution.poses[microItems.get('night').id]?.relation!=='bed-side')fail('bedroom/2.55×2.68 micro: 床头柜没有依附床侧');
-  if(microSolution.poses[microItems.get('chair').id]?.relation!=='desk-front')fail('bedroom/2.55×2.68 micro: 工作椅没有依附书桌');
-  if(microSolution.poses[microItems.get('chair').id].relationGap>.071)fail('bedroom/2.55×2.68 micro: 工作椅离桌面过远');
+  // 6.8㎡微型卧室只强制睡眠与收纳；不能为了“丰富”把床头柜、书桌和椅子
+  // 硬塞进无法保留 0.50m 通路的房间。
+  for(const typeId of ['bed','wardrobe'])if(!(microCounts[typeId]>0))fail(`bedroom/2.55×2.68 micro: 缺少 ${typeId}`);
   rows.push({label:'bedroom/rect/2.55×2.68 micro',ms:+micro.totalTimeMs.toFixed(1),nodes:micro.totalNodes,attempts:micro.attempts,placed:Object.keys(microSolution.poses).length,score:microSolution.evaluation.total,activity:'-'});
   const scaled=engine.autoSelectInventory({programId:'living',shape:'rect',width:5.8,depth:4.8,areaMultiplier:3}),scaledSolution=scaled.probe?.solutions?.[0];
   if(!scaled.feasible||!scaledSolution)fail('living/rect/5.8×4.8@3x: 无方案');
@@ -83,8 +81,8 @@ setTimeout(() => {
   if(scaled.totalTimeMs>6000)fail(`living/rect/5.8×4.8@3x: 质量优先搜索超过 6 秒 (${scaled.totalTimeMs.toFixed(0)} ms)`);
   if(scaledSolution.inventoryItems?.some(item=>item.typeId==='infillCabinet'))fail('living/rect/5.8×4.8@3x: 填缝柜仍进入 Beam 库存');
   if(!scaledSolution.decorItems?.some(item=>item.kind==='postDisplayCabinet'))fail('living/rect/5.8×4.8@3x: 最终阶段没有补墙面收口');
-  if(!scaledSolution.decorItems?.some(item=>item.kind==='activityZone'))fail('living/rect/5.8×4.8@3x: 最终阶段没有补活动区');
-  rows.push({label:'living/rect/5.8×4.8@3x',ms:+scaled.totalTimeMs.toFixed(1),nodes:scaled.totalNodes,attempts:scaled.attempts,placed:Object.keys(scaledSolution.poses).length,score:scaledSolution.evaluation.total,activity:'yes'});
+  if(scaledSolution.decorItems?.some(item=>item.kind==='activityZone'))fail('living/rect/5.8×4.8@3x: 仍用活动区图形掩盖空白');
+  rows.push({label:'living/rect/5.8×4.8@3x',ms:+scaled.totalTimeMs.toFixed(1),nodes:scaled.totalNodes,attempts:scaled.attempts,placed:Object.keys(scaledSolution.poses).length,score:scaledSolution.evaluation.total,activity:'-'});
 
   // 面积模数回归：超大卧室应成为一套完整的大单间会客模块，而不是靠后处理
   // 重复生成多张沙发；客厅进入客餐厅档后，综合方案优先挑战完整餐桌组。
@@ -94,7 +92,7 @@ setTimeout(() => {
   if(studio.attempts>6||studio.totalTimeMs>2000)fail(`bedroom/6.2×6.6: 搜索预算失控 (${studio.attempts} 次 / ${studio.totalTimeMs.toFixed(0)} ms)`);
   if(studio.totalNodes>18000)fail(`bedroom/6.2×6.6: 采样节点重新膨胀到 ${studio.totalNodes}`);
   if(studioSolution.decorItems?.some(item=>['activityLoveseat','activityChair','activityTable'].includes(item.kind)))fail('bedroom/6.2×6.6: 已有正式会客组后仍重复补活动区沙发/茶几');
-  rows.push({label:'bedroom/rect/6.2×6.6 studio',ms:+studio.totalTimeMs.toFixed(1),nodes:studio.totalNodes,attempts:studio.attempts,placed:Object.keys(studioSolution.poses).length,score:studioSolution.evaluation.total,activity:'yes'});
+  rows.push({label:'bedroom/rect/6.2×6.6 studio',ms:+studio.totalTimeMs.toFixed(1),nodes:studio.totalNodes,attempts:studio.attempts,placed:Object.keys(studioSolution.poses).length,score:studioSolution.evaluation.total,activity:'-'});
 
   const mediumDining=engine.autoSelectInventory({programId:'living',shape:'rect',width:5,depth:5}),mediumDiningSolution=mediumDining.probe?.solutions?.[0],mediumDiningCounts=countTypes(mediumDiningSolution);
   if(!(mediumDiningCounts.diningTable>0)||(mediumDiningCounts.diningChair||0)<2)fail(`living/5×5: 客餐厅模块仍未形成完整餐组 ${JSON.stringify({counts:mediumDiningCounts,trials:mediumDining.trials})}`);

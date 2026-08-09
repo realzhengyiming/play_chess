@@ -588,6 +588,7 @@
     .trace-entry::before { content: ""; position: absolute; left: -17px; top: 4px; width: 7px; height: 7px; border-radius: 50%; background: #cbd1cc; }
     .trace-entry.active { color: var(--ink); font-weight: 700; }
     .trace-entry.active::before { background: var(--accent); box-shadow: 0 0 0 4px rgba(255,91,56,.12); }
+    .trace-score-detail { display:block; margin-top:4px; padding:5px 7px; border-radius:7px; color:#315f55; background:#edf5f1; font-size:9px; font-weight:800; }
 
     .solution-strip {
       display: grid;

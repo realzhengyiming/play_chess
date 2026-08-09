@@ -25,7 +25,9 @@
         primaryIds:['bed','desk'], primaryLabels:['床墙','桌墙'],
         // 卧室必须先确定睡眠核心，再围绕床生成床头、收纳和工作组。
         // 展示/休闲类只能排在核心功能组之后，填缝柜永远收尾。
-        order:['bed','night','bedroomLoveseat','bedroomTeaTable','tvbench','bench','wardrobe','desk','chair','chest','shelf','bedroomDisplay','lounge','vanity','vanityStool','bedroomInfillCabinet'],
+        // 先落不可替代的睡眠/收纳/工作骨架，再扩展会客模块；否则超大卧室会
+        // 先用沙发占满优质墙段，最后只剩“有衣柜但柜门不可达”的假完整方案。
+        order:['bed','night','wardrobe','desk','chair','bench','tvbench','bedroomLoveseat','bedroomTeaTable','chest','shelf','bedroomDisplay','lounge','vanity','vanityStool','bedroomInfillCabinet'],
         types:[
           {id:'bed',label:'床',role:'睡眠核心 · 自动试规格',category:'核心家具',color:'#2f6da0',minCount:1,maxCount:2,accessTarget:true,stablePrimaryId:true},
           {id:'wardrobe',label:'衣柜',role:'衣物收纳',category:'核心家具',color:'#9b6a46',minCount:1,maxCount:1,accessTarget:true},
@@ -192,7 +194,7 @@
     // 家具共同进入 configuredRuleCandidates；这里仅是首次启动、尚无本地配置时的基线。
     const candidateEntry=(id,mode,options={})=>({id,enabled:true,mode,rotations:[0,90],relativeTo:'',relation:'',side:'front',crossAlign:'center',distance:{min:0,max:0,step:.20},facing:['parallel'],maxSamples:12,weight:1,collisionClearance:.025,allowFunctionalOverlap:false,...options});
     const DEFAULT_CANDIDATE_RULES={
-      bed:[candidateEntry('bed-wall','wall',{maxSamples:20}),candidateEntry('bed-corner','corner',{relation:'wall-end-corner',requiredAnchor:'wall',maxSamples:8,weight:1.35})],wardrobe:[candidateEntry('wardrobe-wall','wall',{maxSamples:32})],desk:[candidateEntry('desk-wall','wall')],vanity:[candidateEntry('vanity-wall','wall')],chest:[candidateEntry('chest-wall','wall')],shelf:[candidateEntry('shelf-wall','wall')],tvbench:[candidateEntry('tvbench-loveseat-facing','relation',{relativeTo:'bedroomLoveseat',relation:'bedroom-media-facing',side:'front',distance:{min:1,max:2.8,step:.25},facing:['toward'],maxSamples:18,weight:1.55,referenceShapePolicy:{lShape:{enabled:true,lateralSide:'any',frontAlign:'body-center'}}}),candidateEntry('tvbench-wall','wall',{maxSamples:40})],sideboard:[candidateEntry('sideboard-wall','wall')],bookcase:[candidateEntry('bookcase-wall','wall')],display:[candidateEntry('display-wall','wall')],console:[candidateEntry('console-wall','wall')],tv:[candidateEntry('tv-facing-sofa','relation',{relativeTo:'sofa',relation:'sofa-facing',side:'front',distance:{min:1.55,max:3.2,step:.25},facing:['toward'],maxSamples:18,weight:1.55,referenceShapePolicy:{lShape:{enabled:true,lateralSide:'any',frontAlign:'body-center'}}}),candidateEntry('tv-wall','wall',{maxSamples:12})],
+      bed:[candidateEntry('bed-wall','wall',{maxSamples:20}),candidateEntry('bed-corner','corner',{relation:'wall-end-corner',requiredAnchor:'wall',maxSamples:8,weight:1.35})],wardrobe:[candidateEntry('wardrobe-wall','wall',{maxSamples:32})],desk:[candidateEntry('desk-wall','wall')],vanity:[candidateEntry('vanity-wall','wall')],chest:[candidateEntry('chest-wall','wall')],shelf:[candidateEntry('shelf-wall','wall')],tvbench:[candidateEntry('tvbench-loveseat-facing','relation',{relativeTo:'bedroomLoveseat',relation:'bedroom-media-facing',side:'front',distance:{min:.55,max:2.8,step:.25},facing:['toward'],maxSamples:18,weight:1.55,referenceShapePolicy:{lShape:{enabled:true,lateralSide:'any',frontAlign:'body-center'}}}),candidateEntry('tvbench-wall','wall',{maxSamples:40})],sideboard:[candidateEntry('sideboard-wall','wall')],bookcase:[candidateEntry('bookcase-wall','wall')],display:[candidateEntry('display-wall','wall')],console:[candidateEntry('console-wall','wall')],tv:[candidateEntry('tv-facing-sofa','relation',{relativeTo:'sofa',relation:'sofa-facing',side:'front',distance:{min:1.55,max:3.2,step:.25},facing:['toward'],maxSamples:18,weight:1.55,referenceShapePolicy:{lShape:{enabled:true,lateralSide:'any',frontAlign:'body-center'}}}),candidateEntry('tv-wall','wall',{maxSamples:12})],
       night:[candidateEntry('bed-left','relation',{relativeTo:'bed',relation:'bed-side',side:'left',crossAlign:'back',distance:{min:0,max:0,step:.05},collisionClearance:0,allowFunctionalOverlap:true,weight:1.55}),candidateEntry('bed-right','relation',{relativeTo:'bed',relation:'bed-side',side:'right',crossAlign:'back',distance:{min:0,max:0,step:.05},collisionClearance:0,allowFunctionalOverlap:true,weight:1.55})],
       chair:[candidateEntry('desk-front','relation',{relativeTo:'desk',relation:'desk-front',side:'front',distance:{min:.03,max:.07,step:.02},facing:['toward'],maxSamples:6,collisionClearance:.015,weight:1.25})],
       bench:[candidateEntry('bed-foot-near','relation',{relativeTo:'bed',relation:'bed-foot',side:'front',distance:{min:.10,max:.15,step:.05},facing:['toward'],allowFunctionalOverlap:true,maxSamples:4,weight:1.42})],
@@ -200,15 +202,15 @@
       // “硬家具休闲椅”只沿墙落子；开放区域中的小椅子/小沙发由搜索后的活动区补全生成，
       // 避免同一家具同时承担贴墙家具和软装填充两种互相冲突的职责。
       lounge:[candidateEntry('reading-wall','wall',{relation:'reading-wall',maxSamples:16,weight:1.85,collisionClearance:0})],hamper:[candidateEntry('utility-corner','corner',{relation:'utility-corner'})],
-      bedroomLoveseat:[candidateEntry('loveseat-wall','wall',{maxSamples:12,weight:1.18}),candidateEntry('loveseat-open-zone','zone',{relation:'bedroom-lounge-zone',maxSamples:10})],
+      bedroomLoveseat:[candidateEntry('loveseat-tv-facing','relation',{relativeTo:'tvbench',relation:'bedroom-seat-media-facing',side:'front',distance:{min:.55,max:2.8,step:.25},facing:['toward'],maxSamples:24,weight:1.65}),candidateEntry('loveseat-wall','wall',{maxSamples:12,weight:1.18}),candidateEntry('loveseat-open-zone','zone',{relation:'bedroom-lounge-zone',maxSamples:10})],
       bedroomTeaTable:[candidateEntry('tea-loveseat-front','relation',{relativeTo:'bedroomLoveseat',relation:'lounge-table',side:'front',distance:{min:.30,max:.55,step:.125},facing:['parallel'],maxSamples:8,weight:1.25}),candidateEntry('tea-chair-front','relation',{relativeTo:'lounge',relation:'lounge-table',side:'front',distance:{min:.24,max:.46,step:.11},facing:['parallel'],maxSamples:8})],
       bedroomDisplay:[candidateEntry('bedroom-display-wall','wall',{maxSamples:14,weight:1.20})],
       sofa:[candidateEntry('sofa-wall','wall',{maxSamples:16,weight:1.25}),candidateEntry('living-zone','zone',{relation:'floating-sofa',maxSamples:12})],
-      coffee:[candidateEntry('sofa-front','relation',{relativeTo:'sofa',relation:'sofa-front',side:'front',distance:{min:.40,max:1.00,step:.20},facing:['toward','away'],maxSamples:10,referenceShapePolicy:{lShape:{enabled:true,lateralSide:'any',frontAlign:'main-seat'}}})],
+      coffee:[candidateEntry('sofa-front','relation',{relativeTo:'sofa',relation:'sofa-front',side:'front',distance:{min:.30,max:.50,step:.05},preferredDistance:{min:.40,max:.45,tolerance:.12},facing:['toward','away'],maxSamples:8,referenceShapePolicy:{lShape:{enabled:true,lateralSide:'any',frontAlign:'main-seat'}}})],
       arm:[candidateEntry('arm-sofa-opposite','relation',{relativeTo:'sofa',relation:'conversation-opposite',side:'front',distance:{min:.70,max:1.30,step:.20},facing:['toward'],maxSamples:8,weight:1.2,referenceShapePolicy:{lShape:{enabled:false,lateralSide:'any',frontAlign:'body-center'}}}),candidateEntry('arm-side-front','relation',{relativeTo:'side',relation:'sofa-side-chair-chain',side:'front',distance:{min:.04,max:.16,step:.06},facing:['parallel'],maxSamples:10,weight:1.9,allowFunctionalOverlap:true,compoundConstraint:{ancestorRelativeTo:'sofa',side:'front',gap:.04}})],
       side:[candidateEntry('sofa-left','relation',{relativeTo:'sofa',relation:'sofa-side',side:'left',distance:{min:.04,max:.20,step:.08},referenceShapePolicy:{lShape:{enabled:true,lateralSide:'non-chaise',frontAlign:'bbox'}}}),candidateEntry('sofa-right','relation',{relativeTo:'sofa',relation:'sofa-side',side:'right',distance:{min:.04,max:.20,step:.08},referenceShapePolicy:{lShape:{enabled:true,lateralSide:'non-chaise',frontAlign:'bbox'}}})],
       ottoman:[candidateEntry('seat-front','relation',{relativeTo:'arm',relation:'seat-ottoman',side:'front',distance:{min:.22,max:.52,step:.10}})],
-      diningTable:[candidateEntry('dining-zone','zone',{relation:'dining-zone',maxSamples:16})],
+      diningTable:[candidateEntry('dining-zone','zone',{relation:'dining-zone',maxSamples:24})],
       diningChair:['front','back','left','right'].map(side=>candidateEntry(`dining-${side}`,'relation',{relativeTo:'diningTable',relation:'dining-seat',side,distance:{min:.18,max:.38,step:.10},facing:['toward'],maxSamples:6})),
       floorLamp:[candidateEntry('seat-light-left','relation',{relativeTo:'arm',relation:'seat-light',side:'left',distance:{min:.04,max:.18,step:.07}}),candidateEntry('seat-light-right','relation',{relativeTo:'arm',relation:'seat-light',side:'right',distance:{min:.04,max:.18,step:.07}}),candidateEntry('sofa-light-left','relation',{relativeTo:'sofa',relation:'seat-light',side:'left',crossAlign:'front',distance:{min:.04,max:.18,step:.07}}),candidateEntry('sofa-light-right','relation',{relativeTo:'sofa',relation:'seat-light',side:'right',crossAlign:'front',distance:{min:.04,max:.18,step:.07}})],
       plant:[candidateEntry('corner-accent','corner',{relation:'corner-accent'})]
@@ -250,10 +252,10 @@
         // 在依赖组内部仍采用用户的原始优先级，避免配置自由度被完全覆盖。
         if(programId==='bedroom'){
           const dependencyRank=new Map([
-            // 床尾凳依赖床，但必须在衣柜/书桌消耗床尾空间前形成一条数量分支。
-            // 它仍然是可选家具，搜索会同时保留“放置”和“跳过”，不会挤掉核心家具。
-            ['bed',0],['night',10],['bedroomLoveseat',20],['bedroomTeaTable',30],['tvbench',40],
-            ['bench',50],['wardrobe',60],['desk',70],['chair',80],
+            // 衣柜与书桌属于不可替代骨架，必须在可选会客组之前锁定可达墙段。
+            // 床尾凳仍保留放置/跳过两条分支，但不能再抢占衣柜柜门使用区。
+            ['bed',0],['night',10],['wardrobe',20],['desk',30],['chair',40],['bench',50],
+            ['tvbench',60],['bedroomLoveseat',70],['bedroomTeaTable',80],
             ['chest',90],['shelf',100],['bedroomDisplay',110],['lounge',120],
             ['vanity',130],['vanityStool',140],['bedroomInfillCabinet',1000]
           ]);
@@ -310,11 +312,11 @@
               candidateConfig.rules=entries;
             }
             if(rule.id==='tvbench'&&!entries.some(entry=>entry.relativeTo==='bedroomLoveseat')){
-              entries.unshift(candidateEntry('tvbench-loveseat-facing','relation',{relativeTo:'bedroomLoveseat',relation:'bedroom-media-facing',side:'front',distance:{min:1,max:2.8,step:.25},facing:['toward'],maxSamples:18,weight:1.55,referenceShapePolicy:{lShape:{enabled:true,lateralSide:'any',frontAlign:'body-center'}}}));
+              entries.unshift(candidateEntry('tvbench-loveseat-facing','relation',{relativeTo:'bedroomLoveseat',relation:'bedroom-media-facing',side:'front',distance:{min:.55,max:2.8,step:.25},facing:['toward'],maxSamples:18,weight:1.55,referenceShapePolicy:{lShape:{enabled:true,lateralSide:'any',frontAlign:'body-center'}}}));
               candidateConfig.rules=entries;
             }
             if(rule.id==='tvbench'){
-              for(const entry of entries)if(entry.relativeTo==='bedroomLoveseat'){entry.distance={...(entry.distance||{}),min:Math.min(1,Number(entry.distance?.min)||1)};writeRelationReferenceShapePolicy(entry,{frontAlign:'body-center'})}
+              for(const entry of entries)if(entry.relativeTo==='bedroomLoveseat'){entry.distance={...(entry.distance||{}),min:Math.min(.55,Number(entry.distance?.min)||.55)};writeRelationReferenceShapePolicy(entry,{frontAlign:'body-center'})}
               for(const entry of entries)if(entry.mode==='wall')entry.maxSamples=Math.max(40,Number(entry.maxSamples)||0);
               candidateConfig.maxCandidates=Math.max(56,Number(candidateConfig.maxCandidates)||0);
             }
@@ -350,6 +352,11 @@
             // 兼容旧服务端配置：不删除旧字段，禁用即可，导出时仍能看见迁移来源。
             for(const entry of entries)if(entry!==wallEntry&&entry.mode==='zone')entry.enabled=false;
             candidateConfig.maxCandidates=Math.max(16,Number(candidateConfig.maxCandidates)||0);
+          }
+          if(programId==='bedroom'&&rule.id==='bedroomLoveseat'){
+            const entries=Array.isArray(candidateConfig.rules)?candidateConfig.rules:(candidateConfig.rules=[candidateConfig]);
+            if(!entries.some(entry=>entry.relativeTo==='tvbench'))entries.unshift(candidateEntry('loveseat-tv-facing','relation',{relativeTo:'tvbench',relation:'bedroom-seat-media-facing',side:'front',distance:{min:.55,max:2.8,step:.25},facing:['toward'],maxSamples:24,weight:1.65}));
+            candidateConfig.maxCandidates=Math.max(40,Number(candidateConfig.maxCandidates)||0);
           }
           const isInfill=!!rule.infill||/填缝|定制柜|infill/i.test(`${rule.id} ${rule.category||''} ${rule.role||''}`);
           const requiredAnchor=programId==='bedroom'&&rule.id==='lounge'?'wall':(placement.requiredAnchor||'none');
@@ -405,7 +412,7 @@
           dining:{anchor:'diningTable',members:['diningTable','diningChair','sideboard'],compact:[.10,.25]}
         },
         zones:{wide:{lounge:[.34,.49],dining:[.73,.51]},deep:{lounge:[.50,.34],dining:[.51,.73]}},
-        pairs:{sofaCoffee:{gap:[.34,.55]},sofaTv:{gap:[1.55,3.20]},conversation:{radius:[.82,1.62]},diningSideboard:{distance:[.65,3.0]}}
+        pairs:{sofaCoffee:{gap:[.40,.45],compact:[.30,.50],hardMin:.28},sofaTv:{gap:[1.55,3.20]},conversation:{radius:[.82,1.62]},diningSideboard:{distance:[.65,3.0]}}
       },
       bedroom:{
         groups:{sleep:{anchor:'bed',members:['bed','night','bench'],compact:[.10,.27]},work:{anchor:'desk',members:['desk','chair'],compact:[.06,.18]},lounge:{anchor:'bedroomLoveseat',members:['bedroomLoveseat','bedroomTeaTable','lounge'],compact:[.08,.22]}},
@@ -716,6 +723,29 @@
       return {orientation,scale:Math.sqrt(scene.area),centroid:polygonCentroid(scene.polygon),zones,grammar};
     }
 
+    function recognizedDoorKind(type='') {
+      const value=String(type).toLowerCase();
+      if(/slide|slince|sliding/.test(value))return 'slide';
+      if(/hole|opening|passage/.test(value))return 'opening';
+      return 'swing';
+    }
+
+    function doorClearanceRect(center,inward,width,kind) {
+      const depth=kind==='swing'?width:.50,offset=depth/2;
+      const horizontal=Math.abs(inward.y)>=Math.abs(inward.x);
+      return horizontal
+        ?{x:center.x+inward.x*offset,y:center.y+inward.y*offset,w:width,d:depth}
+        :{x:center.x+inward.x*offset,y:center.y+inward.y*offset,w:depth,d:width};
+    }
+
+    function sceneDoors(scene) {
+      return scene.doors?.length?scene.doors:(scene.door?[scene.door]:[]);
+    }
+
+    function overlapsDoorClearance(rect,scene,padding=.01) {
+      return sceneDoors(scene).some(door=>door.noGo&&rectsOverlap(rect,door.noGo,padding));
+    }
+
     function makeScene(shape = 'rect', width = 3.6, depth = 3.8, areaMultiplier = 1) {
       const program=PROGRAMS[currentProgram];
       if (recognizedRoomOverride?.programId===currentProgram) {
@@ -742,24 +772,26 @@
           x0:doorX0,x1:doorX0+syntheticDoorWidth,y:doorY,width:syntheticDoorWidth,
           noGo:{x:doorX0+syntheticDoorWidth/2,y:doorY-syntheticDoorWidth/2,w:syntheticDoorWidth,d:syntheticDoorWidth},
           entry:{x:doorX0+syntheticDoorWidth/2,y:doorY-syntheticDoorWidth+.16},recognized:false};
-        const doorOpening=scaledOpenings.filter(opening=>opening.type.startsWith('door')&&opening.points?.length>=2)
-          .sort((a,b)=>dist(b.points[0],b.points[1])-dist(a.points[0],a.points[1]))[0];
-        let door=syntheticDoor;
-        if(doorOpening){
+        syntheticDoor.type='door_open';syntheticDoor.kind='swing';syntheticDoor.isEntrance=true;
+        const doorOpenings=scaledOpenings.filter(opening=>String(opening.type).startsWith('door')&&opening.points?.length>=2);
+        const doors=doorOpenings.map(doorOpening=>{
           const a={...doorOpening.points[0]},b={...doorOpening.points[1]},center={x:(a.x+b.x)/2,y:(a.y+b.y)/2},doorWidth=dist(a,b);
           const wall=walls.slice().sort((left,right)=>pointSegmentDistance(center,left.a,left.b)-pointSegmentDistance(center,right.a,right.b))[0];
-          const inward=wall?.normal||{x:0,y:-1};
-          door={a,b,inward,x0:a.x,x1:b.x,y:a.y,width:doorWidth,type:doorOpening.type,recognized:true,
-            noGo:{x:center.x+inward.x*doorWidth/2,y:center.y+inward.y*doorWidth/2,w:doorWidth,d:doorWidth},
+          const inward=wall?.normal||{x:0,y:-1},kind=recognizedDoorKind(doorOpening.type);
+          return {a,b,inward,x0:a.x,x1:b.x,y:a.y,width:doorWidth,type:doorOpening.type,kind,recognized:true,
+            sourceIndex:doorOpening.sourceIndex,isEntrance:!!doorOpening.isEntrance,noGo:doorClearanceRect(center,inward,doorWidth,kind),
             entry:{x:center.x+inward.x*Math.min(.22,doorWidth*.28),y:center.y+inward.y*Math.min(.22,doorWidth*.28)}};
-        }
+        });
+        if(!doors.length)doors.push(syntheticDoor);
+        // 入户门作为水漫起点；普通房间没有入户门时使用最宽的室内门。
+        const door=doors.find(row=>row.isEntrance)||doors.slice().sort((a,b)=>b.width-a.width)[0];
         const windowEdge=top||{a:{x:0,y:0},b:{x:w,y:0}};
         const windowMin=Math.min(windowEdge.a.x,windowEdge.b.x),windowMax=Math.max(windowEdge.a.x,windowEdge.b.x);
         const windowWidth=Math.min(currentProgram==='living'?1.80:1.45,Math.max(.60,(windowMax-windowMin)*.40));
         const windowX0=clamp((windowMin+windowMax-windowWidth)/2,windowMin,Math.max(windowMin,windowMax-windowWidth));
         const window={x0:windowX0,x1:windowX0+windowWidth,y:(windowEdge.a.y+windowEdge.b.y)/2,mid:{x:windowX0+windowWidth/2,y:(windowEdge.a.y+windowEdge.b.y)/2}};
         const scene={shape:'recognized',programId:currentProgram,baseWidth:baseW,baseDepth:baseD,areaMultiplier:multiplier,linearMultiplier,
-          width:w,depth:d,polygon,walls,door,window,openings:scaledOpenings,area:polygonArea(polygon),compiledAnchors:[],designField:null,_flowContext:null};
+          width:w,depth:d,polygon,walls,door,doors,window,openings:scaledOpenings,area:polygonArea(polygon),compiledAnchors:[],designField:null,_flowContext:null};
         scene.designField=compileDesignField(scene);scene.compiledAnchors=compileAnchorPreview(scene);return scene;
       }
       const baseW=clamp(Number(width)||program.defaultWidth,2.4,7.0);
@@ -780,6 +812,7 @@
         noGo: { x: doorX0 + doorWidth/2, y: d-doorWidth/2, w: doorWidth, d: doorWidth },
         entry: { x: doorX0 + doorWidth/2, y: d-doorWidth+.16 }
       };
+      door.type='door_open';door.kind='swing';door.isEntrance=true;
       const windowWidth=Math.min(currentProgram==='living'?1.80:1.45,w*.40);
       const windowCenter=w*.70;
       const windowX0=clamp(windowCenter-windowWidth/2,.18,Math.max(.18,w-windowWidth-.18));
@@ -787,7 +820,7 @@
       const scene = {
         shape, programId:currentProgram, baseWidth:baseW, baseDepth:baseD,
         areaMultiplier:multiplier, linearMultiplier,
-        width:w, depth:d, polygon, walls:getWalls(polygon), door, window,
+        width:w, depth:d, polygon, walls:getWalls(polygon), door, doors:[door], window,
         area:polygonArea(polygon), compiledAnchors:[],designField:null,_flowContext:null
       };
       scene.designField=compileDesignField(scene);
@@ -841,10 +874,10 @@
         if (Math.abs(wall.dx)>1e-5&&Math.abs(wall.dy)>1e-5) continue;
         if((usedByWall.get(wall.index)||0)>=maxPerWall)continue;
         let intervals=freeWallIntervals(wall,state,scene,item,0);
-        const doorA=scene.door.a||{x:scene.door.x0,y:scene.door.y},doorB=scene.door.b||{x:scene.door.x1,y:scene.door.y};
-        if (pointOnSegment(doorA,wall.a,wall.b)&&pointOnSegment(doorB,wall.a,wall.b)) {
-          const d0=dot({x:doorA.x-wall.a.x,y:doorA.y-wall.a.y},wall.dir);
-          const d1=dot({x:doorB.x-wall.a.x,y:doorB.y-wall.a.y},wall.dir);
+        for(const door of sceneDoors(scene)){
+          const doorA=door.a||{x:door.x0,y:door.y},doorB=door.b||{x:door.x1,y:door.y};
+          if (!pointOnSegment(doorA,wall.a,wall.b)||!pointOnSegment(doorB,wall.a,wall.b))continue;
+          const d0=dot({x:doorA.x-wall.a.x,y:doorA.y-wall.a.y},wall.dir),d1=dot({x:doorB.x-wall.a.x,y:doorB.y-wall.a.y},wall.dir);
           const cut0=Math.min(d0,d1)-.08,cut1=Math.max(d0,d1)+.08;
           intervals=intervals.flatMap(([a,b])=>subtractInterval([[a,b]],cut0,cut1));
         }
@@ -1127,10 +1160,11 @@
         points.unshift([dx,dy]);
       }
       const candidates=[];
-      for (const rotation of [0,90]) {
-        const normal=rotation===0?{x:0,y:1}:{x:1,y:0};
-        const wallDir=rotation===0?{x:1,y:0}:{x:0,y:-1};
-        for (const [rx,ry] of points) candidates.push({x:scene.width*rx,y:scene.depth*ry,rotation,normal:{...normal},wallDir:{...wallDir},wallIndex:-1,wallPoint:null,anchor:'zone',relation});
+      // 按“同一点的两个朝向”交错输出。configuredRuleCandidates 会按规则上限
+      // 截断；旧顺序先输出全部 0°，导致餐桌的 90° 候选永远进不了前 16。
+      for (const [rx,ry] of points)for (const rotation of [0,90]) {
+        const normal=rotation===0?{x:0,y:1}:{x:1,y:0},wallDir=rotation===0?{x:1,y:0}:{x:0,y:-1};
+        candidates.push({x:scene.width*rx,y:scene.depth*ry,rotation,normal:{...normal},wallDir:{...wallDir},wallIndex:-1,wallPoint:null,anchor:'zone',relation});
       }
       return candidates;
     }
@@ -1283,7 +1317,9 @@
     }
 
     function configuredRuleCandidates(item,state,scene) {
-      const rule=furnitureRule(item),candidate=rule?.candidate||{mode:'wall'},entries=Array.isArray(candidate.rules)&&candidate.rules.length?candidate.rules.filter(entry=>entry.enabled!==false):[candidate],totalLimit=Math.min(rule?.infill?24:72,Math.max(4,Math.round(Number(candidate.maxCandidates)||32))),buckets=[];
+      const rule=furnitureRule(item),candidate=rule?.candidate||{mode:'wall'};let entries=Array.isArray(candidate.rules)&&candidate.rules.length?candidate.rules.filter(entry=>entry.enabled!==false):[candidate];
+      if(item.typeId==='bedroomLoveseat'&&state.poses.tvbench){const related=entries.filter(entry=>entry.mode==='relation'&&entry.relativeTo==='tvbench');if(related.length)entries=related;}
+      const totalLimit=Math.min(rule?.infill?24:72,Math.max(4,Math.round(Number(candidate.maxCandidates)||32))),buckets=[];
       if(rule?.infill)return customInfillCandidates(item,scene,state).slice(0,totalLimit);
       for(const entry of entries){const mode=entry.mode||'wall',relation=entry.relation||'custom-zone',perRule=Math.min(48,Math.max(1,Math.round(Number(entry.maxSamples)||12)));let rows=[];
         if(mode==='corner'&&(entry.requiredAnchor==='wall'||rule?.allowCorner))rows=wallPoseCandidates(item,scene,state).filter(pose=>(pose.wallEndGap??Infinity)<=.12);else if(mode==='corner')rows=cornerCandidates(item,scene,relation);else if(mode==='zone')rows=roomZoneCandidates(item,scene,relation,state);else if(mode==='relation'&&rule?.requiredAnchor==='wall')rows=genericWallRelativeCandidates(item,state,scene,entry);else if(mode==='relation')rows=genericRelativeCandidates(item,state,entry);else rows=wallPoseCandidates(item,scene,state);
@@ -1378,7 +1414,7 @@
       if (rule.avoidWindow&&windowOverlap(item,pose,scene)) return false;
       for (const zone of zones) {
         if (!rectInsidePolygon(zone.rect,scene.polygon)) return false;
-        if (rectsOverlap(zone.rect,scene.door.noGo,.01)) return false;
+        if (overlapsDoorClearance(zone.rect,scene,.01)) return false;
       }
       return true;
     }
@@ -1397,16 +1433,21 @@
       return false;
     }
 
-    function isLegal(item,pose,state,scene) {
-      if (!footprintInside(item,pose,scene.polygon)) return false;
-      if (footprintRects(item,pose).some(rect=>rectsOverlap(rect,scene.door.noGo,.01))) return false;
+    function legalityCheck(item,pose,state,scene) {
+      if (!footprintInside(item,pose,scene.polygon)) return {legal:false,reason:'outside',label:'超出房间边界'};
+      if (footprintRects(item,pose).some(rect=>overlapsDoorClearance(rect,scene,.01))) return {legal:false,reason:'door',label:'占用门洞或门扇区'};
       const zones=hardFunctionalZones(item,pose);
-      if (!staticFurnitureRulesPass(item,pose,scene,zones)) return false;
+      if (!staticFurnitureRulesPass(item,pose,scene,zones)) return {legal:false,reason:'static',label:'违反门窗、墙面或静态功能区'};
       for (const [id,otherPose] of Object.entries(state.poses)) {
         const other=ITEM_BY_ID[id];
-        if (footprintsOverlap(item,pose,other,otherPose,pairCollisionClearance(item,pose,other,otherPose))) return false;
+        if (footprintsOverlap(item,pose,other,otherPose,pairCollisionClearance(item,pose,other,otherPose))) return {legal:false,reason:'collision',label:`与${itemBaseLabel(other)}碰撞`};
       }
-      return !functionalConflict(item,pose,state,zones);
+      if(functionalConflict(item,pose,state,zones))return {legal:false,reason:'functional',label:'侵占家具硬使用区'};
+      return {legal:true,reason:'legal',label:'硬规则合法'};
+    }
+
+    function isLegal(item,pose,state,scene) {
+      return legalityCheck(item,pose,state,scene).legal;
     }
 
     function validateState(state,scene) {
@@ -1591,7 +1632,14 @@
         }
         if (windowOverlap(item,pose,scene)) score -= 72;
       }
-      if (item.typeId === 'coffee') score += pose.relation === 'sofa-front' ? 54 : -18;
+      if (item.typeId === 'coffee') {
+        score += pose.relation === 'sofa-front' ? 54 : -18;
+        if(pose.relation==='sofa-front'&&Number.isFinite(Number(pose.relationGap))){
+          const preferred=configuredEntry?.preferredDistance||DESIGN_GRAMMAR.living.pairs.sofaCoffee;
+          const min=Number(preferred?.min??preferred?.gap?.[0]??.40),max=Number(preferred?.max??preferred?.gap?.[1]??.45),tolerance=Number(preferred?.tolerance)||.12;
+          score+=bandScore(Number(pose.relationGap),min,max,tolerance)*22-6;
+        }
+      }
       if (item.id === 'diningTable') {
         if(!configuredEntry)score += pose.relation==='dining-zone'?34:-12;
         if (state.poses.sofa) score += clamp((dist(pose,state.poses.sofa)-1.35)*8,-18,18);
@@ -1811,7 +1859,11 @@
       return {x:rect.x,y:rect.y,w:rect.w+padding*2,d:rect.d+padding*2};
     }
 
-    const FLOW_RADII=[{id:'tight',radius:.23},{id:'normal',radius:.30},{id:'comfortable',radius:.40}];
+    // tight 半径 0.25m = 最小净通行宽 0.50m。任何家具组合若让这枚“人体圆”
+    // 无法通过，或在门口水漫之外留下成片自由空间，都属于硬失败。
+    const FLOW_RADII=[{id:'tight',radius:.25},{id:'normal',radius:.30},{id:'comfortable',radius:.40}];
+    const FLOW_GUIDE_TYPES=new Set(['coffee','diningTable','sideboard','bookcase','display','console','wardrobe','desk','chest','shelf','bedroomDisplay']);
+    const RECOGNIZED_FLOW_PRUNE_TYPES=new Set(['bed','night','wardrobe','desk','chair','vanity','vanityStool','bench','lounge','bedroomLoveseat','bedroomTeaTable','tvbench','chest','shelf','bedroomDisplay','sofa','tv','coffee','diningTable','diningChair','arm','side','sideboard','bookcase','display','console','ottoman']);
 
     function pointSegmentDistance(p,a,b) {
       const dx=b.x-a.x,dy=b.y-a.y,length2=dx*dx+dy*dy||1;
@@ -1897,8 +1949,13 @@
     function poseObstacleMask(item,pose,level,context) {
       const key=`${item.id}:${item.w}:${item.d}:${pose.overrideShape||item.shape||'box'}:${poseIdentity(pose)}:${level.id}`,cached=context.poseMasks.get(key);
       if(cached)return cached;
+      // 椅/凳属于可挪动物，不把“坐下后的固定人体半径”永久焊死在它四周；
+      // 其实体仍占格。床、柜、桌、沙发等固定家具一律按 0.25m 扩张。
       const movable=new Set(['chair','vanityStool','diningChair','ottoman']).has(item.typeId);
-      const mask=rasterDenseRects(footprintRects(item,pose),context,movable?level.radius*.22:level.radius);
+      // 栅格边界本身会向外取整一格，固定物半径留 1cm 数值容差，避免把刚好
+      // 0.50m 的通道因浮点/格心对齐误判成 0.48m；名义门槛仍是直径 0.50m。
+      const fixedPadding=Math.max(0,level.radius-.01);
+      const mask=rasterDenseRects(footprintRects(item,pose),context,movable?level.radius*.22:fixedPadding);
       context.poseMasks.set(key,mask);return mask;
     }
 
@@ -1924,7 +1981,7 @@
       return rasterDenseRects(trimmed,context,0);
     }
 
-    function computeReachability(state,scene,levels=FLOW_RADII) {
+    function computeReachability(state,scene,levels=FLOW_RADII,extraRects=[]) {
       const context=scene._flowContext||(scene._flowContext=createFlowContext(scene));
       const poses=Object.entries(state.poses),results={};
       for (const level of levels) {
@@ -1934,9 +1991,18 @@
           const mask=poseObstacleMask(item,pose,level,context);
           for(let i=0;i<blocked.length;i++)blocked[i]|=mask[i];
         }
+        if(extraRects.length){
+          const extraMask=rasterDenseRects(extraRects,context,Math.max(0,level.radius-.01));
+          for(let i=0;i<blocked.length;i++)blocked[i]|=extraMask[i];
+        }
         const free=new Uint32Array(context.words);
         for(let i=0;i<free.length;i++)free[i]=(room[i]&(~blocked[i]))>>>0;
         const reached=floodBitset(free,scene,context);
+        // 家具明确声明的服务区（例如沙发与茶几之间、餐桌与餐椅之间）是坐姿/操作
+        // 空间，不要求成为 0.50m 穿行通道。只从“孤岛面积”中扣掉这些有功能归属
+        // 的格子；没有任何功能归属的墙角、凹槽和家具背后空地仍然是硬孤岛。
+        const claimedRects=poses.flatMap(([id,pose])=>ITEM_BY_ID[id]?functionalZones(ITEM_BY_ID[id],pose).map(zone=>zone.rect):[]);
+        const claimed=claimedRects.length?rasterDenseRects(claimedRects,context,0):new Uint32Array(context.words);
         let targetCount=0,reachableTargets=0,hardTargetCount=0,reachableHardTargets=0;const targetStatus={};
         for(const [id,pose] of poses) {
           const item=ITEM_BY_ID[id];if(!item||item.accessTarget===false)continue;
@@ -1946,12 +2012,19 @@
           const secondary=currentProgram==='living'?['tv','sideboard','bookcase','display','console'].includes(item.typeId):['chest','shelf','tvbench'].includes(item.typeId);
           if(!secondary){hardTargetCount++;if(hit)reachableHardTargets++;}
         }
-        const roomCells=bitCount(room),freeCells=bitCount(free),reachedCells=bitCount(reached);
-        results[level.id]={targetCount,reachableTargets,hardTargetCount,reachableHardTargets,targetStatus,reachableRatio:targetCount?reachableTargets/targetCount:1,hardReachableRatio:hardTargetCount?reachableHardTargets/hardTargetCount:1,freeRatio:roomCells?freeCells/roomCells:0,connectedRatio:freeCells?reachedCells/freeCells:0,reachedCells};
+        let unexplainedCells=0;
+        for(let i=0;i<free.length;i++)unexplainedCells+=popcount32((free[i]&(~reached[i])&(~claimed[i]))>>>0);
+        const roomCells=bitCount(room),freeCells=bitCount(free),reachedCells=bitCount(reached),unreachableCells=unexplainedCells;
+        const rawUnreachableArea=unreachableCells*context.step*context.step,islandPass=rawUnreachableArea<=.08+EPS,unreachableArea=islandPass?0:rawUnreachableArea;
+        results[level.id]={targetCount,reachableTargets,hardTargetCount,reachableHardTargets,targetStatus,reachableRatio:targetCount?reachableTargets/targetCount:1,hardReachableRatio:hardTargetCount?reachableHardTargets/hardTargetCount:1,freeRatio:roomCells?freeCells/roomCells:0,connectedRatio:freeCells?1-unreachableCells/freeCells:1,reachedCells,freeCells,unreachableCells,unreachableArea,rawUnreachableArea,islandPass,minimumPassage:level.radius*2};
       }
       const tight=results.tight||results[levels[0].id],normal=results.normal||tight,comfortable=results.comfortable||normal;
+      // 户型选择器里的真实多边形统一执行零孤岛硬门槛。合成矩形继续保留
+      // 拓扑诊断，用于覆盖旧的几何回归，不代表可以交付一个带孤岛的真实户型。
+      const islandRequired=scene.shape==='recognized';
       return {...tight,levels:results,normalRatio:normal.reachableRatio,comfortableRatio:comfortable.reachableRatio,
-        normalHardRatio:normal.hardReachableRatio,comfortableHardRatio:comfortable.hardReachableRatio,hardPass:tight.hardReachableRatio===1};
+        normalHardRatio:normal.hardReachableRatio,comfortableHardRatio:comfortable.hardReachableRatio,islandRequired,
+        hardPass:tight.hardReachableRatio===1&&(!islandRequired||tight.islandPass)};
     }
 
     function relationSatisfied(state,id) {
@@ -2091,11 +2164,11 @@
         modules.push({id,label,weight,ratio,complete:ratio>=.985});
       };
       if(currentProgram==='bedroom'){
-        const nightTarget=scene.area>=9?2:1;
-        add('sleep','床组与基础收纳',2.4,[
-          [placed('bed')?1:0,.48],
-          [Math.min(1,placedCount('night')/nightTarget),.27],
-          [placed('wardrobe')?1:0,.25]
+        const nightTarget=scene.area>=9?2:scene.area>=8?1:0;
+        add('sleep','床组与基础收纳',2.4,nightTarget?[
+          [placed('bed')?1:0,.48],[Math.min(1,placedCount('night')/nightTarget),.27],[placed('wardrobe')?1:0,.25]
+        ]:[
+          [placed('bed')?1:0,.58],[placed('wardrobe')?1:0,.42]
         ]);
         if(expected.has('work')||expected.has('micro-work'))add('work','工作组',1.25,[[placed('desk')?1:0,.55],[placed('chair')?1:0,.45]]);
         if(expected.has('lounge'))add('lounge','卧室会客组',1.45,[[placed('bedroomLoveseat')?1:0,.42],[placed('bedroomTeaTable')?1:0,.25],[placed('tvbench')?1:0,.33]]);
@@ -2107,7 +2180,13 @@
         if(expected.has('guest-seating'))add('guest-seating','围合座位组',1.15,[[Math.min(1,placedCount('arm')),.55],[Math.min(1,placedCount('side')),.27],[Math.min(1,placedCount('floorLamp')),.18]]);
         if(expected.has('dining')){
           const chairTarget=scene.area>=34?4:2;
-          add('dining','餐厅组',1.65,[[placed('diningTable')?1:0,.42],[Math.min(1,placedCount('diningChair')/chairTarget),.58]]);
+          const diningRatio=(placed('diningTable')?.42:0)+Math.min(1,placedCount('diningChair')/chairTarget)*.58;
+          const storageCount=['sideboard','bookcase','display','console'].reduce((sum,typeId)=>sum+placedCount(typeId),0);
+          // 识别结果只有 living_room 类型，不能仅按面积强制推断其一定兼作餐厅。
+          // 34㎡以上允许“完整餐组”或“扩展会客 + 连续收纳”二选一；后者仍需
+          // 至少两把单椅和两件沿墙收纳，不能用三件核心家具冒充丰富方案。
+          const expandedLiving=scene.area>=34&&!placed('diningTable')&&placedCount('arm')>=2&&storageCount>=2?1:0;
+          add('dining','第二功能区（餐组 / 扩展会客）',1.65,[[Math.max(diningRatio,expandedLiving),1]]);
         }
         if(expected.has('storage')){
           const storageTypes=['sideboard','bookcase','display','console'].filter(placed).length;
@@ -2165,14 +2244,16 @@
 
     function wallPlaneMetrics(state,scene,storage,extraWallRects=[]) {
       const rules=DESIGN_QUALITY_RULES.wall;
-      const byWall=new Map();
+      const byWall=new Map(),claimedByWall=new Map();
       for(const [id,pose] of Object.entries(state.poses)){
         const item=ITEM_BY_ID[id];if(!item)continue;
         const wallFilling=currentProgram==='living'
           ?['tv','sideboard','bookcase','display','console','infillCabinet'].includes(item.typeId)
           :['wardrobe','desk','vanity','chest','shelf','tvbench','bedroomDisplay','bedroomInfillCabinet'].includes(item.typeId);
-        // 床、沙发、单椅两侧的留空是正常构图；“墙缝”只约束本来就负责占墙和收口的家具。
-        if(!wallFilling)continue;
+        const wallClaiming=wallFilling||['bed','sofa','bedroomLoveseat','lounge'].includes(item.typeId);
+        // 床、沙发等不按柜体接缝评分，但它们确实占用了一段墙，不能把其背后的墙
+        // 误报为“可继续摆柜的空墙”。claimed 与 actual 因此分开记录。
+        if(!wallClaiming)continue;
         // 一些关系家具虽然没有 wallIndex，但实体背边可能确实贴墙；墙面评价按
         // 真实几何投影识别，不能只依赖候选来源标签。
         for(const rect of footprintRects(item,pose))for(const wall of scene.walls){
@@ -2182,44 +2263,76 @@
           if(Math.abs(perpendicular-halfNormal)>.055)continue;
           const width=Math.abs(wall.dir.x)>.5?rect.w:rect.d,along=dot({x:rect.x-wall.a.x,y:rect.y-wall.a.y},wall.dir);
           if(along+width/2<-.03||along-width/2>wall.length+.03)continue;
-          if(!byWall.has(wall.index))byWall.set(wall.index,[]);
-          byWall.get(wall.index).push({a:clamp(along-width/2,0,wall.length),b:clamp(along+width/2,0,wall.length),actual:true,protected:false});
+          const interval={a:clamp(along-width/2,0,wall.length),b:clamp(along+width/2,0,wall.length),actual:wallFilling,protected:false,claimed:true};
+          if(!claimedByWall.has(wall.index))claimedByWall.set(wall.index,[]);claimedByWall.get(wall.index).push(interval);
+          if(wallFilling){if(!byWall.has(wall.index))byWall.set(wall.index,[]);byWall.get(wall.index).push(interval)}
         }
       }
       for(const rect of extraWallRects){
         const wall=scene.walls[rect.wallIndex];if(!wall)continue;
         const width=Math.abs(wall.dir.x)>=Math.abs(wall.dir.y)?rect.w:rect.d,along=dot({x:rect.x-wall.a.x,y:rect.y-wall.a.y},wall.dir);
         if(!byWall.has(wall.index))byWall.set(wall.index,[]);
-        byWall.get(wall.index).push({a:clamp(along-width/2,0,wall.length),b:clamp(along+width/2,0,wall.length),actual:true,protected:false,postLayout:true});
+        const interval={a:clamp(along-width/2,0,wall.length),b:clamp(along+width/2,0,wall.length),actual:true,protected:false,claimed:true,postLayout:true};
+        byWall.get(wall.index).push(interval);if(!claimedByWall.has(wall.index))claimedByWall.set(wall.index,[]);claimedByWall.get(wall.index).push(interval);
       }
       const openingInterval=(wall,a,b,padding)=>{
         if(!a||!b)return null;const mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2};if(pointSegmentDistance(mid,wall.a,wall.b)>.10)return null;
         const x0=dot({x:a.x-wall.a.x,y:a.y-wall.a.y},wall.dir),x1=dot({x:b.x-wall.a.x,y:b.y-wall.a.y},wall.dir);
         return {a:clamp(Math.min(x0,x1)-padding,0,wall.length),b:clamp(Math.max(x0,x1)+padding,0,wall.length),actual:false,protected:true};
       };
-      let internalSlivers=0,cornerSlivers=0,severeGaps=0,awkwardGaps=0,usefulBays=0,largeGaps=0,gapLength=0,severeGapLength=0,activeWalls=0;
-      const classify=(gap,corner=false)=>{
+      const cornerGapFillable=(wall,gap,atStart)=>{
+        const depth=currentProgram==='living'?.38:.34,t=atStart?gap/2:wall.length-gap/2;
+        const wallPoint={x:wall.a.x+wall.dir.x*t,y:wall.a.y+wall.dir.y*t};
+        const center={x:wallPoint.x+wall.normal.x*depth/2,y:wallPoint.y+wall.normal.y*depth/2};
+        const horizontal=Math.abs(wall.dir.x)>Math.abs(wall.dir.y),rect={x:center.x,y:center.y,w:horizontal?gap:depth,d:horizontal?depth:gap};
+        if(!rectInsidePolygon(rect,scene.polygon)||overlapsDoorClearance(rect,scene,.025))return false;
+        for(const [id,pose] of Object.entries(state.poses)){
+          const item=ITEM_BY_ID[id];if(!item)continue;
+          if(hardFunctionalZones(item,pose).some(zone=>rectsOverlap(rect,zone.rect,0)))return false;
+        }
+        return true;
+      };
+      let internalSlivers=0,cornerSlivers=0,severeGaps=0,awkwardGaps=0,usefulBays=0,largeGaps=0,gapLength=0,severeGapLength=0,activeWalls=0,emptyUsefulBays=0,emptyUsefulLength=0;const gapDetails=[];
+      const classify=(gap,corner=false,wallIndex=-1,position='internal')=>{
         if(gap<=rules.installGapMax)return 'install';
-        if(gap>=rules.severeGapMin&&gap<=rules.severeGapMax){severeGaps++;severeGapLength+=gap;if(corner)cornerSlivers++;else internalSlivers++;return 'severe';}
-        if(gap<rules.usefulBayMin&&gap<=rules.awkwardGapMax){awkwardGaps++;if(corner)cornerSlivers++;else internalSlivers++;return 'awkward';}
-        usefulBays++;largeGaps++;return 'useful';
+        if(gap>=rules.severeGapMin&&gap<=rules.severeGapMax){severeGaps++;severeGapLength+=gap;if(corner)cornerSlivers++;else internalSlivers++;gapDetails.push({wallIndex,position,width:round(gap,3),severity:'severe'});return 'severe';}
+        if(gap<rules.usefulBayMin&&gap<=rules.awkwardGapMax){awkwardGaps++;if(corner)cornerSlivers++;else internalSlivers++;gapDetails.push({wallIndex,position,width:round(gap,3),severity:'awkward'});return 'awkward';}
+        usefulBays++;largeGaps++;gapDetails.push({wallIndex,position,width:round(gap,3),severity:'useful'});return 'useful';
       };
       for(const wall of scene.walls){
-        const actual=byWall.get(wall.index)||[];if(!actual.length)continue;activeWalls++;
-        const rows=[...actual],doorA=scene.door.a||{x:scene.door.x0,y:scene.door.y},doorB=scene.door.b||{x:scene.door.x1,y:scene.door.y},winA={x:scene.window.x0,y:scene.window.y},winB={x:scene.window.x1,y:scene.window.y};
-        const door=openingInterval(wall,doorA,doorB,.22),windowGap=openingInterval(wall,winA,winB,.10);if(door)rows.push(door);if(windowGap)rows.push(windowGap);
+        const actual=byWall.get(wall.index)||[],claimed=claimedByWall.get(wall.index)||[],protectedRows=[],winA={x:scene.window.x0,y:scene.window.y},winB={x:scene.window.x1,y:scene.window.y};
+        for(const door of sceneDoors(scene)){
+          const doorA=door.a||{x:door.x0,y:door.y},doorB=door.b||{x:door.x1,y:door.y},gap=openingInterval(wall,doorA,doorB,.22);if(gap)protectedRows.push(gap);
+        }
+        const windowGap=openingInterval(wall,winA,winB,.10);if(windowGap)protectedRows.push(windowGap);
+        // 所有门窗和已经占墙的主体之外，连续达到 0.70m 的净墙段都属于可利用空墙。
+        // 过去只有墙上已经有柜时才评价，整面空墙反而完全不扣分。
+        const occupied=[...claimed,...protectedRows].sort((a,b)=>a.a-b.a),occupiedMerged=[];
+        for(const row of occupied){const last=occupiedMerged[occupiedMerged.length-1];if(last&&row.a<=last.b+.03)last.b=Math.max(last.b,row.b);else occupiedMerged.push({...row})}
+        let cursor=0;for(const row of occupiedMerged){const free=Math.max(0,row.a-cursor);if(free>=rules.usefulBayMin){emptyUsefulBays++;emptyUsefulLength+=free}cursor=Math.max(cursor,row.b)}
+        const tail=Math.max(0,wall.length-cursor);if(tail>=rules.usefulBayMin){emptyUsefulBays++;emptyUsefulLength+=tail}
+        if(!actual.length)continue;activeWalls++;
+        const rows=[...actual,...protectedRows];
         rows.sort((a,b)=>a.a-b.a);const merged=[];
         for(const row of rows){const last=merged[merged.length-1];if(last&&row.a<=last.b+.03){last.b=Math.max(last.b,row.b);last.actual||=row.actual;last.protected||=row.protected}else merged.push({...row})}
         const first=merged[0],last=merged[merged.length-1],startGap=first.a,endGap=wall.length-last.b;
-        if(first.actual&&startGap>rules.installGapMax){gapLength+=startGap;classify(startGap,true)}if(last.actual&&endGap>rules.installGapMax){gapLength+=endGap;classify(endGap,true)}
+        if(first.actual&&startGap>rules.installGapMax){
+          if(cornerGapFillable(wall,startGap,true)){gapLength+=startGap;classify(startGap,true,wall.index,'start')}
+          else gapDetails.push({wallIndex:wall.index,position:'start',width:round(startGap,3),severity:'architectural'});
+        }
+        if(last.actual&&endGap>rules.installGapMax){
+          if(cornerGapFillable(wall,endGap,false)){gapLength+=endGap;classify(endGap,true,wall.index,'end')}
+          else gapDetails.push({wallIndex:wall.index,position:'end',width:round(endGap,3),severity:'architectural'});
+        }
         for(let index=1;index<merged.length;index++){
           const left=merged[index-1],right=merged[index],gap=right.a-left.b;if(gap<=rules.installGapMax||!left.actual||!right.actual)continue;
-          gapLength+=gap;classify(gap,false);
+          gapLength+=gap;classify(gap,false,wall.index,'internal');
         }
       }
       const continuity=clamp(1-severeGaps*.28-awkwardGaps*.10-severeGapLength/Math.max(storage.availableWall,1)*.72,0,1),cornerClosure=clamp(1-cornerSlivers*.30-severeGaps*.08,0,1);
-      const score=clamp(storage.score*.42+continuity*.36+cornerClosure*.22,0,1),severe=severeGaps>0;
-      return {score,continuity,cornerClosure,internalSlivers,cornerSlivers,severeGaps,awkwardGaps,usefulBays,largeGaps,gapLength,severeGapLength,activeWalls,severe,storage};
+      const unusedWallRatio=clamp(emptyUsefulLength/Math.max(storage.availableWall,1),0,1),emptyWallScore=clamp(1-unusedWallRatio*1.35-emptyUsefulBays*.035,0,1);
+      const score=clamp(storage.score*.36+continuity*.29+cornerClosure*.17+emptyWallScore*.18,0,1),severe=severeGaps>0;
+      return {score,continuity,cornerClosure,emptyWallScore,emptyUsefulBays,emptyUsefulLength,unusedWallRatio,internalSlivers,cornerSlivers,severeGaps,awkwardGaps,usefulBays,largeGaps,gapLength,severeGapLength,gapDetails,activeWalls,severe,storage};
     }
 
     function preferenceSatisfaction(state) {
@@ -2280,8 +2393,9 @@
     function groundPlaneMetrics(state,scene,coverageMetrics,step=DESIGN_QUALITY_RULES.floor.gridStep,extraRects=[]){
       const rules=DESIGN_QUALITY_RULES.floor,radius=rules.humanRadius;
       const cols=Math.max(1,Math.ceil(scene.width/step)),rows=Math.max(1,Math.ceil(scene.depth/step));
-      const free=new Uint8Array(cols*rows),safe=new Uint8Array(cols*rows),visited=new Uint8Array(cols*rows);
+      const free=new Uint8Array(cols*rows),safe=new Uint8Array(cols*rows),claimed=new Uint8Array(cols*rows),visited=new Uint8Array(cols*rows);
       const bodies=[...Object.entries(state.poses).flatMap(([id,pose])=>ITEM_BY_ID[id]?footprintRects(ITEM_BY_ID[id],pose):[]),...extraRects];
+      const claimedRects=Object.entries(state.poses).flatMap(([id,pose])=>ITEM_BY_ID[id]?functionalZones(ITEM_BY_ID[id],pose).map(zone=>zone.rect):[]);
       const rectDistance=(point,rect)=>Math.hypot(Math.max(0,Math.abs(point.x-rect.x)-rect.w/2),Math.max(0,Math.abs(point.y-rect.y)-rect.d/2));
       const boundaryDistance=point=>{
         let value=Infinity;for(let i=0;i<scene.polygon.length;i++)value=Math.min(value,pointSegmentDistance(point,scene.polygon[i],scene.polygon[(i+1)%scene.polygon.length]));return value;
@@ -2291,7 +2405,7 @@
         const point={x:(x+.5)*step,y:(y+.5)*step},index=y*cols+x;if(!pointInPolygon(point,scene.polygon))continue;roomCells++;
         const distances=bodies.map(rect=>rectDistance(point,rect)).sort((a,b)=>a-b),bodyDistance=distances[0]??Infinity;
         if(bodyDistance<=step*.18)continue;
-        free[index]=1;freeCells++;
+        free[index]=1;freeCells++;if(claimedRects.some(rect=>pointInRect(point,rect)))claimed[index]=1;
         const boundary=boundaryDistance(point);
         if(boundary+step*.36>=radius&&bodyDistance+step*.28>=radius){safe[index]=1;safeCells++;}
       }
@@ -2305,16 +2419,16 @@
       }
       const queue=new Int32Array(safe.length),components=[];
       for(let start=0;start<safe.length;start++)if(safe[start]&&!visited[start]){
-        let head=0,tail=0,count=0,sumX=0,sumY=0;queue[tail++]=start;visited[start]=1;
-        while(head<tail){const index=queue[head++],x=index%cols,y=Math.floor(index/cols);count++;sumX+=(x+.5)*step;sumY+=(y+.5)*step;
+        let head=0,tail=0,count=0,unclaimedCount=0,sumX=0,sumY=0;queue[tail++]=start;visited[start]=1;
+        while(head<tail){const index=queue[head++],x=index%cols,y=Math.floor(index/cols);count++;if(!claimed[index])unclaimedCount++;sumX+=(x+.5)*step;sumY+=(y+.5)*step;
           if(x>0&&safe[index-1]&&!visited[index-1]){visited[index-1]=1;queue[tail++]=index-1}if(x+1<cols&&safe[index+1]&&!visited[index+1]){visited[index+1]=1;queue[tail++]=index+1}
           if(y>0&&safe[index-cols]&&!visited[index-cols]){visited[index-cols]=1;queue[tail++]=index-cols}if(y+1<rows&&safe[index+cols]&&!visited[index+cols]){visited[index+cols]=1;queue[tail++]=index+cols}
         }
-        components.push({count,area:count*step*step,x:sumX/count,y:sumY/count});
+        components.push({count,unclaimedCount,area:unclaimedCount*step*step,x:sumX/count,y:sumY/count});
       }
       components.sort((a,b)=>b.count-a.count);const main=components[0]||{count:0,area:0,x:scene.designField.centroid.x,y:scene.designField.centroid.y};
-      const disconnected=components.slice(1),unreachableCells=disconnected.reduce((sum,row)=>sum+row.count,0);
-      const deadRows=disconnected.filter(row=>row.area>=rules.pocketMinArea&&row.area<=rules.pocketMaxArea),deadPocketCells=deadRows.reduce((sum,row)=>sum+row.count,0);
+      const disconnected=components.slice(1),unreachableCells=disconnected.reduce((sum,row)=>sum+row.unclaimedCount,0);
+      const deadRows=disconnected.filter(row=>row.area>=rules.pocketMinArea&&row.area<=rules.pocketMaxArea),deadPocketCells=deadRows.reduce((sum,row)=>sum+row.unclaimedCount,0);
       let mass=0,massX=0,massY=0;for(const rect of bodies){const area=Math.max(.01,rect.w*rect.d);mass+=area;massX+=rect.x*area;massY+=rect.y*area;}
       const center=scene.designField.centroid,scale=Math.max(scene.designField.scale,1),massCenter=mass?{x:massX/mass,y:massY/mass}:center;
       const massDistance=dist(massCenter,center)/scale,freeDistance=dist(main,center)/scale,balanceDistance=massDistance*.62+freeDistance*.38;
@@ -2606,6 +2720,8 @@
         .sort((a,b)=>b.evaluation.total-a.evaluation.total);
       const strictCount=evaluatedAll.filter(state=>state.evaluation.qualityPass).length;
       stats.qualityRejected=evaluatedAll.length-strictCount;
+      const bestReach=evaluatedAll.slice().sort((a,b)=>Number(b.evaluation.reach.hardPass)-Number(a.evaluation.reach.hardPass)||a.evaluation.reach.unreachableArea-b.evaluation.reach.unreachableArea||b.evaluation.reach.hardReachableRatio-a.evaluation.reach.hardReachableRatio)[0]?.evaluation.reach;
+      stats.bestReach=bestReach?{hardPass:bestReach.hardPass,hardReachableRatio:bestReach.hardReachableRatio,islandArea:round(bestReach.unreachableArea,3),connectedRatio:round(bestReach.connectedRatio,3),targetStatus:{...bestReach.targetStatus}}:null;
       const selected=chooseObjectiveSolutions(solutionPoolFromEvaluated(evaluatedAll));
       stats.timeMs=performance.now()-startTime;
       stats.avgUs=stats.nodes?stats.timeMs*1000/stats.nodes:0;
@@ -2647,7 +2763,7 @@
       const rects=footprintRects(item,pose);
       const hardZones=hardFunctionalZones(item,pose);
       const inside=rects.every(rect=>rectInsidePolygon(rect,scene.polygon));
-      const clearsDoor=!rects.some(rect=>rectsOverlap(rect,scene.door.noGo,.01));
+      const clearsDoor=!rects.some(rect=>overlapsDoorClearance(rect,scene,.01));
       const profile={
         rects,hardZones,staticLegal:inside&&clearsDoor&&staticFurnitureRulesPass(item,pose,scene,hardZones),
         bodyMask:rasterRectMask(rects,context,0),
@@ -2768,6 +2884,8 @@
         .sort((a,b)=>b.evaluation.total-a.evaluation.total);
       const strictCount=evaluatedAll.filter(state=>state.evaluation.qualityPass).length;
       stats.qualityRejected=evaluatedAll.length-strictCount;
+      const bestReach=evaluatedAll.slice().sort((a,b)=>Number(b.evaluation.reach.hardPass)-Number(a.evaluation.reach.hardPass)||a.evaluation.reach.unreachableArea-b.evaluation.reach.unreachableArea||b.evaluation.reach.hardReachableRatio-a.evaluation.reach.hardReachableRatio)[0]?.evaluation.reach;
+      stats.bestReach=bestReach?{hardPass:bestReach.hardPass,hardReachableRatio:bestReach.hardReachableRatio,islandArea:round(bestReach.unreachableArea,3),connectedRatio:round(bestReach.connectedRatio,3),targetStatus:{...bestReach.targetStatus}}:null;
       const qualifiedPool=solutionPoolFromEvaluated(evaluatedAll);
       const outputPool=dedupeFinalLayouts(qualifiedPool,.36);
       stats.outputDuplicateRejected=qualifiedPool.length-outputPool.length;
@@ -2840,7 +2958,7 @@
             poses:treeNode.poses,
             partialScore:treeNode.score,
             lastMove:{itemId:item.id,pose:record.pose,merit:record.merit,skipped},
-            _parent:parent,_profile:record.profile,_hash:hash,_treeId:treeNode.id,_treeNode:treeNode
+            _parent:parent,_profile:record.profile,_flowPenalty:parent._flowPenalty||0,_hash:hash,_treeId:treeNode.id,_treeNode:treeNode
           };
           const prior=hashes.get(hash);
           if (prior&&prior.partialScore>=next.partialScore) {treeNode.status='duplicate';treeNode.reason='状态哈希重复，保留同构局面中的高分项';stats.duplicates++;continue;}
@@ -2869,14 +2987,29 @@
           }
           delete next._parent;delete next._profile;
         }
-        // 可达性具有单调性：家具只会继续占用空间，不会重新打开已切断的连通域。
-        // 因而在核心组与长柜落下后，用最窄人体半径的 bitset 水漫提前剪枝是安全的。
-        if (new Set(['coffee','diningTable','wardrobe','desk']).has(item.typeId)) {
+        // 半盘棋不直接判死：后续贴墙柜可能覆盖小死角，桌椅成组也会改变服务入口。
+        // 在会改变空间拓扑的关键落子后只更新“可撤销引导分”；后续家具若覆盖死角，
+        // 旧扣分会自动退回。完整局面再由 0.50m + 零孤岛硬门槛统一剪枝。
+        // 卧室的后置沙发/床尾凳同样可能封死先落下的衣柜柜门区；客厅家具更多，
+        // 仍只在会改变拓扑的关键类型上复核，避免每个小件都触发水漫。
+        const needsFlowGuide=currentProgram==='bedroom'?RECOGNIZED_FLOW_PRUNE_TYPES.has(item.typeId):FLOW_GUIDE_TYPES.has(item.typeId);
+        if(needsFlowGuide)for(const next of nextStates){
+          stats.flowChecks++;
+          const flow=computeReachability(next,scene,[FLOW_RADII[0]]);
+          // 核心家具“摆得下但用不了”不是小扣分。尤其衣柜柜门区不可达时，
+          // 必须让可达候选压过单纯更贴墙的候选；孤岛项仍保持可撤销。
+          const penalty=Math.min(90,flow.unreachableArea*20+(1-flow.hardReachableRatio)*90);
+          next.partialScore+=(next._flowPenalty||0)-penalty;next._flowPenalty=penalty;
+        }
+        // 真实户型在中途就硬剪；标准几何保留可撤销引导，因为后续定制柜可能
+        // 恰好填平一个小夹缝。所有场景在完整局面仍统一执行零孤岛硬门槛。
+        if(scene.shape==='recognized'&&RECOGNIZED_FLOW_PRUNE_TYPES.has(item.typeId)){
           nextStates=nextStates.filter(next=>{
             stats.flowChecks++;
             const flow=computeReachability(next,scene,[FLOW_RADII[0]]);
-            if(!flow.hardPass){next._treeNode.status='flow-pruned';next._treeNode.reason='关键通路被切断，水漫可达性硬检查失败';stats.flowPruned++;stats.pruned++;return false;}
-            return true;
+            if(flow.hardPass)return true;
+            next._treeNode.status='flow-pruned';next._treeNode.reason=flow.islandPass?'关键家具不可达，0.50m 水漫失败':`形成 ${flow.unreachableArea.toFixed(2)}㎡ 孤岛，或通行缝小于 0.50m`;
+            stats.flowPruned++;stats.pruned++;return false;
           });
           if(!nextStates.length)break;
         }
@@ -2991,7 +3124,7 @@
     // 这份表是卧室/客厅自动家具清单的单一入口，后续可直接映射到配置编辑页。
     const ROOM_AREA_MODULES={
       bedroom:[
-        {id:'micro-bedroom',label:'微型卧室',minArea:0,modules:['sleep','micro-work']},
+        {id:'micro-bedroom',label:'微型卧室',minArea:0,modules:['sleep']},
         {id:'sleep',label:'睡眠卧室',minArea:9,modules:['sleep']},
         {id:'work-bedroom',label:'工作卧室',minArea:12,modules:['sleep','work']},
         {id:'suite-lounge',label:'套房会客',minArea:20,modules:['sleep','work','lounge']},
@@ -3061,7 +3194,8 @@
     function inventoryRoomFeatures(scene) {
       const wallPerimeter=scene.walls.filter(wall=>Math.abs(wall.dx)<EPS||Math.abs(wall.dy)<EPS).reduce((sum,wall)=>sum+wall.length,0);
       const windowWidth=Math.max(0,scene.window.x1-scene.window.x0);
-      const availableWall=Math.max(1,wallPerimeter-scene.door.width-windowWidth*.72);
+      const doorWidth=sceneDoors(scene).reduce((sum,door)=>sum+(Number(door.width)||0),0);
+      const availableWall=Math.max(1,wallPerimeter-doorWidth-windowWidth*.72);
       return {availableWall,compactness:clamp(scene.area/(scene.width*scene.depth),.45,1)};
     }
 
@@ -3296,7 +3430,9 @@
         if(area>=9)core.night=2;
         if(area>=12){core.desk=1;core.chair=1;}
         const micro={...core};
-        if(area>=6.2&&area<9){micro.night=1;micro.desk=1;micro.chair=1;}
+        // 8㎡以下优先保证床和衣柜；床头柜会挤掉必需衣柜，书桌也不能靠
+        // “输出缺家具的半盘棋”伪装成丰富。8㎡以上才挑战桌/床头柜组合。
+        if(area>=8&&area<9){micro.night=1;micro.desk=1;micro.chair=1;}
         // 通行版先保证睡眠、收纳、工作三个基本组可用。
         rows.push(make(micro));
         // 大卧室先试完整的“单人/小沙发 + 茶几 + 小电视柜”硬家具组。
@@ -3343,9 +3479,10 @@
         }
       }else if(objectiveId==='balanced'&&programId==='living'&&modules.has('dining')){
         // 客餐厅先挑战完整餐组；34㎡以上同时带一组沿墙收纳，而不是先跑纯会客厅。
+        const chairTarget=area>=34?4:2;
         const preferred=modules.has('storage')
-          ?rows.find(row=>(row.counts.diningTable||0)>0&&(row.counts.diningChair||0)===2&&(row.counts.bookcase||0)>0)
-          :rows.find(row=>(row.counts.diningTable||0)>0&&(row.counts.diningChair||0)>=2);
+          ?rows.find(row=>(row.counts.diningTable||0)>0&&(row.counts.diningChair||0)>=chairTarget&&(row.counts.bookcase||0)>0)
+          :rows.find(row=>(row.counts.diningTable||0)>0&&(row.counts.diningChair||0)>=chairTarget);
         if(preferred)rows.splice(0,rows.length,preferred,...rows.filter(row=>row!==preferred));
       }
       const unique=new Map();for(const row of rows)unique.set(inventoryCountsSignature(programId,row.counts),row);
@@ -3435,8 +3572,9 @@
         const richFinal=objectiveId==='function';
         const compactLivingBudget=programId==='living'&&trialScene.area<18?46:null;
         const largeLiving=programId==='living'&&trialScene.area>=28,largeRoom=trialScene.area>=28;
+        const largeBedroomLounge=programId==='bedroom'&&largeRoom&&(candidate.counts.bedroomLoveseat||0)>0;
         const qualityDining=programId==='living'&&diningTier;
-        const beamWidth=qualityDining&&largeRoom?180:(richFinal||qualityDining
+        const beamWidth=largeBedroomLounge?72:qualityDining&&largeRoom?180:(richFinal||qualityDining
           ?(largeRoom?Math.min(52,34+Math.round(FURNITURE.length*.8)):(FURNITURE.length>=20?92:Math.min(62,44+Math.round(FURNITURE.length*1.2))))
           :(largeRoom?Math.min(36,24+Math.round(FURNITURE.length*.55)):(compactLivingBudget||(FURNITURE.length>=20?52:Math.min(44,28+Math.round(FURNITURE.length*.8))))));
         // 超大客厅仍使用精确矩形复核；这里只把 Bitset broad-phase 的格网从
@@ -3447,7 +3585,7 @@
         const completionOk=layoutDensityMode!=='rich'||candidate.estimate.missingCompletionPenalty<=16;
         const strictOk=completionOk&&candidate.estimate.coverage>=coverageFloor&&probe.solutions.some(passesHardFurniturePhase);
         attempts++;totalNodes+=probe.stats.nodes;totalTimeMs+=probe.stats.timeMs;totalBatches+=probe.stats.batches||0;totalMatrixCandidates+=probe.stats.matrixCandidates||probe.stats.nodes;
-        trials.push({objective:objectiveId,pieces:FURNITURE.length,counts:{...candidate.counts},mode:profile.mode,ok:strictOk,timeMs:probe.stats.timeMs,bestEvaluation:probe.solutions[0]?.evaluation?{qualityPass:probe.solutions[0].evaluation.qualityPass,scores:{...probe.solutions[0].evaluation.scores},placed:Object.keys(probe.solutions[0].poses||{}).length}:null});
+        trials.push({objective:objectiveId,pieces:FURNITURE.length,counts:{...candidate.counts},mode:profile.mode,ok:strictOk,timeMs:probe.stats.timeMs,bestReach:probe.stats.bestReach,bestEvaluation:probe.solutions[0]?.evaluation?{qualityPass:probe.solutions[0].evaluation.qualityPass,scores:{...probe.solutions[0].evaluation.scores},reach:{hardPass:probe.solutions[0].evaluation.reach.hardPass,hardReachableRatio:probe.solutions[0].evaluation.reach.hardReachableRatio,islandArea:probe.solutions[0].evaluation.reach.unreachableArea},placed:Object.keys(probe.solutions[0].poses||{}).length}:null});
         const trial={ok:strictOk,probe,profile,key,candidate,items:FURNITURE.map(item=>({...item})),config:snapshotProgramConfig(programId)};
         cache.set(key,trial);return trial;
       };
@@ -3584,15 +3722,18 @@
         if(!customCabinetEnabled||roomScene.area<18)return [];
         // 配置中的墙段预算仍决定需要补几段，但它只在最终方案上执行；上限避免
         // 超大房间沿每面空墙无限补柜，也不会把这些柜体重新带回搜索树。
-        const areaTarget=roomScene.area>=40?3:roomScene.area>=28?2:1;
-        const target=Math.min(3,Math.max(areaTarget,infillWallBudget(currentProgram,roomScene)));
-        const depth=currentProgram==='living'?.38:.34,minWidth=.6,maxWidth=currentProgram==='living'?2.8:2.4;
+        const areaTarget=roomScene.area>=40?5:roomScene.area>=28?3:2;
+        const target=Math.min(5,Math.max(areaTarget,infillWallBudget(currentProgram,roomScene)));
+        // 0.10–0.59m 不是一件独立家具，而是定制柜的封板/窄柜模块；它专门解决
+        // 角落和柜间死缝。仍作为实体参加最终通行复核，不能偷偷侵占走道。
+        const depth=currentProgram==='living'?.38:.34,minWidth=.10,maxWidth=currentProgram==='living'?2.8:2.4;
         const candidates=[],faux={id:'postWallDisplay',typeId:currentProgram==='living'?'display':'bedroomDisplay',w:1,d:depth,shape:'box'};
         for(const wall of roomScene.walls){
           if(Math.abs(wall.dx)>1e-5&&Math.abs(wall.dy)>1e-5)continue;
           let intervals=freeWallIntervals(wall,state,roomScene,faux,0);
-          const doorA=roomScene.door.a||{x:roomScene.door.x0,y:roomScene.door.y},doorB=roomScene.door.b||{x:roomScene.door.x1,y:roomScene.door.y};
-          if(pointOnSegment(doorA,wall.a,wall.b)&&pointOnSegment(doorB,wall.a,wall.b)){
+          for(const door of sceneDoors(roomScene)){
+            const doorA=door.a||{x:door.x0,y:door.y},doorB=door.b||{x:door.x1,y:door.y};
+            if(!pointOnSegment(doorA,wall.a,wall.b)||!pointOnSegment(doorB,wall.a,wall.b))continue;
             const d0=dot({x:doorA.x-wall.a.x,y:doorA.y-wall.a.y},wall.dir),d1=dot({x:doorB.x-wall.a.x,y:doorB.y-wall.a.y},wall.dir);
             intervals=intervals.flatMap(([a,b])=>subtractInterval([[a,b]],Math.min(d0,d1)-.08,Math.max(d0,d1)+.08));
           }
@@ -3603,18 +3744,23 @@
             for(const t of slots){
               const wallPoint={x:wall.a.x+wall.dir.x*t,y:wall.a.y+wall.dir.y*t},center={x:wallPoint.x+wall.normal.x*depth/2,y:wallPoint.y+wall.normal.y*depth/2};
               const horizontal=Math.abs(wall.dir.x)>Math.abs(wall.dir.y),rect={x:center.x,y:center.y,w:horizontal?width:depth,d:horizontal?depth:width,rotation:0};
-              if(!rectInsidePolygon(rect,roomScene.polygon)||rectsOverlap(rect,roomScene.door.noGo,.025))continue;
-              if(baseOccupied.some(body=>rectsOverlap(rect,body,.015))||baseHard.some(zone=>rectsOverlap(rect,zone,0)))continue;
-              candidates.push({...rect,wallIndex:wall.index,runWidth:width,score:width*12-Math.max(0,available-width)*1.5});
+              if(!rectInsidePolygon(rect,roomScene.polygon)||overlapsDoorClearance(rect,roomScene,.025))continue;
+              // 收口板本来就要与相邻柜体/电视柜贴合；负 5mm 仅消除“边界相接被
+              // 当作碰撞”的数值误判，真实实体重叠仍会被拒绝。
+              if(baseOccupied.some(body=>rectsOverlap(rect,body,-.005))||baseHard.some(zone=>rectsOverlap(rect,zone,0)))continue;
+              const closurePriority=available<=DESIGN_QUALITY_RULES.wall.severeGapMax?72:available<DESIGN_QUALITY_RULES.wall.usefulBayMin?42:0;
+              candidates.push({...rect,wallIndex:wall.index,runWidth:width,score:closurePriority+width*12-Math.max(0,available-width)*1.5});
             }
           }
         }
         candidates.sort((a,b)=>b.score-a.score);const selected=[];
         for(const candidate of candidates){
           if(selected.some(row=>rectsOverlap(candidate,row,.08)))continue;
-          selected.push(candidate);if(selected.length>=target)break;
+          // 先保留少量备选；最终逐个接受时还要做 0.50m 通行、孤岛和墙面复核。
+          // 旧逻辑只留 target 个，前两项若被复核拒绝，就不会回看后续合法墙段。
+          selected.push(candidate);if(selected.length>=target*2)break;
         }
-        return selected.map((body,index)=>({kind:'postDisplayCabinet',label:`${index?'展示柜':'定制展示柜'} ${body.runWidth.toFixed(1)} m`,x:body.x,y:body.y,w:body.w,d:body.d,rotation:0,color:index?'#71877e':'#5d7f78',layer:'overlay',collision:'post-layout',wallIndex:body.wallIndex}));
+        return selected.map((body,index)=>({kind:'postDisplayCabinet',label:`${body.runWidth<.6?'定制收口':'定制展示柜'} ${body.runWidth.toFixed(1)} m`,x:body.x,y:body.y,w:body.w,d:body.d,runWidth:body.runWidth,rotation:0,color:body.runWidth<.6?'#789087':index?'#71877e':'#5d7f78',layer:'overlay',collision:'post-layout',wallIndex:body.wallIndex,postLayoutBudget:target}));
       };
 
       // 若 Beam 没有保留硬休闲椅，则用最多 8 个墙角候选做一次收尾；实体背边/侧边
@@ -3625,7 +3771,7 @@
         const variants=[[dims[0],dims[1]],[dims[1],dims[0]]],corners=[[0,0],[roomScene.width,0],[0,roomScene.depth],[roomScene.width,roomScene.depth]],candidates=[];
         for(const [w,d] of variants)for(const [cx,cy] of corners){
           const rect={x:cx===0?w/2:roomScene.width-w/2,y:cy===0?d/2:roomScene.depth-d/2,w,d,rotation:0};
-          if(!rectInsidePolygon(rect,roomScene.polygon)||rectsOverlap(rect,roomScene.door.noGo,.10))continue;
+          if(!rectInsidePolygon(rect,roomScene.polygon)||overlapsDoorClearance(rect,roomScene,.10))continue;
           if(blocked.some(body=>rectsOverlap(rect,body,.04))||baseHard.some(zone=>rectsOverlap(rect,zone,.02)))continue;
           candidates.push({...rect,score:dist(rect,roomScene.door.entry)+Math.min(rect.x,roomScene.width-rect.x,rect.y,roomScene.depth-rect.y)*.1});
         }
@@ -3650,7 +3796,7 @@
               for(let y=d/2+.08;y<=roomScene.depth-d/2-.08+EPS;y+=.14){
                 for(let x=w/2+.08;x<=roomScene.width-w/2-.08+EPS;x+=.14){
                   const rect={x,y,w,d,rotation:0};
-                  if(!rectInsidePolygon(rect,roomScene.polygon)||rectsOverlap(rect,roomScene.door.noGo,.04))continue;
+                  if(!rectInsidePolygon(rect,roomScene.polygon)||overlapsDoorClearance(rect,roomScene,.04))continue;
                   if(occupied.some(body=>rectsOverlap(rect,body,.08))||hard.some(zone=>rectsOverlap(rect,zone,.02)))continue;
                   const edge=Math.min(x-w/2,roomScene.width-x-w/2,y-d/2,roomScene.depth-y-d/2);
                   const score=w*d-Math.hypot(x-center.x,y-center.y)*.07+Math.min(.35,edge)*.10-zoneIndex*.05;
@@ -3670,8 +3816,7 @@
       const floorRule=(FLOOR_SURFACE_RULES[currentProgram]||[]).find(rule=>(rule.preferences?.defaultCount??rule.quantity?.min??1)>0);
       if(floorRule){const anchor=first(floorRule.surface?.relativeTo||(currentProgram==='bedroom'?'bed':'sofa')),body=bodyOf(anchor),padding=floorRule.surface?.padding||{},normal=anchor?.pose?.normal||{x:0,y:1};if(body){const side=Math.max(0,Number(padding.side)||0),front=Math.max(0,Number(padding.front)||0),back=Math.max(0,Number(padding.back)||0),desiredW=Math.max(body.w+side*2,Number(floorRule.geometry?.width)||0),desiredD=Math.max(body.d+front+back,Number(floorRule.geometry?.depth)||0),w=Math.min(roomScene.width-.16,desiredW),d=Math.min(roomScene.depth-.16,desiredD),shift=(front-back)/2,x=Math.min(roomScene.width-w/2-.08,Math.max(w/2+.08,body.x+normal.x*shift)),y=Math.min(roomScene.depth-d/2-.08,Math.max(d/2+.08,body.y+normal.y*shift));add('rug',floorRule.label||'地毯',body,{x,y,w,d,color:floorRule.color||'#c9ad78',layer:'floor',collision:'ignore'})}}
       const wallComplements=synthesizeWallComplements();decor.push(...wallComplements);
-      // 活动区只是解释留白的标注，不再偷塞“免碰撞”的沙发、茶几或坐垫。
-      decor.push(...synthesizeActivityZones(wallComplements));
+      // 当前“丰富”阶段不再用活动区图形解释空白；留白是否合理只由地面和墙面评分回答。
       // 窗帘是墙面层，永远不占地；长度直接跟随识别/绘制出的窗洞。
       if(roomScene?.window){const w=roomScene.window;decor.push({kind:'curtain',label:'窗帘',x:(w.x0+w.x1)/2,y:w.y+.045,w:Math.max(.5,Math.abs(w.x1-w.x0)),d:.09,rotation:0,color:'#9fb9ad',layer:'overlay'});}
       if(currentProgram==='bedroom'){
@@ -3698,18 +3843,30 @@
 
     function validatePostLayoutDecor(plan,scene,decor){
       const baseline=plan.evaluation.diagnostics.ground,baselineWall=plan.evaluation.diagnostics.wallDetails,coverage=stateCoverageAndActivation(plan,scene),accepted=[],solids=[],wallSolids=[],storage=wallStorageMetrics(plan,scene);
-      let currentGround=baseline,currentWall=baselineWall;
+      let currentGround=baseline,currentWall=baselineWall,acceptedPostLayout=0;
+      const postRejectSummary={budget:0,flow:0,ground:0,wall:0},postRejected=[];
       for(const row of decor){
         if(row.collision!=='post-layout'){accepted.push(row);continue;}
+        if(acceptedPostLayout>=Math.max(1,Number(row.postLayoutBudget)||1)){postRejectSummary.budget++;postRejected.push({label:row.label,wallIndex:row.wallIndex,reason:'budget'});continue;}
         const rect={x:row.x,y:row.y,w:row.w,d:row.d,rotation:row.rotation||0};
+        // 定制柜也是落地实体，不能在 Beam 结束后偷偷堵住 0.50m 通路或造出孤岛。
+        const candidateReach=computeReachability(plan,scene,[FLOW_RADII[0]],[...solids,rect]);
+        if(!candidateReach.hardPass){postRejectSummary.flow++;postRejected.push({label:row.label,wallIndex:row.wallIndex,reason:'flow',islandArea:round(candidateReach.unreachableArea,3)});continue;}
         const candidateGround=groundPlaneMetrics(plan,scene,coverage,DESIGN_QUALITY_RULES.floor.gridStep,[...solids,rect]);
-        if(candidateGround.severe||candidateGround.score+0.04<(currentGround?.score??0))continue;
+        const closureModule=Number(row.runWidth)>0&&Number(row.runWidth)<.6;
+        // 十几厘米的收口板与相邻柜体/墙形成同一实体。粗地面栅格会把它误计成
+        // 新障碍并触发 narrow severe；只要精确 0.50m 水漫仍通过且地面分下降
+        // 不超过 8 分，就允许它消除更严重的墙缝。
+        const groundTolerance=closureModule?.08:.04;
+        if((candidateGround.severe&&!closureModule)||candidateGround.score+groundTolerance<(currentGround?.score??0)){postRejectSummary.ground++;postRejected.push({label:row.label,wallIndex:row.wallIndex,reason:'ground'});continue;}
         const nextWallRows=row.kind==='postDisplayCabinet'?[...wallSolids,row]:wallSolids;
         const candidateWall=wallPlaneMetrics(plan,scene,storage,nextWallRows);
-        if(candidateWall.severe||candidateWall.score+0.025<(currentWall?.score??0))continue;
-        solids.push(rect);if(row.kind==='postDisplayCabinet')wallSolids.push(row);accepted.push(row);currentGround=candidateGround;currentWall=candidateWall;
+        const priorSevere=currentWall?.severeGaps||0;
+        if(candidateWall.severeGaps>priorSevere||candidateWall.score+0.025<(currentWall?.score??0)){postRejectSummary.wall++;postRejected.push({label:row.label,wallIndex:row.wallIndex,reason:'wall'});continue;}
+        solids.push(rect);acceptedPostLayout++;if(row.kind==='postDisplayCabinet')wallSolids.push(row);accepted.push(row);currentGround=candidateGround;currentWall=candidateWall;
       }
       const wall=currentWall||baselineWall;
+      const finalReach=computeReachability(plan,scene,FLOW_RADII,solids);
       const scores=plan.evaluation.scores;scores.ground=Math.round((currentGround||baseline).score*100);scores.storage=Math.round(wall.score*100);
       const weights=DESIGN_QUALITY_RULES.weights;
       let total=scores.function*weights.function+scores.ground*weights.ground+scores.storage*weights.wall+scores.relation*weights.relation+scores.circulation*weights.circulation;
@@ -3717,12 +3874,96 @@
       if(severe)total=Math.min(total,DESIGN_QUALITY_RULES.gates.severeDefectCap);
       total=Math.min(total,scores.function+14,scores.circulation+14,scores.relation+12,scores.storage+15,scores.ground+15,scores.comfort+18);
       plan.evaluation.total=round(total,1);
-      plan.evaluation.qualityPass=plan.evaluation.qualityPass&&!severe&&scores.ground>=DESIGN_QUALITY_RULES.gates.minGround&&scores.storage>=DESIGN_QUALITY_RULES.gates.minWall;
-      plan.evaluation.diagnostics={...plan.evaluation.diagnostics,ground:currentGround||baseline,wallDetails:wall,severeFieldDefect:severe,postLayoutValidation:{acceptedSolids:solids.length,rejectedSolids:decor.filter(row=>row.collision==='post-layout').length-solids.length}};
+      plan.evaluation.reach=finalReach;
+      // 墙面补全会改变最终的地面/墙面结果，必须按最终现场重新过一遍质量门槛。
+      // 不能和补全前的 qualityPass 做 AND，否则已经消除的墙缝仍会永久留下失败状态。
+      const diagnostics=plan.evaluation.diagnostics;
+      plan.evaluation.qualityPass=scores.feasible===100&&diagnostics.diningCoherent!==false&&diagnostics.densityCoherent!==false&&finalReach.hardPass&&!severe&&
+        scores.modules>=(diagnostics.requiredModuleScore||0)&&scores.circulation>=55&&scores.relation>=62&&scores.composition>=50&&
+        scores.storage>=DESIGN_QUALITY_RULES.gates.minWall&&scores.ground>=DESIGN_QUALITY_RULES.gates.minGround&&scores.comfort>=50&&scores.preference>=45;
+      plan.evaluation.diagnostics={...plan.evaluation.diagnostics,ground:currentGround||baseline,wallDetails:wall,severeFieldDefect:severe,postLayoutValidation:{
+        baselineGroundScore:round((baseline?.score||0)*100,1),baselineGroundSevere:Boolean(baseline?.severe),
+        baselineWallScore:round((baselineWall?.score||0)*100,1),baselineWallSevere:Boolean(baselineWall?.severe),
+        acceptedSolids:solids.length,rejectedSolids:decor.filter(row=>row.collision==='post-layout').length-solids.length,
+        rejectSummary:postRejectSummary,rejectedDetails:postRejected,hardPass:finalReach.hardPass,islandArea:finalReach.unreachableArea
+      }};
       return accepted;
     }
 
-    const Engine = { PROGRAMS, CONFIGS, SOFA_PRESETS, INVENTORY_VALUES, INVENTORY_OBJECTIVES, ROOM_AREA_MODULES, roomAreaTier, AUTO_DIMENSION_PRESETS, VARIABLE_SIZE_PRESETS, FURNITURE_RULES, DESIGN_GRAMMAR, FLOW_RADII, DENSITY_MODES, applyFurnitureCatalog, applyDesignQualityRules, getDesignQualityRules:()=>JSON.parse(JSON.stringify(DESIGN_QUALITY_RULES)), setProgram, refreshFurniture, setVariableSizeSearch, setLayoutDensityMode, setCustomCabinetEnabled, applyProgramSnapshot, autoSelectInventory, generateInventoryFrontier, stagedInventoryCandidates, inventoryEstimate, synthesizeSoftDecor, getFurniture:()=>FURNITURE, makeScene, search, searchMatrix, searchScalar, evaluateFull, computeReachability, designMetrics, generateCandidates, validateState, isLegal, wallPoseCandidates, functionalZones, footprintRects, polygonArea, pointInPolygon,
+    // 户型选择器与离线回归共用同一套识别结果解析，避免页面能选择的房间
+    // 没有被测试脚本覆盖。该段必须位于无 DOM 的引擎提前返回之前。
+    const ROOM_TYPE_LABELS={living_room:'客厅',bedroom:'卧室',kitchen:'厨房',bathroom:'卫生间',office:'办公室',closet:'衣帽间',balcony:'阳台',corridor:'走廊',dining_room:'餐厅',pipe:'管井',elevator_room:'电梯间'};
+    const SUPPORTED_ROOM_PROGRAM={living_room:'living',bedroom:'bedroom'};
+    const pointLike=value=>Array.isArray(value)?value.length>=2&&Number.isFinite(Number(value[0]))&&Number.isFinite(Number(value[1])):value&&Number.isFinite(Number(value.x))&&Number.isFinite(Number(value.y));
+    const directRing=value=>{
+      let ring=value;
+      while(Array.isArray(ring)&&ring.length===1&&Array.isArray(ring[0]))ring=ring[0];
+      return Array.isArray(ring)&&ring.length>=3&&ring.slice(0,Math.min(3,ring.length)).every(pointLike)?ring:null;
+    };
+    function roomPolygon(value) {
+      if (!value) return null;
+      const preferred=['polygon','room_polygon','points','contour','contour_points','outline','vertices','boundary'];
+      if (typeof value==='object'&&!Array.isArray(value)) for(const key of preferred){const ring=directRing(value[key]);if(ring)return ring;}
+      return directRing(value);
+    }
+    function collectRecognizedRooms(roomData) {
+      const rooms=[];
+      const visit=(value,inheritedType='')=>{
+        if(value==null)return;
+        if(Array.isArray(value)){
+          const tupleType=String(value[0]||'').toLowerCase(),tupleRing=directRing(value[1]);
+          if(ROOM_TYPE_LABELS[tupleType]&&tupleRing){rooms.push({type:tupleType,rawPolygon:tupleRing,source:{rawArea:Number(value[2])||0,centroid:value[3]}});return;}
+          const ring=directRing(value);
+          if(ring&&inheritedType){rooms.push({type:inheritedType,rawPolygon:ring,source:{}});return;}
+          value.forEach(row=>visit(row,inheritedType));return;
+        }
+        if(typeof value!=='object')return;
+        const type=String(value.room_type||value.roomType||value.type||value.category||inheritedType||'').toLowerCase();
+        const polygon=roomPolygon(value);
+        if(type&&ROOM_TYPE_LABELS[type]&&polygon){rooms.push({type,rawPolygon:polygon,source:value});return;}
+        if(type&&ROOM_TYPE_LABELS[type]&&!polygon&&Object.keys(value).length<8)rooms.push({type,rawPolygon:null,source:value});
+        Object.entries(value).forEach(([key,child])=>{
+          if(['polygon','room_polygon','points','contour','contour_points','outline','vertices','boundary'].includes(key))return;
+          visit(child,ROOM_TYPE_LABELS[key]?key:type||inheritedType);
+        });
+      };
+      visit(roomData);
+      const seen=new Set();return rooms.filter(room=>{const key=`${room.type}:${JSON.stringify(room.rawPolygon||[])}`;if(seen.has(key))return false;seen.add(key);return true;});
+    }
+    function prepareRecognizedRooms(payload,inputArea) {
+      const root=payload?.data||payload||{};
+      const rooms=collectRecognizedRooms(root.room_data??root.rooms??root);
+      const entranceIndexes=new Set((Array.isArray(root.enter_door_index_list)?root.enter_door_index_list:[]).map(Number));
+      const rawOpenings=(Array.isArray(root.close_data)?root.close_data:[]).map((row,sourceIndex)=>{
+        const points=Array.isArray(row?.[1])?row[1].filter(pointLike).map(point=>Array.isArray(point)?{x:Number(point[0]),y:Number(point[1])}:{x:Number(point.x),y:Number(point.y)}):[];
+        return {type:String(row?.[0]||''),points,sourceIndex,isEntrance:entranceIndexes.has(sourceIndex)};
+      }).filter(opening=>opening.points.length>=2);
+      const pixelRooms=rooms.filter(room=>room.rawPolygon).map(room=>{
+        const points=room.rawPolygon.map(point=>Array.isArray(point)?{x:Number(point[0]),y:Number(point[1])}:{x:Number(point.x),y:Number(point.y)});
+        const xs=points.map(p=>p.x),ys=points.map(p=>p.y),span=Math.max(Math.max(...xs)-Math.min(...xs),Math.max(...ys)-Math.min(...ys));
+        return {room,points,span,rawArea:polygonArea(points)};
+      });
+      const rawPixelArea=pixelRooms.filter(row=>row.span>20).reduce((sum,row)=>sum+row.rawArea,0);
+      const apiScale=Number(root.scale_rate);
+      const sharedScale=Number.isFinite(apiScale)&&apiScale>0?apiScale:(rawPixelArea>0&&inputArea>0?Math.sqrt(inputArea/rawPixelArea):1);
+      return rooms.map(room=>{
+        const row=pixelRooms.find(item=>item.room===room);if(!row)return {...room,polygon:null};
+        const scale=row.span<=20?1:sharedScale;
+        const rawMinX=Math.min(...row.points.map(p=>p.x)),rawMinY=Math.min(...row.points.map(p=>p.y));
+        const scaled=row.points.map(point=>({x:point.x*scale,y:point.y*scale}));
+        const minX=Math.min(...scaled.map(p=>p.x)),minY=Math.min(...scaled.map(p=>p.y));
+        const polygon=scaled.map(point=>({x:round(point.x-minX,4),y:round(point.y-minY,4)}));
+        if(polygon.length>3&&dist(polygon[0],polygon[polygon.length-1])<1e-5)polygon.pop();
+        if(polygonSignedArea(polygon)<0)polygon.reverse();
+        const width=Math.max(...polygon.map(p=>p.x)),depth=Math.max(...polygon.map(p=>p.y));
+        const rawEdges=row.points.map((a,index)=>({a,b:row.points[(index+1)%row.points.length]}));
+        const openings=rawOpenings.filter(opening=>opening.points.slice(0,2).every(point=>Math.min(...rawEdges.map(edge=>pointSegmentDistance(point,edge.a,edge.b)))<=2.5))
+          .map(opening=>({...opening,rawPoints:opening.points.slice(0,2).map(point=>({...point})),points:opening.points.slice(0,2).map(point=>({x:round((point.x-rawMinX)*scale,4),y:round((point.y-rawMinY)*scale,4)}))}));
+        return {...room,polygon,openings,width,depth,area:polygonArea(polygon)};
+      });
+    }
+
+    const Engine = { PROGRAMS, CONFIGS, SOFA_PRESETS, INVENTORY_VALUES, INVENTORY_OBJECTIVES, ROOM_AREA_MODULES, roomAreaTier, AUTO_DIMENSION_PRESETS, VARIABLE_SIZE_PRESETS, FURNITURE_RULES, DESIGN_GRAMMAR, FLOW_RADII, DENSITY_MODES, applyFurnitureCatalog, applyDesignQualityRules, getDesignQualityRules:()=>JSON.parse(JSON.stringify(DESIGN_QUALITY_RULES)), setProgram, refreshFurniture, setVariableSizeSearch, setLayoutDensityMode, setCustomCabinetEnabled, applyProgramSnapshot, autoSelectInventory, generateInventoryFrontier, stagedInventoryCandidates, inventoryEstimate, synthesizeSoftDecor, getFurniture:()=>FURNITURE, makeScene, search, searchMatrix, searchScalar, evaluateFull, computeReachability, designMetrics, generateCandidates, validateState, isLegal, wallPoseCandidates, functionalZones, footprintRects, polygonArea, pointInPolygon, prepareRecognizedRooms,
       setRecognizedRoomOverrideForTest:value=>{recognizedRoomOverride=value}
     };
     globalThis.RoomChessEngine = Engine;
@@ -3859,11 +4100,18 @@
       const itemIds=(solution.inventoryItems||FURNITURE).map(item=>item.id).filter(id=>solution.poses[id]);
       const traceKey=itemIds.map(id=>`${id}:${poseIdentity(solution.poses[id])}`).join('|');
       if (solution._displayTrace?.key===traceKey) return solution._displayTrace.trace;
-      const searchTrace=solution.planTrace||result?.trace||[];
+      const searchTrace=solution.planTrace||result?.trace||[],tree=solution.planBeamTree||result?.beamTree;
+      const pathByItem=new Map();
+      if(tree?.nodeById&&solution._treeId){
+        let node=tree.nodeById.get(solution._treeId),guard=0;
+        while(node&&node.id!=='n0'&&guard++<FURNITURE.length+3){pathByItem.set(node.itemId,node);node=tree.nodeById.get(node.parentId)}
+      }
       const poses={},trace=[{poses:{},partialScore:0,lastMove:null,depth:0,beamSize:1}];
       itemIds.forEach((id,index)=>{
-        const item=ITEM_BY_ID[id],pose=solution.poses[id];poses[id]=pose;
-        trace.push({poses:{...poses},partialScore:0,lastMove:{itemId:id,pose,merit:0},depth:index+1,beamSize:searchTrace[index+1]?.beamSize||0});
+        const item=ITEM_BY_ID[id],pose=solution.poses[id],treeNode=pathByItem.get(id);poses[id]=pose;
+        const fallback=searchTrace.find(row=>row.lastMove?.itemId===id&&poseIdentity(row.lastMove.pose)===poseIdentity(pose));
+        const merit=Number(treeNode?.merit??fallback?.lastMove?.merit??candidateStaticScore(item,pose,{poses:Object.fromEntries(Object.entries(poses).filter(([key])=>key!==id))},scene))||0;
+        trace.push({poses:{...poses},partialScore:Number(treeNode?.score??fallback?.partialScore??0)||0,lastMove:{itemId:id,pose,merit},depth:index+1,beamSize:searchTrace[index+1]?.beamSize||0});
       });
       solution._displayTrace={key:traceKey,trace};return trace;
     }
@@ -3887,15 +4135,16 @@
       for (const pose of rawCandidatesForItem(item,parentState,scene)) {
         const key=poseKey(item,pose);if(seen.has(key))continue;seen.add(key);raw.push(pose);
       }
-      const legal=[],rejected=[];
+      const legal=[],rejected=[],rejectSummary={outside:0,door:0,static:0,collision:0,functional:0};
       for (const pose of raw) {
-        if (isLegal(item,pose,parentState,scene)) legal.push({pose,merit:candidateStaticScore(item,pose,parentState,scene)});
-        else rejected.push(pose);
+        const check=legalityCheck(item,pose,parentState,scene);
+        if (check.legal) legal.push({pose,merit:candidateStaticScore(item,pose,parentState,scene)});
+        else {rejected.push({pose,reason:check.reason,label:check.label});rejectSummary[check.reason]=(rejectSummary[check.reason]||0)+1;}
       }
       legal.sort((a,b)=>b.merit-a.merit);
       const retained=legal.slice(0,72),retainedKeys=new Set(retained.map(row=>poseKey(item,row.pose)));
       const legalDeferred=legal.filter(row=>!retainedKeys.has(poseKey(item,row.pose)));
-      const value={item,parentState,selected,rawCount:raw.length,legal,retained,legalDeferred,rejected};
+      const value={item,parentState,selected,rawCount:raw.length,legal,retained,legalDeferred,rejected,rejectSummary};
       candidateSnapshotCache={key:cacheKey,value};return value;
     }
 
@@ -3919,7 +4168,8 @@
       const phase=`当前已放 ${traceIndex} 件 · 下一手`;
       const source=[...new Set(snapshot.retained.map(row=>candidateSourceLabel(row.pose)))].join('、')||'规则生成';
       const specs=[...new Set(snapshot.retained.map(row=>row.pose.sizeLabel).filter(Boolean))].join(' / ');
-      ui.candidateBadge.innerHTML=`<strong>${phase}：${snapshot.item.label}</strong><br>生成 ${snapshot.rawCount} · 硬合法 ${snapshot.legal.length} · 送入搜索 ${snapshot.retained.length} · 淘汰 ${snapshot.rejected.length} · 来源：${source}${specs?` · 规格：${specs}`:''}`;
+      const r=snapshot.rejectSummary||{},reasons=[r.outside&&`越界 ${r.outside}`,r.door&&`挡门 ${r.door}`,r.static&&`门窗/静态 ${r.static}`,r.collision&&`家具碰撞 ${r.collision}`,r.functional&&`功能区 ${r.functional}`].filter(Boolean).join('、')||'无';
+      ui.candidateBadge.innerHTML=`<strong>${phase}：${snapshot.item.label}</strong><br>生成 ${snapshot.rawCount} · 硬合法 ${snapshot.legal.length} · 送入搜索 ${snapshot.retained.length} · 淘汰 ${snapshot.rejected.length}（${reasons}） · 来源：${source}${specs?` · 规格：${specs}`:''}`;
     }
 
     function renderFurnitureConfig() {
@@ -3979,7 +4229,7 @@
         </div>`}).join('');
       ui.legend.innerHTML=FURNITURE.slice(0,3).map(item=>`<span><i style="background:${item.color}"></i>${item.label}</span>`).join('')+
         '<span><i style="border:1px dashed #ff5b38;background:rgba(255,91,56,.08)"></i>硬功能区</span>'+
-        '<span><i style="border:1px dashed #2f8a78;background:rgba(47,138,120,.06)"></i>建议活动区</span>';
+        '<span><i style="border:1px dashed #2f8a78;background:rgba(47,138,120,.06)"></i>家具软使用区</span>';
       ui.scoreList.innerHTML=SCORE_KEYS.map(([key,label])=>`
         <div class="score-row" data-score="${key}">
           <span class="score-name">${label}</span>
@@ -4163,18 +4413,21 @@
     }
 
     function drawDoorWindow(tr) {
-      const d=scene.door;
-      const rawA=d.a||{x:d.x0,y:d.y},rawB=d.b||{x:d.x1,y:d.y},inward=d.inward||{x:0,y:-1},a=tr.p(rawA),b=tr.p(rawB),hinge=b;
       ctx.save();
-      ctx.strokeStyle='#ff5b38';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
-      ctx.lineWidth=1.5;ctx.setLineDash([5,5]);ctx.beginPath();
-      const closedAngle=Math.atan2(a.y-b.y,a.x-b.x),openRaw={x:rawB.x+inward.x*d.width,y:rawB.y+inward.y*d.width},open=tr.p(openRaw),openAngle=Math.atan2(open.y-b.y,open.x-b.x);
-      ctx.arc(hinge.x,hinge.y,d.width*tr.scale,closedAngle,openAngle);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(hinge.x,hinge.y);ctx.lineTo(open.x,open.y);ctx.stroke();
-      ctx.setLineDash([]);
-      const midRaw={x:(rawA.x+rawB.x)/2+inward.x*.18,y:(rawA.y+rawB.y)/2+inward.y*.18},mid=tr.p(midRaw),label=`门 ${d.width.toFixed(1)} m`;
-      ctx.font='800 11px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';const labelWidth=ctx.measureText(label).width+12;
-      ctx.fillStyle='rgba(255,255,255,.92)';ctx.fillRect(mid.x-labelWidth/2,mid.y-10,labelWidth,20);ctx.fillStyle='#d94326';ctx.fillText(label,mid.x,mid.y);
+      for(const d of sceneDoors(scene)){
+        const rawA=d.a||{x:d.x0,y:d.y},rawB=d.b||{x:d.x1,y:d.y},inward=d.inward||{x:0,y:-1},a=tr.p(rawA),b=tr.p(rawB),kind=d.kind||recognizedDoorKind(d.type),hinge=b;
+        ctx.strokeStyle=kind==='opening'?'#bc765f':'#ff5b38';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+        if(kind==='swing'){
+          ctx.lineWidth=1.5;ctx.setLineDash([5,5]);ctx.beginPath();
+          const closedAngle=Math.atan2(a.y-b.y,a.x-b.x),openRaw={x:rawB.x+inward.x*d.width,y:rawB.y+inward.y*d.width},open=tr.p(openRaw),openAngle=Math.atan2(open.y-b.y,open.x-b.x);
+          ctx.arc(hinge.x,hinge.y,d.width*tr.scale,closedAngle,openAngle);ctx.stroke();ctx.beginPath();ctx.moveTo(hinge.x,hinge.y);ctx.lineTo(open.x,open.y);ctx.stroke();ctx.setLineDash([]);
+        }else if(kind==='slide'){
+          const offset={x:inward.x*.055,y:inward.y*.055},sa=tr.p({x:rawA.x+offset.x,y:rawA.y+offset.y}),sb=tr.p({x:rawB.x+offset.x,y:rawB.y+offset.y});ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(sa.x,sa.y);ctx.lineTo(sb.x,sb.y);ctx.stroke();
+        }
+        const midRaw={x:(rawA.x+rawB.x)/2+inward.x*.18,y:(rawA.y+rawB.y)/2+inward.y*.18},mid=tr.p(midRaw),typeLabel=kind==='slide'?'推拉门':kind==='opening'?'门洞':'门',label=`${typeLabel} ${d.width.toFixed(1)} m`;
+        ctx.font='800 11px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';const labelWidth=ctx.measureText(label).width+12;
+        ctx.fillStyle='rgba(255,255,255,.92)';ctx.fillRect(mid.x-labelWidth/2,mid.y-10,labelWidth,20);ctx.fillStyle='#d94326';ctx.fillText(label,mid.x,mid.y);
+      }
       const w=scene.window;const wa=tr.p({x:w.x0,y:w.y}),wb=tr.p({x:w.x1,y:w.y});
       ctx.strokeStyle='#43a8bd';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(wa.x,wa.y);ctx.lineTo(wb.x,wb.y);ctx.stroke();
       ctx.restore();
@@ -4208,8 +4461,8 @@
         const q=tr.p(row.pose);markerPath(row.pose,q,4.2);
         ctx.strokeStyle='rgba(190,142,54,.82)';ctx.lineWidth=1.5;ctx.stroke();
       }
-      for (const pose of snapshot.rejected) {
-        const q=tr.p(pose),r=4.4;ctx.strokeStyle='rgba(195,76,59,.72)';ctx.lineWidth=1.35;
+      for (const row of snapshot.rejected) {
+        const pose=row.pose,q=tr.p(pose),r=4.4;ctx.strokeStyle='rgba(195,76,59,.72)';ctx.lineWidth=1.35;
         ctx.beginPath();ctx.moveTo(q.x-r,q.y-r);ctx.lineTo(q.x+r,q.y+r);ctx.moveTo(q.x+r,q.y-r);ctx.lineTo(q.x-r,q.y+r);ctx.stroke();
       }
       for (const row of snapshot.retained) {
@@ -4390,7 +4643,7 @@
       const rect=r=>({x:ox+(r.x-r.w/2)*scale,y:oy+(r.y-r.d/2)*scale,w:r.w*scale,h:r.d*scale});
       beamCtx.beginPath();scene.polygon.forEach((p,i)=>{const q=point(p);i?beamCtx.lineTo(q.x,q.y):beamCtx.moveTo(q.x,q.y);});beamCtx.closePath();beamCtx.fillStyle='#fffef9';beamCtx.fill();beamCtx.strokeStyle='#56615d';beamCtx.lineWidth=1.2;beamCtx.stroke();
       for(const [id,pose] of Object.entries(node.poses||{})){const item=ITEM_BY_ID[id];if(!item)continue;for(const body of footprintRects(item,pose)){const r=rect(body);beamCtx.fillStyle=item.color;beamCtx.strokeStyle=id===node.itemId?'#ff5b38':'rgba(13,25,21,.5)';beamCtx.lineWidth=id===node.itemId?2.2:1;beamCtx.beginPath();beamCtx.roundRect(r.x,r.y,r.w,r.h,Math.min(3,r.w*.12,r.h*.12));beamCtx.fill();beamCtx.stroke();}}
-      const doorA=point(scene.door.a||{x:scene.door.x0,y:scene.door.y}),doorB=point(scene.door.b||{x:scene.door.x1,y:scene.door.y});beamCtx.strokeStyle='#ff5b38';beamCtx.lineWidth=2;beamCtx.beginPath();beamCtx.moveTo(doorA.x,doorA.y);beamCtx.lineTo(doorB.x,doorB.y);beamCtx.stroke();
+      beamCtx.strokeStyle='#ff5b38';beamCtx.lineWidth=2;for(const door of sceneDoors(scene)){const doorA=point(door.a||{x:door.x0,y:door.y}),doorB=point(door.b||{x:door.x1,y:door.y});beamCtx.beginPath();beamCtx.moveTo(doorA.x,doorA.y);beamCtx.lineTo(doorB.x,doorB.y);beamCtx.stroke();}
       const winA=point({x:scene.window.x0,y:0}),winB=point({x:scene.window.x1,y:0});beamCtx.strokeStyle='#43a8bd';beamCtx.beginPath();beamCtx.moveTo(winA.x,winA.y);beamCtx.lineTo(winB.x,winB.y);beamCtx.stroke();
     }
 
@@ -4523,8 +4776,7 @@
         const first=rect(footprintRects(item,pose)[0]);
         if (first.w>45&&first.h>22) {pctx.fillStyle='rgba(255,255,255,.95)';pctx.font='700 9px system-ui';pctx.textAlign='center';pctx.textBaseline='middle';pctx.fillText(itemDisplayLabel(item,pose),first.x+first.w/2,first.y+first.h/2);}
       }
-      const doorA=point(scene.door.a||{x:scene.door.x0,y:scene.door.y}),doorB=point(scene.door.b||{x:scene.door.x1,y:scene.door.y});
-      pctx.strokeStyle='#ff5b38';pctx.lineWidth=4;pctx.beginPath();pctx.moveTo(doorA.x,doorA.y);pctx.lineTo(doorB.x,doorB.y);pctx.stroke();
+      pctx.strokeStyle='#ff5b38';pctx.lineWidth=4;for(const door of sceneDoors(scene)){const doorA=point(door.a||{x:door.x0,y:door.y}),doorB=point(door.b||{x:door.x1,y:door.y});pctx.beginPath();pctx.moveTo(doorA.x,doorA.y);pctx.lineTo(doorB.x,doorB.y);pctx.stroke();}
       const winA=point({x:scene.window.x0,y:0}),winB=point({x:scene.window.x1,y:0});
       pctx.strokeStyle='#43a8bd';pctx.lineWidth=5;pctx.beginPath();pctx.moveTo(winA.x,winA.y);pctx.lineTo(winB.x,winB.y);pctx.stroke();
     }
@@ -4594,7 +4846,15 @@
         };
         const sizeAction=p.sizeLabel?` · 选择${p.sizeLabel} ${(p.overrideW??item?.w??0).toFixed(2)}×${(p.overrideD??item?.d??0).toFixed(2)} m`:'';
         const action=(p.relation==='custom-infill'?`末轮扫描余墙并定尺 ${p.overrideW?.toFixed(2)||''} m · 安装余缝 ${Math.round((p.installationGap||0)*1000)} mm`:p.relation==='wall-run'?`沿墙连续补齐 ${p.overrideW?.toFixed(2)||''} m`:(relationActions[p.relation]||`靠墙 ${p.wallIndex+1} 落子`))+sizeAction;
-        return `<button type="button" class="trace-entry ${i===traceIndex?'active':''}" data-trace-step="${i}">第 ${s.depth} 手：${itemStepLabel(item)} ${action}<br>保留 ${s.beamSize||0} 个候选局面</button>`;
+        const local=`局部 ${s.lastMove.merit>=0?'+':''}${s.lastMove.merit.toFixed(1)}`,partial=s.partialScore?` · 搜索累计 ${s.partialScore.toFixed(1)}`:'';
+        let vector='';
+        if(i===traceIndex&&s._evaluation){
+          const previous=trace[i-1]?._evaluation,keys=[['ground','地面'],['storage','墙面'],['relation','关系'],['circulation','通行']];
+          const parts=keys.map(([key,label])=>{const value=s._evaluation.scores[key],delta=previous?value-previous.scores[key]:null;return `${label} ${value}${delta==null?'':` (${delta>=0?'+':''}${delta})`}`});
+          const totalDelta=previous?s._evaluation.total-previous.total:null;
+          vector=`<span class="trace-score-detail">当前总分 ${s._evaluation.total.toFixed(1)}${totalDelta==null?'':` (${totalDelta>=0?'+':''}${totalDelta.toFixed(1)})`} · ${parts.join(' · ')}</span>`;
+        }
+        return `<button type="button" class="trace-entry ${i===traceIndex?'active':''}" data-trace-step="${i}">第 ${s.depth} 手：${itemStepLabel(item)} ${action}<br>${local}${partial} · 保留 ${s.beamSize||0} 个候选局面${vector}</button>`;
       }).join('');
       ui.traceLog.scrollTop=previousLogScroll;
       ui.traceLog.querySelectorAll('[data-trace-step]').forEach(button=>button.addEventListener('click',()=>showTraceStep(Number(button.dataset.traceStep))));
@@ -4608,7 +4868,9 @@
       traceIndex=clamp(index,0,trace.length-1);
       activeState=trace[traceIndex];
       candidateSnapshotCache={key:null,value:null};
-      const evaluation=evaluateFull(activeState,scene);updateScores(evaluation);
+      const evaluation=evaluateFull(activeState,scene);trace[traceIndex]._evaluation=evaluation;
+      if(traceIndex>0&&!trace[traceIndex-1]._evaluation)trace[traceIndex-1]._evaluation=evaluateFull(trace[traceIndex-1],scene);
+      updateScores(evaluation);
       ui.depthMetric.textContent=`${traceIndex} / ${FURNITURE.length}`;
       const nextItem=trace[traceIndex+1]?.lastMove?ITEM_BY_ID[trace[traceIndex+1].lastMove.itemId]:null;
       ui.boardStatus.textContent=nextItem?`${traceIndex?`第 ${traceIndex} 手后`:'空房间'} · 正在显示 ${nextItem.label} 的下一手采样点`:`第 ${traceIndex} 手 · 完整方案`;
@@ -4671,78 +4933,6 @@
       if(document.visibilityState==='hidden')runSearch();else requestAnimationFrame(runSearch);
     }
 
-    const ROOM_TYPE_LABELS={living_room:'客厅',bedroom:'卧室',kitchen:'厨房',bathroom:'卫生间',office:'办公室',closet:'衣帽间',balcony:'阳台',corridor:'走廊',dining_room:'餐厅',pipe:'管井',elevator_room:'电梯间'};
-    const SUPPORTED_ROOM_PROGRAM={living_room:'living',bedroom:'bedroom'};
-    const pointLike=value=>Array.isArray(value)?value.length>=2&&Number.isFinite(Number(value[0]))&&Number.isFinite(Number(value[1])):value&&Number.isFinite(Number(value.x))&&Number.isFinite(Number(value.y));
-    const directRing=value=>{
-      let ring=value;
-      while(Array.isArray(ring)&&ring.length===1&&Array.isArray(ring[0]))ring=ring[0];
-      return Array.isArray(ring)&&ring.length>=3&&ring.slice(0,Math.min(3,ring.length)).every(pointLike)?ring:null;
-    };
-    function roomPolygon(value) {
-      if (!value) return null;
-      const preferred=['polygon','room_polygon','points','contour','contour_points','outline','vertices','boundary'];
-      if (typeof value==='object'&&!Array.isArray(value)) for(const key of preferred){const ring=directRing(value[key]);if(ring)return ring;}
-      return directRing(value);
-    }
-    function collectRecognizedRooms(roomData) {
-      const rooms=[];
-      const visit=(value,inheritedType='')=>{
-        if(value==null)return;
-        if(Array.isArray(value)){
-          // 真实接口格式：[房间类型, 轮廓点数组, 像素面积, 中心点]
-          const tupleType=String(value[0]||'').toLowerCase(),tupleRing=directRing(value[1]);
-          if(ROOM_TYPE_LABELS[tupleType]&&tupleRing){rooms.push({type:tupleType,rawPolygon:tupleRing,source:{rawArea:Number(value[2])||0,centroid:value[3]}});return;}
-          const ring=directRing(value);
-          if(ring&&inheritedType){rooms.push({type:inheritedType,rawPolygon:ring,source:{}});return;}
-          value.forEach(row=>visit(row,inheritedType));return;
-        }
-        if(typeof value!=='object')return;
-        const type=String(value.room_type||value.roomType||value.type||value.category||inheritedType||'').toLowerCase();
-        const polygon=roomPolygon(value);
-        if(type&&ROOM_TYPE_LABELS[type]&&polygon){rooms.push({type,rawPolygon:polygon,source:value});return;}
-        if(type&&ROOM_TYPE_LABELS[type]&&!polygon&&Object.keys(value).length<8)rooms.push({type,rawPolygon:null,source:value});
-        Object.entries(value).forEach(([key,child])=>{
-          if(['polygon','room_polygon','points','contour','contour_points','outline','vertices','boundary'].includes(key))return;
-          visit(child,ROOM_TYPE_LABELS[key]?key:type||inheritedType);
-        });
-      };
-      visit(roomData);
-      const seen=new Set();return rooms.filter(room=>{const key=`${room.type}:${JSON.stringify(room.rawPolygon||[])}`;if(seen.has(key))return false;seen.add(key);return true;});
-    }
-    function prepareRecognizedRooms(payload,inputArea) {
-      const root=payload?.data||payload||{};
-      const rooms=collectRecognizedRooms(root.room_data??root.rooms??root);
-      const rawOpenings=(Array.isArray(root.close_data)?root.close_data:[]).map(row=>{
-        const points=Array.isArray(row?.[1])?row[1].filter(pointLike).map(point=>Array.isArray(point)?{x:Number(point[0]),y:Number(point[1])}:{x:Number(point.x),y:Number(point.y)}):[];
-        return {type:String(row?.[0]||''),points};
-      }).filter(opening=>opening.points.length>=2);
-      const pixelRooms=rooms.filter(room=>room.rawPolygon).map(room=>{
-        const points=room.rawPolygon.map(point=>Array.isArray(point)?{x:Number(point[0]),y:Number(point[1])}:{x:Number(point.x),y:Number(point.y)});
-        const xs=points.map(p=>p.x),ys=points.map(p=>p.y),span=Math.max(Math.max(...xs)-Math.min(...xs),Math.max(...ys)-Math.min(...ys));
-        return {room,points,span,rawArea:polygonArea(points)};
-      });
-      const rawPixelArea=pixelRooms.filter(row=>row.span>20).reduce((sum,row)=>sum+row.rawArea,0);
-      const apiScale=Number(root.scale_rate);
-      const sharedScale=Number.isFinite(apiScale)&&apiScale>0?apiScale:(rawPixelArea>0&&inputArea>0?Math.sqrt(inputArea/rawPixelArea):1);
-      return rooms.map(room=>{
-        const row=pixelRooms.find(item=>item.room===room);if(!row)return {...room,polygon:null};
-        const scale=row.span<=20?1:sharedScale;
-        const rawMinX=Math.min(...row.points.map(p=>p.x)),rawMinY=Math.min(...row.points.map(p=>p.y));
-        const scaled=row.points.map(point=>({x:point.x*scale,y:point.y*scale}));
-        const minX=Math.min(...scaled.map(p=>p.x)),minY=Math.min(...scaled.map(p=>p.y));
-        const polygon=scaled.map(point=>({x:round(point.x-minX,4),y:round(point.y-minY,4)}));
-        if(polygon.length>3&&dist(polygon[0],polygon[polygon.length-1])<1e-5)polygon.pop();
-        // 引擎以屏幕坐标系的顺时针轮廓（正有向面积）计算向内法线。
-        // 识别接口返回的是相反方向；不纠正时床、柜体都会向墙外生成。
-        if(polygonSignedArea(polygon)<0)polygon.reverse();
-        const width=Math.max(...polygon.map(p=>p.x)),depth=Math.max(...polygon.map(p=>p.y));
-        const rawEdges=row.points.map((a,index)=>({a,b:row.points[(index+1)%row.points.length]}));
-        const openings=rawOpenings.filter(opening=>opening.points.slice(0,2).every(point=>Math.min(...rawEdges.map(edge=>pointSegmentDistance(point,edge.a,edge.b)))<=2.5))
-          .map(opening=>({...opening,rawPoints:opening.points.slice(0,2).map(point=>({...point})),points:opening.points.slice(0,2).map(point=>({x:round((point.x-rawMinX)*scale,4),y:round((point.y-rawMinY)*scale,4)}))}));
-        return {...room,polygon,openings,width,depth,area:polygonArea(polygon)};
-      });
-    }
     let recognizedFloorplanRooms=[];
     let selectedRecognizedRoom=null;
     let floorplanPreviewImage=null;
