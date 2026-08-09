@@ -106,6 +106,8 @@
       }
       if(!value?.densityModes?.rich)errors.push('缺少 densityModes.rich');
       if(!(Number(value?.search?.semanticSampling?.wall?.maxUniformPositions)>0))errors.push('search.semanticSampling.wall.maxUniformPositions 必须为正数');
+      const longBedroomChallenge=value?.inventory?.longBedroomChallenge;
+      if(longBedroomChallenge?.enabled!==true||!(Number(longBedroomChallenge.minArea)>0)||!(Number(longBedroomChallenge.minAspect)>1)||!longBedroomChallenge.counts)errors.push('缺少有效的 inventory.longBedroomChallenge');
       const deskSizePolicy=value?.search?.sizePolicies?.bedroom?.desk;
       if(!deskSizePolicy)errors.push('缺少 search.sizePolicies.bedroom.desk');
       else if(!Array.isArray(deskSizePolicy.targetByArea)||!deskSizePolicy.targetByArea.length||!Array.isArray(deskSizePolicy.searchMaxByArea)||!deskSizePolicy.searchMaxByArea.length||!(Number(deskSizePolicy.repairCandidateLimit)>0))errors.push('书桌模数策略不完整');
@@ -1089,6 +1091,10 @@
         // 前 N 个候选，窗边位置甚至进不了评分。先把自然采光候选提到桶前面，
         // 其余位置仍由后续合法性、椅子和通路共同筛选。
         if(item.typeId==='desk'&&mode==='wall'&&scene.window?.mid)rows.sort((a,b)=>dist(a,scene.window.mid)-dist(b,scene.window.mid));
+        // 带模数的沿墙家具已根据“当前剩余连续墙段”生成了 wall-run 语义点。
+        // 先保留这些高信息量点，再用固定等分点补齐预算；不扩大 maxSamples，
+        // 却能避免空墙中点被轮廓前部的无效原始点挤出 Beam。
+        if(item.typeId==='bedroomDisplay'&&rule?.run&&mode==='wall')rows.sort((a,b)=>Number(b.relation==='wall-run')-Number(a.relation==='wall-run'));
         buckets.push(rows.slice(0,perRule).map(pose=>({...pose,candidateRuleId:pose.candidateRuleId||entry.id||relation})));
       }
       const all=[];for(let index=0;all.length<totalLimit;index++){let added=false;for(const bucket of buckets)if(bucket[index]){all.push(bucket[index]);added=true;if(all.length>=totalLimit)break}if(!added)break}return all;
@@ -1394,6 +1400,19 @@
         if(balancedDeskInstall){const targetGap=residual/2;score+=18-Math.min(24,Math.abs(closureGap-targetGap)*240)}
         else score+=closureGap<=.025?(storageLike?22:16):closureGap<=DESIGN_QUALITY_RULES.wall.installGapMax?(storageLike?13:9):
           closureGap<=DESIGN_QUALITY_RULES.wall.severeGapMax?-44:closureGap<DESIGN_QUALITY_RULES.wall.usefulBayMin?-17:0;
+        // 家具贴到墙端时，还要检查与相邻转角短墙的深度收口。
+        // 例如 0.32m 深浅柜靠在 0.49m 返墙旁，会留下 0.17m 死缝；
+        // 这种候选应在落子时被压低，不等最终墙面验收才淘汰整盘。
+        const along=wall?dot({x:pose.x-wall.a.x,y:pose.y-wall.a.y},wall.dir):0,startGap=along-actual.w/2,endGap=(wall?.length||0)-(along+actual.w/2);
+        const adjacentWalls=[];
+        if(startGap<=DESIGN_QUALITY_RULES.wall.installGapMax+EPS)adjacentWalls.push(scene.walls[(pose.wallIndex-1+scene.walls.length)%scene.walls.length]);
+        if(endGap<=DESIGN_QUALITY_RULES.wall.installGapMax+EPS)adjacentWalls.push(scene.walls[(pose.wallIndex+1)%scene.walls.length]);
+        for(const adjacent of adjacentWalls){
+          const returnGap=(adjacent?.length||0)-actual.d;
+          if(returnGap<=DESIGN_QUALITY_RULES.wall.installGapMax+EPS)score+=10;
+          else if(returnGap<=DESIGN_QUALITY_RULES.wall.severeGapMax+EPS)score-=86;
+          else if(returnGap<DESIGN_QUALITY_RULES.wall.usefulBayMin-EPS)score-=30;
+        }
       }
       if (!configuredEntry&&item.id === 'hamper') score += pose.relation === 'utility-corner' ? 32 : -8;
       if (item.id === 'sofa') {
@@ -3478,13 +3497,20 @@
         const richChallenge={...core,tvbench:1,bedroomLoveseat:1,bedroomTeaTable:1,bench:1,
           chest:1,shelf:1,bedroomDisplay:1,lounge:1,vanity:1,vanityStool:1};
         rows.push({...make(richChallenge),autoChallenge:true});
-        // 锚点先单独成盘，避免十个后续可选槽位的前瞻分反过来干扰床、电视墙
-        // 和沙发的主构图。它没有面积门槛；是否可用完全由真实几何决定。
+        const bedroomAspect=Math.max(scene.width/Math.max(scene.depth,EPS),scene.depth/Math.max(scene.width,EPS));
+        const longBedroomConfig=LAYOUT_CONSTRAINTS.inventory.longBedroomChallenge;
+        const longBedroomChallengeActive=longBedroomConfig?.enabled===true
+          &&(!longBedroomConfig.shape||scene.shape===longBedroomConfig.shape)
+          &&area+EPS>=Number(longBedroomConfig.minArea||0)
+          &&bedroomAspect+EPS>=Number(longBedroomConfig.minAspect||0);
+        // 长条卧室中，床尾凳、浅展示柜和会客组一起进入搜索；放不下的单件自动 skip。
+        // 具体家具数量来自配置，这里不再另外写一套场景规则。
+        if(longBedroomChallengeActive)rows.push({...make({...core,...longBedroomConfig.counts}),longBedroomChallenge:true});
+        // 少量锚点盘仅作为丰富盘无法通过时的几何退路。
         rows.push({...make({...core,night:1,tvbench:1,bedroomLoveseat:1}),hotelAnchorChallenge:true});
         rows.push({...make({bed:1,wardrobe:1,night:0,desk:1,chair:1,tvbench:1}),hotelMediaFallback:true});
         // 长条卧室优先尝试酒店式“床尾壁挂电视 + 超薄电视柜”。它是睡眠组的
         // 延伸，不要求先摆小沙发，也不会把 0.4m 深普通电视柜硬塞进窄通道。
-        const bedroomAspect=Math.max(scene.width/Math.max(scene.depth,EPS),scene.depth/Math.max(scene.width,EPS));
         const hotelMediaPreferred=area>=15&&bedroomAspect>=1.65;
         if(area>=15)rows.push(make({...core,tvbench:1}));
         // 大卧室先试完整的“单人/小沙发 + 茶几 + 小电视柜”硬家具组。
@@ -3532,7 +3558,7 @@
         const preferred=area>=6.2&&area<9
           ?rows.find(row=>(row.counts.night||0)>=1&&(row.counts.desk||0)>0&&(row.counts.chair||0)>0)
           :layoutDensityMode==='rich'&&rows.some(row=>row.focusChallenge)?rows.find(row=>row.focusChallenge)
-          :layoutDensityMode==='rich'&&recognizedHotelMediaPreferred?rows.find(row=>row.hotelAnchorChallenge)
+          :layoutDensityMode==='rich'&&recognizedHotelMediaPreferred?(rows.find(row=>row.longBedroomChallenge)||rows.find(row=>row.hotelAnchorChallenge))
           :layoutDensityMode==='rich'?rows.find(row=>row.autoChallenge)
           :recognizedHotelMediaPreferred?rows.find(row=>(row.counts.tvbench||0)>0&&(row.counts.bedroomLoveseat||0)===0)
           :area>=20
@@ -3635,7 +3661,7 @@
         if(candidate.essentialFallback||candidate.hotelMediaFallback||candidate.moduleChallenge)return true;
         // 酒店锚点方案允许“一只床头柜换一张沙发”。这是设计取舍，不是缺件；
         // 真实可行性继续交给 0.50m 通路、孤岛和完整质量评分。
-        if(layoutDensityMode==='rich'&&candidate.estimate.missingCompletionPenalty>16&&!candidate.hotelAnchorChallenge)return false;
+        if(layoutDensityMode==='rich'&&candidate.estimate.missingCompletionPenalty>16&&!candidate.hotelAnchorChallenge&&!candidate.longBedroomChallenge)return false;
         if(candidate.estimate.coverage+EPS<coverageFloorFor(objectiveId))return false;
         return true;
       };
@@ -3667,10 +3693,10 @@
           return finalized;
         });
         const coverageFloor=coverageFloorFor(objectiveId);
-        const completionOk=layoutDensityMode!=='rich'||candidate.estimate.missingCompletionPenalty<=16||candidate.hotelAnchorChallenge||candidate.hotelMediaFallback||candidate.essentialFallback||candidate.moduleChallenge;
+        const completionOk=layoutDensityMode!=='rich'||candidate.estimate.missingCompletionPenalty<=16||candidate.longBedroomChallenge||candidate.hotelAnchorChallenge||candidate.hotelMediaFallback||candidate.essentialFallback||candidate.moduleChallenge;
         const strictOk=completionOk&&candidate.estimate.coverage>=coverageFloor&&probe.solutions.some(passesHardFurniturePhase);
         attempts++;totalNodes+=probe.stats.nodes;totalTimeMs+=probe.stats.timeMs;totalBatches+=probe.stats.batches||0;totalMatrixCandidates+=probe.stats.matrixCandidates||probe.stats.nodes;
-        trials.push({objective:objectiveId,pieces:FURNITURE.length,counts:{...candidate.counts},mode:profile.mode,ok:strictOk,timeMs:probe.stats.timeMs,bestReach:probe.stats.bestReach,bestEvaluation:probe.solutions[0]?.evaluation?{qualityPass:probe.solutions[0].evaluation.qualityPass,scores:{...probe.solutions[0].evaluation.scores},reach:{hardPass:probe.solutions[0].evaluation.reach.hardPass,hardReachableRatio:probe.solutions[0].evaluation.reach.hardReachableRatio,islandArea:probe.solutions[0].evaluation.reach.unreachableArea},placed:Object.keys(probe.solutions[0].poses||{}).length}:null});
+        trials.push({objective:objectiveId,pieces:FURNITURE.length,counts:{...candidate.counts},mode:profile.mode,ok:strictOk,timeMs:probe.stats.timeMs,bestReach:probe.stats.bestReach,bestEvaluation:probe.solutions[0]?.evaluation?{qualityPass:probe.solutions[0].evaluation.qualityPass,scores:{...probe.solutions[0].evaluation.scores},reach:{hardPass:probe.solutions[0].evaluation.reach.hardPass,hardReachableRatio:probe.solutions[0].evaluation.reach.hardReachableRatio,islandArea:probe.solutions[0].evaluation.reach.unreachableArea},placed:Object.keys(probe.solutions[0].poses||{}).length,diagnostics:{densityCoherent:probe.solutions[0].evaluation.diagnostics?.densityCoherent,bedroomWallCoherent:probe.solutions[0].evaluation.diagnostics?.bedroomWallCoherent,severeFieldDefect:probe.solutions[0].evaluation.diagnostics?.severeFieldDefect,postLayoutValidation:probe.solutions[0].evaluation.diagnostics?.postLayoutValidation}}:null});
         const trial={ok:strictOk,probe,profile,key,candidate,items:inventoryItems,config:snapshotProgramConfig(programId)};
         cache.set(key,trial);return trial;
       };
@@ -3918,8 +3944,8 @@
         return selected;
       };
       // 当前阶段只输出直接落在地面的软装。地毯是最底层衬底，不参与碰撞、通行占用或 Beam 落子。
-      const floorRule=LAYOUT_CONSTRAINTS.postLayout.floorOnly===true?(FLOOR_SURFACE_RULES[currentProgram]||[]).find(rule=>(rule.preferences?.defaultCount??rule.quantity?.min??1)>0):null;
-      if(floorRule){const anchor=first(floorRule.surface?.relativeTo||(currentProgram==='bedroom'?'bed':'sofa')),body=bodyOf(anchor),padding=floorRule.surface?.padding||{},normal=anchor?.pose?.normal||{x:0,y:1};if(body){const side=Math.max(0,Number(padding.side)||0),front=Math.max(0,Number(padding.front)||0),back=Math.max(0,Number(padding.back)||0),desiredW=Math.max(body.w+side*2,Number(floorRule.geometry?.width)||0),desiredD=Math.max(body.d+front+back,Number(floorRule.geometry?.depth)||0),w=Math.min(roomScene.width-.16,desiredW),d=Math.min(roomScene.depth-.16,desiredD),shift=(front-back)/2,x=Math.min(roomScene.width-w/2-.08,Math.max(w/2+.08,body.x+normal.x*shift)),y=Math.min(roomScene.depth-d/2-.08,Math.max(d/2+.08,body.y+normal.y*shift));add('rug',floorRule.label||'地毯',body,{x,y,w,d,color:floorRule.color||'#c9ad78',layer:'floor',collision:'ignore'})}}
+      const floorRule=LAYOUT_CONSTRAINTS.postLayout.floorOnly===true?(FLOOR_SURFACE_RULES[currentProgram]||[]).find(rule=>(rule.preferences?.defaultCount??rule.quantity?.min??1)>0&&roomScene.area+EPS>=Number(rule.surface?.minArea||0)&&roomScene.area-EPS<=Number(rule.surface?.maxArea??Infinity)):null;
+      if(floorRule){const anchor=first(floorRule.surface?.relativeTo||(currentProgram==='bedroom'?'bed':'sofa')),body=bodyOf(anchor),padding=floorRule.surface?.padding||{},normal=anchor?.pose?.normal||{x:0,y:1};if(body){const side=Math.max(0,Number(padding.side)||0),front=Math.max(0,Number(padding.front)||0),back=Math.max(0,Number(padding.back)||0),normalHorizontal=Math.abs(normal.x)>.5,desiredW=Math.max(body.w+(normalHorizontal?front+back:side*2),Number(floorRule.geometry?.width)||0),desiredD=Math.max(body.d+(normalHorizontal?side*2:front+back),Number(floorRule.geometry?.depth)||0),w=Math.min(roomScene.width-.16,desiredW),d=Math.min(roomScene.depth-.16,desiredD),shift=(front-back)/2,x=Math.min(roomScene.width-w/2-.08,Math.max(w/2+.08,body.x+normal.x*shift)),y=Math.min(roomScene.depth-d/2-.08,Math.max(d/2+.08,body.y+normal.y*shift));add('rug',floorRule.label||'地毯',body,{x,y,w,d,color:floorRule.color||'#c9ad78',layer:'floor',collision:'ignore'})}}
       const wallComplements=synthesizeWallComplements();decor.push(...wallComplements);
       // 当前阶段只保留直接落地的实体/地面层：地毯与最终补柜。床品、抱枕、
       // 台灯、桌面绿植、挂画、搁板、窗帘等非落地陈设全部退出生成与计数。

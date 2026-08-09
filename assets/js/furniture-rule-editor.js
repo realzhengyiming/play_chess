@@ -3,12 +3,12 @@
     // 配置只保存在 FastAPI 的唯一全局文件中；浏览器不再读写 cookie/localStorage。
     const ENABLE_LOCAL_CONFIG_PERSISTENCE=false;
     const GLOBAL_CONFIG_API='/api/furniture-config';
-    const BASELINE_VERSION=14;
+    const BASELINE_VERSION=15;
     const STORAGE_KEY='room-chess-furniture-rule-catalog-v1';
     const PROFILE_STORAGE_KEY='room-chess-furniture-rule-profiles-v1';
     const ACTIVE_PROFILE_KEY='room-chess-furniture-rule-active-profile-v1';
     const DEFAULT_ROOM_TYPES=[{id:'bedroom',label:'卧室',engineEnabled:true},{id:'living',label:'客厅',engineEnabled:true}];
-    const DEFAULT_COUNTS={bedroom:{bed:1,night:2,wardrobe:1,desk:1,chair:1,bench:0,chest:0,shelf:0,tvbench:0,bedroomDisplay:0,lounge:0,bedroomLoveseat:0,bedroomTeaTable:0,vanity:0,vanityStool:0,bedroomInfillCabinet:1},living:{sofa:1,tv:1,coffee:1,diningTable:0,diningChair:0,sideboard:0,bookcase:0,display:0,console:0,arm:2,ottoman:0,side:1,floorLamp:1,plant:0,infillCabinet:1,livingRug:0}};
+    const DEFAULT_COUNTS={bedroom:{bed:1,night:2,wardrobe:1,desk:1,chair:1,bench:0,chest:0,shelf:0,tvbench:0,bedroomDisplay:0,lounge:0,bedroomLoveseat:0,bedroomTeaTable:0,vanity:0,vanityStool:0,bedroomInfillCabinet:1,bedroomRug:1},living:{sofa:1,tv:1,coffee:1,diningTable:0,diningChair:0,sideboard:0,bookcase:0,display:0,console:0,arm:2,ottoman:0,side:1,floorLamp:1,plant:0,infillCabinet:1,livingRug:0}};
     const DEFAULT_DESIGN_QUALITY_RULES={
       version:2,weights:{function:.22,ground:.26,wall:.22,relation:.15,circulation:.15},
       floor:{gridStep:.24,humanRadius:.23,pocketMinArea:.08,pocketMaxArea:1.45,severeUnreachableRatio:.055,severeNarrowRatio:.12,balanceIdeal:.13,balanceSevere:.28,largestOpenMin:.12,largestOpenMax:.44},
@@ -38,6 +38,9 @@
       },
       inventory:{
         variantModeByArea:{living:{diningTable:[{minArea:34,mode:'generous'}]},bedroom:{}},
+        // 长条卧室不再只试“床+电视柜+小沙发”的七件锚点盘。
+        // 以下真实家具同时进入一盘棋，放不下的单件由 skip 分支放弃。
+        longBedroomChallenge:{enabled:true,shape:'recognized',minArea:20,minAspect:1.65,counts:{night:1,tvbench:1,bench:1,bedroomLoveseat:1,bedroomTeaTable:1,bedroomDisplay:1}},
         focusChallenges:{bedroom:[
           {minArea:11.5,maxArea:13.19,target:{bench:1}},
           {minArea:13.2,maxArea:14.5,target:{tvbench:1},challenge:{tvbench:1,bench:1}}
@@ -114,6 +117,7 @@
       row('bedroom','bedroomDisplay','卧室展示柜',1.2,.32,'沿墙浅柜','空墙陈列与浅收纳','#738276',{requiredAnchor:'wall',avoidWindow:true,run:{min:.7,max:2.4,step:.1,fill:[.62,.94]},patch:{quantity:{min:0,max:2},accessTarget:true,candidate:{rules:[candidateRule('bedroom-display-wall','wall',{maxSamples:14,weight:1.2})],maxCandidates:14},service:{label:'展示柜取用区',side:'front',depth:.42,spanExtra:0,hard:false,allowBodyTypes:[]}}}),
       row('library','hamper','洗衣篮',.42,.42,'小件家具','衣物暂存','#9b9070',{patch:{candidate:{mode:'corner',rotations:[0,90],relativeTo:'',relation:'utility-corner',gap:0},service:{label:'取放衣物区',side:'front',depth:.6,spanExtra:0,hard:false,allowBodyTypes:[]}}}),
       row('bedroom','bedroomInfillCabinet','卧室定制填缝柜',1.8,.4,'拓展填缝定制柜','末轮空墙补齐','#526f68',{requiredAnchor:'wall',avoidWindow:true,infill:true,run:{min:.6,max:3,step:.05,modules:[.6,.8,1,1.2,1.5,1.8,2.4,3],fill:[.72,1],maxByWalls:true,maxPerWall:1,wallCountCap:4,areaPerCabinet:8},patch:{quantity:{min:0,max:4},accessTarget:true,service:{label:'定制柜取用区',side:'front',depth:.45,spanExtra:0,hard:false,allowBodyTypes:[]}}}),
+      row('bedroom','bedroomRug','卧室地毯',2.5,3.1,'地面陈设','长卧室留白整合','#cdbb8e',{patch:{quantity:{min:0,max:1},preferences:{defaultCount:1,weight:1},surface:{layer:'floor',collision:'ignore',relativeTo:'bedroomLoveseat',minArea:20,padding:{side:.70,front:2.35,back:.10}},service:{label:'卧室地面衬底',side:'front',depth:0,spanExtra:0,hard:false,allowBodyTypes:[]}}}),
       row('living','sofa','沙发',2.2,.9,'会客核心','会客核心','#be633e',{patch:{quantity:{min:1,max:1},accessTarget:true,geometry:{width:2.2,depth:.9,shape:'box',variants:[{id:'box',label:'普通三人沙发',width:2.2,depth:.9,shape:'box'},{id:'l-left',label:'左贵妃 L 形沙发',width:2.8,depth:1.65,shape:'l-left'},{id:'l-right',label:'右贵妃 L 形沙发',width:2.8,depth:1.65,shape:'l-right'}]},candidate:{rules:[candidateRule('sofa-wall','wall',{maxSamples:16,weight:1.25}),candidateRule('sofa-zone','zone',{relation:'floating-sofa',maxSamples:12})],maxCandidates:28},service:{label:'沙发起坐区',side:'front',depth:.6,spanExtra:0,hard:false,allowBodyTypes:[]}}}),
       row('living','tv','电视柜',1.8,.45,'会客核心','视听中心','#34424d',{requiredAnchor:'wall',avoidWindow:true,patch:{quantity:{min:1,max:1},accessTarget:true,candidate:{rules:[candidateRule('tv-facing-sofa','relation',{relativeTo:'sofa',relation:'sofa-facing',side:'front',distance:{min:1.55,max:3.2,step:.25},facing:['toward'],maxSamples:18,weight:1.55,referenceShapePolicy:{lShape:{enabled:true,lateralSide:'any',frontAlign:'body-center'}}}),candidateRule('tv-open-wall','wall',{maxSamples:12})],maxCandidates:30},service:{label:'设备与抽屉区',side:'front',depth:.6,spanExtra:0,hard:true,allowBodyTypes:[]}}}),
       row('living','coffee','茶几',1.2,.6,'会客核心','会客中心','#bd9252',{patch:{quantity:{min:1,max:1},candidate:{rules:[candidateRule('coffee-sofa-front','relation',{relativeTo:'sofa',relation:'sofa-front',side:'front',distance:{min:.3,max:.4,step:.05},facing:['toward','away'],maxSamples:6,weight:1.5,collisionClearance:0})],maxCandidates:8},service:{label:'茶几取用区',side:'front',depth:.6,spanExtra:0,hard:false,allowBodyTypes:[]}}}),
@@ -148,7 +152,7 @@
     const ruleKey=rule=>`${rule.program}:${rule.id}`;
     const profileId=()=>`profile-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,7)}`;
     function normalizeProfile(row){
-      const rawCatalog=normalizeCatalog(row.catalog).filter(rule=>rule.id!=='bedroomRug'),upgradeIds=['bedroomLoveseat','bedroomTeaTable','bedroomDisplay'];
+      const rawCatalog=normalizeCatalog(row.catalog),upgradeIds=['bedroomLoveseat','bedroomTeaTable','bedroomDisplay'];
       const upgrading=row.richBedroomDefaultsV1!==true;
       if(upgrading)for(const id of upgradeIds){const base=defaults.find(rule=>rule.id===id);if(base&&!rawCatalog.some(rule=>rule.id===id))rawCatalog.push(normalizeRule(clone(base),rawCatalog.length))}
       const catalog=[...new Map(rawCatalog.map(rule=>[rule.id,rule])).values()],defaultsByRule=clone(row.defaultsByRule||{}),roomTypes=Array.isArray(row.roomTypes)?clone(row.roomTypes):clone(DEFAULT_ROOM_TYPES),roomAssignments=clone(row.roomAssignments||{}),roomSettings=clone(row.roomSettings||{}),hasAssignments=!!row.roomAssignments;
@@ -348,6 +352,8 @@
       if(modes?.rich?.enabled!==true||modes?.airy?.enabled!==false||modes?.standard?.enabled!==false)errors.push('当前阶段只允许 rich，airy / standard 必须停用');
       if(!layout?.search||!layout?.postLayout||!layout?.inventory||!layout?.qualityPass||!layout?.designGrammar)errors.push('layoutConstraints 缺少 search / postLayout / inventory / qualityPass / designGrammar');
       if(!(Number(layout?.search?.semanticSampling?.wall?.maxUniformPositions)>0))errors.push('search.semanticSampling.wall.maxUniformPositions 必须为正数');
+      const longBedroomChallenge=layout?.inventory?.longBedroomChallenge;
+      if(longBedroomChallenge?.enabled!==true||!(Number(longBedroomChallenge.minArea)>0)||!(Number(longBedroomChallenge.minAspect)>1)||!longBedroomChallenge.counts)errors.push('inventory.longBedroomChallenge 必须包含启用条件与家具数量');
       const deskSizePolicy=layout?.search?.sizePolicies?.bedroom?.desk;
       if(!deskSizePolicy)errors.push('search.sizePolicies.bedroom.desk 不能为空');
       else if(!Array.isArray(deskSizePolicy.targetByArea)||!deskSizePolicy.targetByArea.length||!Array.isArray(deskSizePolicy.searchMaxByArea)||!deskSizePolicy.searchMaxByArea.length||!(Number(deskSizePolicy.repairCandidateLimit)>0))errors.push('书桌模数策略缺少面积目标、搜索上限或末轮候选预算');

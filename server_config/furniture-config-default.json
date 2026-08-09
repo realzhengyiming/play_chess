@@ -1,8 +1,8 @@
 {
   "schemaVersion": 8,
-  "baselineVersion": 14,
+  "baselineVersion": 15,
   "profileName": "全局家具配置",
-  "updatedAt": "2026-08-09T12:10:27.547Z",
+  "updatedAt": "2026-08-09T13:03:00.446Z",
   "richBedroomDefaultsV1": true,
   "richBedroomDefaultsV2": true,
   "wallCabinetFirstV1": true,
@@ -155,6 +155,20 @@
           ]
         },
         "bedroom": {}
+      },
+      "longBedroomChallenge": {
+        "enabled": true,
+        "shape": "recognized",
+        "minArea": 20,
+        "minAspect": 1.65,
+        "counts": {
+          "night": 1,
+          "tvbench": 1,
+          "bench": 1,
+          "bedroomLoveseat": 1,
+          "bedroomTeaTable": 1,
+          "bedroomDisplay": 1
+        }
       },
       "focusChallenges": {
         "bedroom": [
@@ -3671,6 +3685,136 @@
     },
     {
       "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "bedroomRug",
+      "label": "卧室地毯",
+      "category": "地面陈设",
+      "role": "长卧室留白整合",
+      "color": "#cdbb8e",
+      "geometry": {
+        "width": 2.5,
+        "depth": 3.1,
+        "shape": "box",
+        "searchVariants": false
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 180
+      },
+      "candidate": {
+        "mode": "zone",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "zone",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "crossOffset": 0,
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "crossOffset": 0,
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "sharedCirculation": false,
+        "label": "卧室地面衬底",
+        "side": "front",
+        "depth": 0,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "surface": {
+        "layer": "floor",
+        "collision": "ignore",
+        "relativeTo": "bedroomLoveseat",
+        "minArea": 20,
+        "padding": {
+          "side": 0.7,
+          "front": 2.35,
+          "back": 0.1
+        }
+      },
+      "run": null,
+      "infill": false
+    },
+    {
+      "schemaVersion": 1,
       "program": "living",
       "id": "sofa",
       "label": "沙发",
@@ -3714,7 +3858,7 @@
       "preferences": {
         "defaultCount": 1,
         "weight": 1,
-        "priority": 180
+        "priority": 190
       },
       "candidate": {
         "rules": [
@@ -3891,7 +4035,7 @@
       "preferences": {
         "defaultCount": 1,
         "weight": 1,
-        "priority": 190
+        "priority": 200
       },
       "candidate": {
         "rules": [
@@ -4068,7 +4212,7 @@
       "preferences": {
         "defaultCount": 1,
         "weight": 1,
-        "priority": 200
+        "priority": 210
       },
       "candidate": {
         "rules": [
@@ -4211,7 +4355,7 @@
       "preferences": {
         "defaultCount": 2,
         "weight": 1,
-        "priority": 210
+        "priority": 220
       },
       "candidate": {
         "rules": [
@@ -4537,7 +4681,7 @@
       "preferences": {
         "defaultCount": 1,
         "weight": 1,
-        "priority": 220
+        "priority": 230
       },
       "candidate": {
         "mode": "relation",
@@ -4715,7 +4859,7 @@
       "preferences": {
         "defaultCount": 0,
         "weight": 1,
-        "priority": 230
+        "priority": 240
       },
       "candidate": {
         "mode": "relation",
@@ -4857,7 +5001,7 @@
       "preferences": {
         "defaultCount": 0,
         "weight": 1.5,
-        "priority": 240
+        "priority": 250
       },
       "candidate": {
         "rules": [
@@ -5034,7 +5178,7 @@
       "preferences": {
         "defaultCount": 0,
         "weight": 1,
-        "priority": 250
+        "priority": 260
       },
       "candidate": {
         "rules": [
@@ -5283,7 +5427,7 @@
       "preferences": {
         "defaultCount": 0,
         "weight": 1,
-        "priority": 260
+        "priority": 270
       },
       "candidate": {
         "mode": "wall",
@@ -5433,7 +5577,7 @@
       "preferences": {
         "defaultCount": 0,
         "weight": 1,
-        "priority": 270
+        "priority": 280
       },
       "candidate": {
         "mode": "wall",
@@ -5583,7 +5727,7 @@
       "preferences": {
         "defaultCount": 0,
         "weight": 1,
-        "priority": 280
+        "priority": 290
       },
       "candidate": {
         "mode": "wall",
@@ -5733,7 +5877,7 @@
       "preferences": {
         "defaultCount": 0,
         "weight": 1,
-        "priority": 290
+        "priority": 300
       },
       "candidate": {
         "mode": "wall",
@@ -5883,7 +6027,7 @@
       "preferences": {
         "defaultCount": 1,
         "weight": 1,
-        "priority": 300
+        "priority": 310
       },
       "candidate": {
         "rules": [
@@ -6132,7 +6276,7 @@
       "preferences": {
         "defaultCount": 0,
         "weight": 1,
-        "priority": 310
+        "priority": 320
       },
       "candidate": {
         "mode": "corner",
@@ -6251,7 +6395,7 @@
       "preferences": {
         "defaultCount": 1,
         "weight": 1,
-        "priority": 320
+        "priority": 330
       },
       "candidate": {
         "mode": "wall",
@@ -6393,7 +6537,7 @@
       "preferences": {
         "defaultCount": 0,
         "weight": 1,
-        "priority": 330
+        "priority": 340
       },
       "candidate": {
         "mode": "zone",
@@ -6519,7 +6663,8 @@
       "lounge",
       "vanity",
       "vanityStool",
-      "bedroomInfillCabinet"
+      "bedroomInfillCabinet",
+      "bedroomRug"
     ],
     "living": [
       "sofa",
@@ -6653,6 +6798,13 @@
         "defaultCount": 1,
         "weight": 1,
         "priority": 160
+      },
+      "bedroomRug": {
+        "min": 0,
+        "max": 1,
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 170
       }
     },
     "living": {
@@ -9443,6 +9595,136 @@
         "areaPerCabinet": 8
       },
       "infill": true
+    },
+    {
+      "schemaVersion": 1,
+      "program": "bedroom",
+      "id": "bedroomRug",
+      "label": "卧室地毯",
+      "category": "地面陈设",
+      "role": "长卧室留白整合",
+      "color": "#cdbb8e",
+      "geometry": {
+        "width": 2.5,
+        "depth": 3.1,
+        "shape": "box",
+        "searchVariants": false
+      },
+      "quantity": {
+        "min": 0,
+        "max": 1
+      },
+      "accessTarget": false,
+      "preferences": {
+        "defaultCount": 1,
+        "weight": 1,
+        "priority": 170
+      },
+      "candidate": {
+        "mode": "zone",
+        "rotations": [
+          0,
+          90
+        ],
+        "relativeTo": "",
+        "relation": "",
+        "gap": 0,
+        "rules": [
+          {
+            "id": "candidate-1",
+            "enabled": true,
+            "mode": "zone",
+            "rotations": [
+              0,
+              90
+            ],
+            "relativeTo": "",
+            "relation": "",
+            "side": "front",
+            "crossAlign": "center",
+            "crossOffset": 0,
+            "distance": {
+              "min": 0,
+              "max": 0,
+              "step": 0.2
+            },
+            "facing": [
+              "parallel"
+            ],
+            "maxSamples": 12,
+            "weight": 1,
+            "collisionClearance": 0.025,
+            "allowFunctionalOverlap": false,
+            "referenceShapePolicy": {
+              "lShape": {
+                "enabled": true,
+                "lateralSide": "any",
+                "frontAlign": "bbox"
+              }
+            },
+            "lShapeCrossAlign": "bbox",
+            "excludeForLShape": false,
+            "avoidChaiseSide": false
+          }
+        ],
+        "ruleListVersion": 2,
+        "maxCandidates": 32,
+        "id": "candidate-1",
+        "enabled": true,
+        "side": "front",
+        "crossAlign": "center",
+        "crossOffset": 0,
+        "distance": {
+          "min": 0,
+          "max": 0,
+          "step": 0.2
+        },
+        "facing": [
+          "parallel"
+        ],
+        "maxSamples": 12,
+        "weight": 1,
+        "collisionClearance": 0.025,
+        "allowFunctionalOverlap": false,
+        "referenceShapePolicy": {
+          "lShape": {
+            "enabled": true,
+            "lateralSide": "any",
+            "frontAlign": "bbox"
+          }
+        },
+        "lShapeCrossAlign": "bbox",
+        "excludeForLShape": false,
+        "avoidChaiseSide": false
+      },
+      "placement": {
+        "requiredAnchor": "none",
+        "avoidWindow": false,
+        "allowCorner": false
+      },
+      "service": {
+        "sharedCirculation": false,
+        "label": "卧室地面衬底",
+        "side": "front",
+        "depth": 0,
+        "spanExtra": 0,
+        "hard": false,
+        "allowBodyTypes": [],
+        "alignStart": false
+      },
+      "surface": {
+        "layer": "floor",
+        "collision": "ignore",
+        "relativeTo": "bedroomLoveseat",
+        "minArea": 20,
+        "padding": {
+          "side": 0.7,
+          "front": 2.35,
+          "back": 0.1
+        }
+      },
+      "run": null,
+      "infill": false
     },
     {
       "schemaVersion": 1,
