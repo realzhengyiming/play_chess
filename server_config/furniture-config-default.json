@@ -1,8 +1,8 @@
 {
   "schemaVersion": 8,
-  "baselineVersion": 15,
+  "baselineVersion": 16,
   "profileName": "全局家具配置",
-  "updatedAt": "2026-08-09T13:03:00.446Z",
+  "updatedAt": "2026-08-09T15:41:31.710Z",
   "richBedroomDefaultsV1": true,
   "richBedroomDefaultsV2": true,
   "wallCabinetFirstV1": true,
@@ -167,6 +167,11 @@
           "bench": 1,
           "bedroomLoveseat": 1,
           "bedroomTeaTable": 1,
+          "bedroomDisplay": 1,
+          "chest": 1
+        },
+        "requiredCounts": {
+          "bench": 1,
           "bedroomDisplay": 1
         }
       },
@@ -197,19 +202,51 @@
         "living": [
           {
             "minArea": 0,
-            "target": {}
+            "target": {},
+            "irregularTarget": {}
+          },
+          {
+            "minArea": 14,
+            "target": {
+              "display": 1
+            },
+            "irregularTarget": {
+              "display": 1
+            }
+          },
+          {
+            "minArea": 19,
+            "target": {
+              "bookcase": 1,
+              "display": 1
+            },
+            "irregularTarget": {
+              "display": 1
+            }
           },
           {
             "minArea": 24,
             "target": {
-              "sideboard": 1
+              "sideboard": 1,
+              "display": 1
+            },
+            "irregularTarget": {
+              "display": 1
             }
           },
           {
             "minArea": 34,
             "target": {
               "sideboard": 1,
-              "display": 1
+              "bookcase": 2,
+              "display": 1,
+              "console": 1
+            },
+            "irregularTarget": {
+              "sideboard": 1,
+              "bookcase": 1,
+              "display": 1,
+              "console": 1
             }
           }
         ],
@@ -808,7 +845,8 @@
       "floorOnly": true,
       "wallComplements": {
         "enabled": true,
-        "countTowardRichMinimum": true,
+        "repairOnly": true,
+        "countTowardRichMinimum": false,
         "maxRecoverableIslandArea": 0.2,
         "allowProgressiveIslandRepair": true,
         "minIslandImprovement": 0.015,

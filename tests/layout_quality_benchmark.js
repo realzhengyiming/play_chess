@@ -22,6 +22,8 @@ const CASES = [
   ['living', 'notch', 6.4, 5.2],
   ['living', 'rect', 7.2, 5.5],
 ];
+const caseFilter=process.argv.find(arg=>arg.startsWith('--case='))?.slice('--case='.length);
+const ACTIVE_CASES=caseFilter?CASES.filter(([programId,shape,width,depth])=>`${programId}/${shape}/${width}x${depth}`===caseFilter):CASES;
 
 const percentile = (values, ratio) => {
   const sorted = [...values].sort((a, b) => a - b);
@@ -38,7 +40,7 @@ setTimeout(() => {
   engine.setLayoutDensityMode('rich');
   engine.setCustomCabinetEnabled(true);
 
-  const rows = CASES.map(([programId, shape, width, depth]) => {
+  const rows = ACTIVE_CASES.map(([programId, shape, width, depth]) => {
     const result = engine.autoSelectInventory({ programId, shape, width, depth });
     const solution = result.probe?.solutions?.[0];
     if (!solution) throw new Error(`${programId}/${shape}/${width}x${depth}: 无方案`);
@@ -73,6 +75,10 @@ setTimeout(() => {
       wallCornerSlivers: wall.cornerSlivers ?? null,
       wallInternalSlivers: wall.internalSlivers ?? null,
       wallSevereGaps: wall.severeGaps ?? null,
+      unusedWallRatio:rounded(wall.unusedWallRatio),
+      emptyWallScore:rounded(wall.emptyWallScore),
+      largeRoomWallCoherent:diagnostics.largeRoomWallCoherent ?? null,
+      largeRoomGroundCoherent:diagnostics.largeRoomGroundCoherent ?? null,
       completeModules: modules.completeCount ?? null,
       moduleScore: rounded(modules.score),
       regression:{
@@ -85,6 +91,7 @@ setTimeout(() => {
         diningWidth:rounded(solution.poses?.diningTable?.overrideW),
         deskWidth:rounded(solution.poses?.desk?.overrideW),
         deskTarget:rounded(sizePolicy.details?.find(row=>row.typeId==='desk')?.targetWidth),
+        maxPostWallRun:rounded(Math.max(0,...decor.filter(row=>row.kind==='postDisplayCabinet').map(row=>Number(row.runWidth)||0))),
         elevatedDecor:decor.filter(row=>!['rug','postDisplayCabinet'].includes(row.kind)).map(row=>row.kind),
       },
       ...(process.argv.includes('--debug') ? {
@@ -125,8 +132,10 @@ setTimeout(() => {
     if(mediaBedroom&&!mediaBedroom.regression.hasTvbench)failures.push(mediaBedroom);
     const compactDining=rows.find(row=>row.case==='living/rect/4.8x4.2');
     if(compactDining&&(!compactDining.regression.hasArm||!compactDining.regression.hasDiningTable||compactDining.regression.diningChairs<1||!compactDining.regression.diningWall))failures.push(compactDining);
+    if(compactDining&&compactDining.placed<8)failures.push(compactDining);
     if(grandLiving&&(grandLiving.regression.diningWidth??0)<1.6)failures.push(grandLiving);
     for(const row of rows)if(row.anchors>140)failures.push(row);
+    for(const row of rows)if((row.regression.maxPostWallRun??0)>.81)failures.push(row);
     for(const row of rows)if(row.regression.elevatedDecor.length)failures.push(row);
     if (failures.length) throw new Error(`质量基准失败：${[...new Set(failures.map(row => row.case))].join(', ')}`);
   }

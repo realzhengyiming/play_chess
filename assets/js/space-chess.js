@@ -106,8 +106,10 @@
       }
       if(!value?.densityModes?.rich)errors.push('缺少 densityModes.rich');
       if(!(Number(value?.search?.semanticSampling?.wall?.maxUniformPositions)>0))errors.push('search.semanticSampling.wall.maxUniformPositions 必须为正数');
+      const wallComplements=value?.postLayout?.wallComplements;
+      if(wallComplements?.repairOnly!==true||wallComplements?.countTowardRichMinimum!==false)errors.push('postLayout.wallComplements 必须只修缝且不计入丰富度');
       const longBedroomChallenge=value?.inventory?.longBedroomChallenge;
-      if(longBedroomChallenge?.enabled!==true||!(Number(longBedroomChallenge.minArea)>0)||!(Number(longBedroomChallenge.minAspect)>1)||!longBedroomChallenge.counts)errors.push('缺少有效的 inventory.longBedroomChallenge');
+      if(longBedroomChallenge?.enabled!==true||!(Number(longBedroomChallenge.minArea)>0)||!(Number(longBedroomChallenge.minAspect)>1)||!longBedroomChallenge.counts||!longBedroomChallenge.requiredCounts)errors.push('缺少有效的 inventory.longBedroomChallenge');
       const deskSizePolicy=value?.search?.sizePolicies?.bedroom?.desk;
       if(!deskSizePolicy)errors.push('缺少 search.sizePolicies.bedroom.desk');
       else if(!Array.isArray(deskSizePolicy.targetByArea)||!deskSizePolicy.targetByArea.length||!Array.isArray(deskSizePolicy.searchMaxByArea)||!deskSizePolicy.searchMaxByArea.length||!(Number(deskSizePolicy.repairCandidateLimit)>0))errors.push('书桌模数策略不完整');
@@ -1094,7 +1096,10 @@
         // 带模数的沿墙家具已根据“当前剩余连续墙段”生成了 wall-run 语义点。
         // 先保留这些高信息量点，再用固定等分点补齐预算；不扩大 maxSamples，
         // 却能避免空墙中点被轮廓前部的无效原始点挤出 Beam。
+        const stagedWallSupport=currentProgram==='living'&&Number(stagedSupportCounts(scene)?.[item.typeId]||0)>0;
         if(item.typeId==='bedroomDisplay'&&rule?.run&&mode==='wall')rows.sort((a,b)=>Number(b.relation==='wall-run')-Number(a.relation==='wall-run'));
+        else if(stagedWallSupport&&rule?.run&&mode==='wall')rows.sort((a,b)=>
+          Number(b.relation==='wall-run')-Number(a.relation==='wall-run')||(Number(b.overrideW)||0)-(Number(a.overrideW)||0));
         buckets.push(rows.slice(0,perRule).map(pose=>({...pose,candidateRuleId:pose.candidateRuleId||entry.id||relation})));
       }
       const all=[];for(let index=0;all.length<totalLimit;index++){let added=false;for(const bucket of buckets)if(bucket[index]){all.push(bucket[index]);added=true;if(all.length>=totalLimit)break}if(!added)break}return all;
@@ -1573,6 +1578,13 @@
       // 若任一锚点确实无合法位置，本轮库存自然失败并回退；不再因为 skip 分高
       // 就在明明放得下时偷懒。茶几和其它小件仍保持逐件可跳过。
       if(selectedHotelAnchor)return true;
+      const longBedroomConfig=LAYOUT_CONSTRAINTS.inventory.longBedroomChallenge;
+      const longBedroomChallengeActive=currentProgram==='bedroom'&&longBedroomConfig?.enabled===true&&
+        (!longBedroomConfig.shape||scene.shape===longBedroomConfig.shape)&&scene.area+EPS>=Number(longBedroomConfig.minArea||0)&&
+        bedroomAspect+EPS>=Number(longBedroomConfig.minAspect||0);
+      // 长条卧室里真正承担墙面构图的床尾凳、浅柜由配置声明为必放；
+      // 末轮收口件不能替代它们，也不能靠自己的件数让方案通过丰富度门槛。
+      if(longBedroomChallengeActive&&item.slotIndex<Number(longBedroomConfig.requiredCounts?.[item.typeId]||0))return true;
       if(item.typeId==='chair'&&state.poses.desk&&item.slotIndex===0)return true;
       if(item.typeId==='vanityStool'&&state.poses.vanity&&item.slotIndex===0)return true;
       if(item.typeId==='diningChair'&&state.poses.diningTable){
@@ -1589,6 +1601,9 @@
       if(currentProgram==='living'&&layoutDensityMode==='rich'&&item.slotIndex===0&&scene.area>=24&&
         ['sideboard','bookcase','display','side','arm'].includes(item.typeId)&&
         (CONFIGS.living.counts[item.typeId]||0)>0)return true;
+      const stagedSupportTarget=currentProgram==='living'&&layoutDensityMode==='rich'?stagedSupportCounts(scene):{};
+      if(currentProgram==='living'&&['sideboard','bookcase','display','console'].includes(item.typeId)&&
+        item.slotIndex<Number(stagedSupportTarget[item.typeId]||0))return true;
       // 只有 studio 明确选择的三件套不可拆。普通卧室里的沙发、圆几、电视柜
       // 都是逐件挑战：能放就继续，放不下只跳过这一件，不能连带删掉后续家具。
       if(currentProgram==='bedroom'&&item.slotIndex===0&&(CONFIGS.bedroom.counts[item.typeId]||0)>0){
@@ -3182,9 +3197,12 @@
       const row=[...(rows||[])].sort((a,b)=>Number(b.minArea)-Number(a.minArea)).find(item=>area+EPS>=Number(item.minArea));
       return Number(row?.[field]??row?.value??0);
     }
-    function configuredAreaTarget(rows,area){
+    function configuredAreaTarget(rows,area,field='target'){
       const row=[...(rows||[])].sort((a,b)=>Number(b.minArea)-Number(a.minArea)).find(item=>area+EPS>=Number(item.minArea));
-      return row?.target||{};
+      return row?.[field]||row?.target||{};
+    }
+    function stagedSupportCounts(scene){
+      return configuredAreaTarget(LAYOUT_CONSTRAINTS.inventory.stagedSupport?.living,scene.area,scene.shape==='rect'?'target':'irregularTarget');
     }
 
     // 外层不再把家具视作彼此无关的商品，而是以设计师常用的“功能组合包”扩充。
@@ -3310,11 +3328,8 @@
         side:layoutDensityMode==='rich'?1:0,arm:layoutDensityMode==='rich'?(roomAreaTier('living',scene.area).modules.includes('dining')?1:scene.area>=14?2:1):0,
         floorLamp:layoutDensityMode==='rich'?1:0,plant:0,
         infillCabinet:0,
-        // 大客厅不能只靠一组沙发和定制柜撑满；34㎡以上先锁定两种常规沿墙家具，
-        // 其余连续空墙交给最终定制柜补全，避免第三种成品柜制造新的墙缝。
-        sideboard:scene.area>=34&&layoutDensityMode==='rich'?1:0,
-        bookcase:scene.area>=34&&layoutDensityMode==='rich'?1:0,
-        display:0
+        // 各面积应完成的真实沿墙家具完全读取 stagedSupport；末轮修缝件不参与。
+        ...stagedSupportCounts(scene)
       };
       // 常规卧室也不能只剩“床 + 衣柜”。是否完成工作/会客组由配置的面积模块决定；
       // 丰富模式只增加末轮浅柜，不再把展示柜、休闲椅同时设为硬目标而挤掉核心家具。
@@ -3530,7 +3545,7 @@
         // 上一回合”伪造床+衣柜方案；修正搜索终止后在这里显式保留基础清单。
         rows.push({...make({bed:1,wardrobe:1}),essentialFallback:true});
       }else{
-        const conversation={sofa:1,tv:1,coffee:1},core={...conversation};
+        const support=stagedSupportCounts(scene),conversation={sofa:1,tv:1,coffee:1},core={...conversation,...support};
         if(area>=14){core.arm=2;core.side=1;core.floorLamp=1;}
         rows.push(make(core));
         if(area>=16)rows.push(make({...core,bookcase:1}));
@@ -3540,7 +3555,7 @@
         // 大客餐厅仍保留会客核心，但家具增长以完整模块为单位。
         if(area>=30)rows.push(make({...core,arm:3,side:2,floorLamp:2,sideboard:2,bookcase:1,display:1,infillCabinet:0}));
         const largeDiningChairTarget=2;
-        if(area>=19)rows.push({...make({...conversation,arm:1,side:1,diningTable:1,diningChair:largeDiningChairTarget,...configuredAreaTarget(LAYOUT_CONSTRAINTS.inventory.stagedSupport?.living,area)}),moduleChallenge:true});
+        if(area>=19)rows.push({...make({...conversation,arm:1,side:1,diningTable:1,diningChair:largeDiningChairTarget,...support}),moduleChallenge:true});
         if(area>=23)rows.push(make({...conversation,arm:1,side:1,diningTable:1,diningChair:4,sideboard:1}));
         // 大客厅优先尝试紧凑但完整的双区骨架：围合会客 + 双人餐组 +
         // 两种沿墙收纳。它比四椅三柜组合更容易保住 0.50m 连通通路。
@@ -3574,7 +3589,7 @@
         // 客餐厅先挑战完整餐组；随面积增加的沿墙辅助家具来自同一份配置，
         // 不再在这里写死“必须书柜”，避免多门异形客厅被某一柜型堵出孤岛。
         const chairTarget=2;
-        const support=configuredAreaTarget(LAYOUT_CONSTRAINTS.inventory.stagedSupport?.living,area);
+        const support=stagedSupportCounts(scene);
         const preferred=rows.find(row=>(row.counts.diningTable||0)>0&&(row.counts.diningChair||0)>=chairTarget&&Object.entries(support).every(([typeId,count])=>(row.counts[typeId]||0)>=count));
         if(preferred)rows.splice(0,rows.length,preferred,...rows.filter(row=>row!==preferred));
       }
@@ -3869,6 +3884,10 @@
                 }
               }
             }
+            // 末轮补柜只修安装缝/零碎墙段；达到成品家具最小宽度的完整空墙，
+            // 必须回到 Beam 里由餐边柜、书柜、展示柜等真实家具竞争，不能用
+            // 一条超长“定制展示柜”冒充丰富度和主墙设计。
+            if(complementRules.repairOnly===true&&available+EPS>=DESIGN_QUALITY_RULES.wall.usefulBayMin)continue;
             const width=available<=maxWidth+complementRules.closureExtensionMax?round(available,2):round(Math.floor(Math.min(maxWidth,available)*10+EPS)/10,1);if(width<minWidth)continue;
             const slots=available>width+.32?[start+width/2,(start+end)/2,end-width/2]:[(start+end)/2];
             for(const t of slots){

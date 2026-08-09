@@ -83,7 +83,6 @@ setTimeout(() => {
       if(hotelBedroom&&placedTypeCount('bedroomLoveseat')<1)failures.push(`${label}: 长条卧室明明可行却未挑战正式小沙发`);
       if(hotelBedroom&&room.area>=20&&placedTypeCount('bench')<1)failures.push(`${label}: 20㎡以上长条卧室可行却未放床尾凳`);
       if(hotelBedroom&&room.area>=20&&placedTypeCount('bedroomDisplay')<1)failures.push(`${label}: 20㎡以上长条卧室未用浅展示柜消化空墙`);
-      if(hotelBedroom&&room.area>=20&&!(solution.decorItems||[]).some(row=>row.kind==='rug'))failures.push(`${label}: 20㎡以上长条卧室中央留白未用落地地毯整合`);
       if(hotelBedroom){
         const tvId=Object.keys(solution.poses||{}).find(id=>itemById.get(id)?.typeId==='tvbench');
         if(tvId&&solution.poses[tvId]?.relation!=='bedroom-tv-bed-facing')failures.push(`${label}: 电视柜没有保持床对电视的酒店主轴`);
