@@ -965,6 +965,9 @@
       // 增加一圈离边界约 0.18~0.22 的聚类中心，使沙发前区占掉中央时餐组仍可
       // 落在另一半空间。只增加这些代表点，不按房间面积铺满细网格。
       if(relation==='dining-zone')points.unshift(
+        // 大客餐厅必须保留真正位于另一功能半区的候选。旧顺序先塞满边界点，
+        // maxSamples 截断后，房间中部的大块空地反而永远进不了候选集。
+        [.50,.50],[.50,.38],[.50,.62],
         [.18,.24],[.18,.50],[.18,.76],[.82,.24],[.82,.50],[.82,.76],
         [.34,.18],[.66,.18],[.34,.82],[.66,.82]
       );
@@ -1148,6 +1151,12 @@
       // 同一件家具可以按面积切换候选语义：大客厅禁用贴墙餐桌，
       // 小客厅则保留贴墙作为后备。面积只筛规则，不增加网格采样数。
       entries=entries.filter(entry=>scene.area+EPS>=Number(entry.minArea??0)&&scene.area-EPS<=Number(entry.maxArea??Infinity));
+      // 单人沙发已经有主沙发时，只允许通过一个已落子的真实家具建立会客关系。
+      // arm-open-zone / arm-wall 是“没有主沙发”的兜底，不得把一把椅子孤零零
+      // 丢到远处甚至面壁。L 形沙发若不允许直接挂单椅，则宁可跳过这件可选家具。
+      if(currentProgram==='living'&&item.typeId==='arm'&&stateTypeCount(state,'sofa')>0){
+        entries=entries.filter(entry=>entry.mode==='relation'&&entry.relativeTo&&stateTypeCount(state,entry.relativeTo)>0);
+      }
       if(!entries.length)return [];
       const bedroomAspect=Math.max(scene.width/Math.max(scene.depth,EPS),scene.depth/Math.max(scene.width,EPS));
       const hotelBedroom=currentProgram==='bedroom'&&scene.shape==='recognized'&&bedroomAspect>=1.65;
@@ -1313,6 +1322,29 @@
       return false;
     }
 
+    function livingMediaCorridor(state) {
+      if(currentProgram!=='living')return null;
+      const sofaEntry=FURNITURE.find(row=>row.typeId==='sofa'&&state.poses[row.id]),tvEntry=FURNITURE.find(row=>row.typeId==='tv'&&state.poses[row.id]);
+      if(!sofaEntry||!tvEntry)return null;
+      const sofaPose=state.poses[sofaEntry.id],tvPose=state.poses[tvEntry.id],dx=Math.abs(sofaPose.x-tvPose.x),dy=Math.abs(sofaPose.y-tvPose.y);
+      // 这不是通行区，而是会客主轴：餐桌及其拉椅包络不得横穿沙发与电视柜。
+      return dx>=dy
+        ?{x:(sofaPose.x+tvPose.x)/2,y:(sofaPose.y+tvPose.y)/2,w:dx,d:1.18}
+        :{x:(sofaPose.x+tvPose.x)/2,y:(sofaPose.y+tvPose.y)/2,w:1.18,d:dy};
+    }
+
+    function diningGroupConflictsLounge(item,pose,state) {
+      if(currentProgram!=='living'||item.typeId!=='diningTable')return false;
+      const body=poseRect(pose,item),chairPull=.62,group={x:body.x,y:body.y,w:body.w+chairPull*2,d:body.d+chairPull*2};
+      const corridor=livingMediaCorridor(state);
+      if(corridor&&rectsOverlap(group,corridor,0))return true;
+      // 餐桌实体没撞到茶几，不代表椅子还能拉开。用餐组包络与会客实体必须分区。
+      return Object.entries(state.poses).some(([id,otherPose])=>{
+        const other=ITEM_BY_ID[id];
+        return other&&['sofa','tv','coffee','arm'].includes(other.typeId)&&footprintRects(other,otherPose).some(rect=>rectsOverlap(group,rect,.08));
+      });
+    }
+
     function legalityCheck(item,pose,state,scene) {
       if (!footprintInside(item,pose,scene.polygon)) return {legal:false,reason:'outside',label:'超出房间边界'};
       if (footprintRects(item,pose).some(rect=>overlapsDoorClearance(rect,scene,.01))) return {legal:false,reason:'door',label:'占用门洞或门扇区'};
@@ -1322,6 +1354,7 @@
         const other=ITEM_BY_ID[id];
         if (footprintsOverlap(item,pose,other,otherPose,pairCollisionClearance(item,pose,other,otherPose))) return {legal:false,reason:'collision',label:`与${itemBaseLabel(other)}碰撞`};
       }
+      if(diningGroupConflictsLounge(item,pose,state))return {legal:false,reason:'semantic-zone',label:'餐桌椅组侵入沙发—电视会客主轴'};
       if(functionalConflict(item,pose,state,zones))return {legal:false,reason:'functional',label:'侵占家具硬使用区'};
       return {legal:true,reason:'legal',label:'硬规则合法'};
     }
@@ -1538,7 +1571,7 @@
         if(loveseat){const nextState={...state,poses:{...state.poses,[item.id]:pose}};for(const futurePose of configuredRuleCandidates(loveseat,nextState,scene)){if(isLegal(loveseat,futurePose,nextState,scene)){loungeFeasible=true;break}}}
         score+=loungeFeasible?72:-120;
       }
-      if (!configuredEntry&&item.id.startsWith('night')) {
+      if (item.typeId==='night') {
         score += pose.relation === 'bed-side' ? 52 : -12;
         const actual=itemLocalDims(item,pose),target=scene.area<11?.35:scene.area>18?.55:.45;
         score += 7-Math.abs(actual.w-target)*22;
@@ -1627,6 +1660,8 @@
       if (item.id === 'diningTable') {
         score += pose.relation==='dining-wall'?30:pose.relation==='dining-zone'?18:0;
         if (state.poses.sofa) score += clamp((dist(pose,state.poses.sofa)-1.35)*8,-18,18);
+        const group=poseRect(pose,item),loungeItems=Object.entries(state.poses).filter(([id])=>['sofa','tv','coffee','arm'].includes(ITEM_BY_ID[id]?.typeId));
+        if(loungeItems.length){const clearance=Math.min(...loungeItems.map(([id,otherPose])=>rectGap(group,poseRect(otherPose,ITEM_BY_ID[id]))));score+=clamp((clearance-.55)*13,-24,22)}
       }
       if (!configuredEntry&&item.id.startsWith('diningChair')) score += pose.relation==='dining-seat'?48:-16;
       if(item.typeId==='diningChair'&&state.poses.diningTable){
@@ -2662,10 +2697,33 @@
       return {composition,storage:wall.score,alignment,compact,zoning,symmetry,balance,voidScore,functionalGroups,storageDetails:storage,wallDetails:wall,...activationMetrics};
     }
 
-    function configuredGlobalTotal(scores) {
+    function candidateRulePreferenceMetrics(state,scene) {
+      const details=[];let regret=0;
+      for(const [id,pose] of Object.entries(state.poses||{})){
+        const item=ITEM_BY_ID[id],candidate=furnitureRule(item)?.candidate,rows=Array.isArray(candidate?.rules)?candidate.rules.filter(row=>row.enabled!==false&&scene.area+EPS>=Number(row.minArea??0)&&scene.area-EPS<=Number(row.maxArea??Infinity)):[];
+        if(rows.length<2)continue;
+        const selected=rows.find(row=>(row.id||row.relation)===pose.candidateRuleId)||rows.find(row=>row.relation&&row.relation===pose.relation);if(!selected)continue;
+        const weights=rows.map(row=>clamp(Number(row.weight)||1,0,3)),min=Math.min(...weights),max=Math.max(...weights);if(max-min<=EPS)continue;
+        const selectedWeight=clamp(Number(selected.weight)||1,0,3),normalizedRegret=clamp((max-selectedWeight)/(max-min),0,1);
+        regret+=normalizedRegret;details.push({id,typeId:item.typeId,ruleId:selected.id||selected.relation,weight:selectedWeight,maxWeight:max,regret:round(normalizedRegret,3)});
+      }
+      // 用户配置的高权重是终局偏好，而不只是搜索顺序提示。每选中一条明显
+      // 次优规则扣 5 分，最多 12 分；仍允许为了通行/地面质量作必要让步。
+      const penalty=Math.min(12,regret*5);
+      return {score:details.length?clamp(1-regret/details.length,0,1):1,penalty:round(penalty,2),details};
+    }
+
+    function configuredGlobalTotal(scores,candidatePreference=null) {
       const weights=DESIGN_QUALITY_RULES.weights,mapping={wall:'storage'};let weighted=0,totalWeight=0;
       for(const [key,value] of Object.entries(weights)){const weight=Number(value)||0,score=Number(scores[mapping[key]||key]);if(weight<=0||!Number.isFinite(score))continue;weighted+=score*weight;totalWeight+=weight}
-      return totalWeight?weighted/totalWeight:0;
+      return (totalWeight?weighted/totalWeight:0)-Math.max(0,Number(candidatePreference?.penalty)||0);
+    }
+
+    function postLayoutMinimumCabinetWidth(programId=currentProgram) {
+      const configured=Number(LAYOUT_CONSTRAINTS.postLayout?.wallComplements?.programs?.[programId]?.minWidth)||0;
+      // 老版本用户 JSON 曾把 minWidth 保存成 0.1m。产品层底线不能被旧配置
+      // 绕过：卧室至少是 0.60m 成品柜，客厅至少是 1.10m 有效模数。
+      return Math.max(programId==='living'?1.10:.60,configured);
     }
 
     function evaluateFull(state,scene,flowLevels=FLOW_RADII) {
@@ -2705,6 +2763,7 @@
       functionScore=allPlaced?100*(modules.score*Number(functionWeights.modules)+stateCoverage.coverage*Number(functionWeights.inventoryCoverage)+design.functionalGroups.score*Number(functionWeights.functionalGroups))/functionWeightTotal:
         placedItems.length/Math.max(1,FURNITURE.filter(item=>!item.optional).length)*(currentProgram==='living'?58:60);
       const preference=preferenceSatisfaction(state);
+      const candidatePreference=candidateRulePreferenceMetrics(state,scene);
       const sizePolicy=sizePolicySatisfaction(state,scene);
       const activation=spaceActivationMetrics(state,scene,design);
       const ground=groundPlaneMetrics(state,scene,design);
@@ -2724,7 +2783,7 @@
         activation: Math.round(activation.score*100),
         ground: Math.round(ground.score*100)
       };
-      let total=configuredGlobalTotal(scores);
+      let total=configuredGlobalTotal(scores,candidatePreference);
       // 地面与墙面的严重缺陷采用封顶，而不是靠其它对象高分抵消。
       const severeFieldDefect=ground.severe||design.wallDetails.severe;
       const weakField=scores.ground<DESIGN_QUALITY_RULES.gates.minGround||scores.storage<DESIGN_QUALITY_RULES.gates.minWall;
@@ -2769,7 +2828,7 @@
       const qualityPass=allPlaced&&diningCoherent&&guestSeatingCoherent&&focusChallengeCoherent&&densityCoherent&&largeRoomGroundCoherent&&bedroomWallFinishable&&reach.hardPass&&!searchSevereFieldDefect&&
         scores.modules>=requiredModuleScore&&scores.circulation>=quality.minimumScores.circulation&&scores.relation>=quality.minimumScores.relation&&scores.composition>=quality.minimumScores.composition&&
         scores.storage>=DESIGN_QUALITY_RULES.gates.minWall&&scores.ground>=DESIGN_QUALITY_RULES.gates.minGround&&scores.comfort>=quality.minimumScores.comfort&&scores.preference>=quality.minimumScores.preference;
-      diagnostics={...diagnostics,...design,modules,preference,sizePolicy,activation,ground,functionCoverage:stateCoverage.coverage,diningCoherent,diningSeatBalance,guestSeatingCoherent,focusChallengeCoherent,placedDiningChairs,richMinimum,densityCoherent,potentialPostFurniture,largeRoomGroundCoherent,longBedroomWallRequired,largestEmptyWallBay,bedroomWallProgramComplete,bedroomWallCoherent,requiredModuleScore,severeFieldDefect,weakField};
+      diagnostics={...diagnostics,...design,modules,preference,candidatePreference,sizePolicy,activation,ground,functionCoverage:stateCoverage.coverage,diningCoherent,diningSeatBalance,guestSeatingCoherent,focusChallengeCoherent,placedDiningChairs,richMinimum,densityCoherent,potentialPostFurniture,largeRoomGroundCoherent,longBedroomWallRequired,largestEmptyWallBay,bedroomWallProgramComplete,bedroomWallCoherent,requiredModuleScore,severeFieldDefect,weakField};
       return { total:round(total,1), scores, reach, qualityPass, diagnostics };
     }
 
@@ -3421,6 +3480,16 @@
         const moving=FURNITURE.filter(item=>memberTypes.includes(item.typeId)),remaining=FURNITURE.filter(item=>!memberTypes.includes(item.typeId));
         const insertAfter=remaining.map(item=>item.typeId).lastIndexOf(group.orderAfter),insertAt=insertAfter<0?remaining.length:insertAfter+1;
         FURNITURE.splice(0,FURNITURE.length,...remaining.slice(0,insertAt),...moving,...remaining.slice(insertAt));
+      }
+      // 若单人沙发规则明确允许“相对边几”落位，边几就是它的语义父节点，
+      // 必须先落。用户配置里的普通 priority 不能反过来让 arm-side-front 永远
+      // 因引用对象尚不存在而失效。这也让 L 沙发能形成“主沙发→边几→单椅”组。
+      const armRule=FURNITURE.find(item=>item.typeId==='arm'),hasSideDependency=armRule&&(furnitureRule(armRule)?.candidate?.rules||[]).some(row=>row.enabled!==false&&row.mode==='relation'&&row.relativeTo==='side');
+      // 只在厅堂档启用：中小客厅直接围绕普通沙发摆单椅，提前移动边几会扩大
+      // Beam 分支却没有新增语义价值；55㎡以上才需要挑战完整的第二侧座位链。
+      if(hasSideDependency&&scene.area>=55&&FURNITURE.some(item=>item.typeId==='side')){
+        const arms=FURNITURE.filter(item=>item.typeId==='arm'),withoutArms=FURNITURE.filter(item=>item.typeId!=='arm'),lastSide=withoutArms.map(item=>item.typeId).lastIndexOf('side'),insertAt=lastSide+1;
+        FURNITURE.splice(0,FURNITURE.length,...withoutArms.slice(0,insertAt),...arms,...withoutArms.slice(insertAt));
       }
     }
 
@@ -4167,7 +4236,7 @@
         const target=Math.min(programRules.maxBudget,Math.max(areaTarget,infillWallBudget(currentProgram,roomScene)));
         // 只生成达到配置最小模数的真实柜体。小于该宽度的安装余缝留给现场
         // 收边处理，不再把 0.1–0.2m 的封板伪装成一件家具。
-        const depth=programRules.depth,minWidth=programRules.minWidth,maxWidth=programRules.maxWidth;
+        const depth=programRules.depth,minWidth=postLayoutMinimumCabinetWidth(currentProgram),maxWidth=programRules.maxWidth;
         // 门前矩形只保护门扇扫掠/通行深度，门洞端点还需要独立保护。否则与门洞
         // 相接的垂直短墙会被误判成可用碎缝，最终画出“门框旁窄柜”。
         const doorJambClearance=Math.max(0,Number(complementRules.doorJambClearance)||0);
@@ -4323,14 +4392,14 @@
         if(candidateWall.severeGaps>priorSevere||wallScoreDropped||(!wallCoverageImproved&&candidateWall.score<(currentWall?.score??0)-EPS)){postRejectSummary.wall++;postRejected.push({label:row.label,wallIndex:row.wallIndex,reason:'wall',beforeUnused:round(currentWall?.unusedWallRatio||0,3),afterUnused:round(candidateWall.unusedWallRatio,3),beforeSevere:priorSevere,afterSevere:candidateWall.severeGaps,gaps:candidateWall.gapDetails});continue;}
         solids.push(rect);acceptedPostLayout++;if(row.kind==='postDisplayCabinet')wallSolids.push(row);accepted.push(row);currentGround=candidateGround;currentWall=candidateWall;currentReach=candidateReach;
       }
-      const rawWall=currentWall||baselineWall,minimumCabinetModule=Math.max(DESIGN_QUALITY_RULES.wall.installGapMax,Number(LAYOUT_CONSTRAINTS.postLayout.wallComplements.programs[currentProgram]?.minWidth)||0);
+      const rawWall=currentWall||baselineWall,minimumCabinetModule=Math.max(DESIGN_QUALITY_RULES.wall.installGapMax,postLayoutMinimumCabinetWidth(currentProgram));
       // 仍保留小余缝的连续性/角落软扣分，但既然产品层已取消小填缝柜，低于
       // 最小柜体模数的缝隙不能再触发最终“严重缺陷”硬失败。
       const submoduleSevere=(rawWall.gapDetails||[]).filter(row=>row.severity==='severe'&&Number(row.width)<minimumCabinetModule-EPS),actionableSevere=(rawWall.gapDetails||[]).filter(row=>row.severity==='severe'&&Number(row.width)>=minimumCabinetModule-EPS);
       const wall={...rawWall,severeGaps:actionableSevere.length,severe:actionableSevere.length>0,submoduleSevereGaps:submoduleSevere.length};
       const finalReach=computeReachability(plan,scene,FLOW_RADII,solids);
       const scores=plan.evaluation.scores;scores.ground=Math.round((currentGround||baseline).score*100);scores.storage=Math.round(wall.score*100);
-      let total=configuredGlobalTotal(scores);
+      let total=configuredGlobalTotal(scores,plan.evaluation.diagnostics.candidatePreference);
       const severe=(currentGround||baseline).severe||wall.severe;
       if(severe)total=Math.min(total,DESIGN_QUALITY_RULES.gates.severeDefectCap);
       total=Math.min(total,scores.function+14,scores.circulation+14,scores.relation+12,scores.storage+15,scores.ground+15,scores.comfort+18);

@@ -87,7 +87,9 @@ setTimeout(() => {
       const invalidActivityZones=(solution.decorItems||[]).filter(row=>row.kind==='activityZone'&&(row.layer!=='floor'||row.collision!=='ignore'||row.label!=='中央活动区'));
       const unsupportedWallFurniture=Object.entries(solution.poses||{}).filter(([id,pose])=>(pose.anchor==='wall'||Number.isInteger(pose.wallIndex)&&pose.wallIndex>=0)&&!engine.fullBackWallSupport(itemById.get(id),pose,result.scene));
       const doorJambClearance=Math.max(0,Number(config.layoutConstraints.postLayout.wallComplements.doorJambClearance)||0);
-      const minimumCabinetModule=Math.min(...Object.values(config.layoutConstraints.postLayout.wallComplements.programs).map(row=>Number(row.minWidth)||Infinity));
+      const minimumCabinetModule=programId==='living'
+        ?Math.max(1.10,Number(config.layoutConstraints.postLayout.wallComplements.programs.living.minWidth)||0)
+        :Math.max(.60,Number(config.layoutConstraints.postLayout.wallComplements.programs.bedroom.minWidth)||0);
       const undersizedComplements=(solution.decorItems||[]).filter(row=>row.kind==='postDisplayCabinet'&&Number(row.runWidth)+1e-6<minimumCabinetModule);
       const doorSideComplements=(solution.decorItems||[]).filter(row=>row.kind==='postDisplayCabinet'&&actualDoors.some(door=>{
         const endpoints=door.a&&door.b?[door.a,door.b]:[{x:door.x0,y:door.y},{x:door.x1,y:door.y}];
