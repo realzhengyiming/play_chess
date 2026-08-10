@@ -95,7 +95,7 @@ setTimeout(() => {
         deskWidth:rounded(solution.poses?.desk?.overrideW),
         deskTarget:rounded(sizePolicy.details?.find(row=>row.typeId==='desk')?.targetWidth),
         maxPostWallRun:rounded(Math.max(0,...decor.filter(row=>row.kind==='postDisplayCabinet').map(row=>Number(row.runWidth)||0))),
-        elevatedDecor:decor.filter(row=>!['rug','postDisplayCabinet'].includes(row.kind)).map(row=>row.kind),
+        elevatedDecor:decor.filter(row=>!['rug','postDisplayCabinet','activityZone'].includes(row.kind)).map(row=>row.kind),
       },
       ...(process.argv.includes('--debug') ? {
         emptyGround: engine.evaluateFull({ poses: {} }, result.scene).diagnostics.ground,

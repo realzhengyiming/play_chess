@@ -19,6 +19,8 @@
 - 地面、墙面、通行、关系等评分权重和质量门槛；
 - 候选预算、Beam 宽度、库存尝试次数和剪枝启用阶段；
 - 末轮填缝柜的尺寸、预算、验收门槛。
+- `service.sharedCirculation` 只表示可与其他通行/使用区共享；`service.blocksFurniture` 单独决定家具实体能否侵入，二者不能混为一谈。
+- `layoutIntelligence.activityZones` 只解释通过硬验收后的规则留白，不计入家具数量和布局得分。
 
 ## 允许留在代码的安全不变量
 

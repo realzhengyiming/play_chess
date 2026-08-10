@@ -67,7 +67,8 @@ setTimeout(() => {
     if (programId === 'bedroom') {
       for(const rug of solution.decorItems?.filter(item=>item.kind==='rug')||[])if(rug.collision!=='ignore')fail(`${label}: 地毯错误参与硬碰撞`);
     }
-    if (solution.decorItems?.some(item => item.kind === 'activityZone')) fail(`${label}: 仍用活动区图形掩盖空白`);
+    if (solution.decorItems?.some(item => ['activityTable','activityCushion','activityChair','activityLoveseat'].includes(item.kind))) fail(`${label}: 仍用免碰撞假家具掩盖空白`);
+    for(const zone of solution.decorItems?.filter(item=>item.kind==='activityZone')||[])if(zone.collision!=='ignore'||zone.label!=='中央活动区')fail(`${label}: 中央活动区没有按配置生成`);
     if (result.totalTimeMs > 10000) fail(`${label}: 搜索超过 10 秒 (${result.totalTimeMs.toFixed(0)} ms)`);
     rows.push({label,ms:+result.totalTimeMs.toFixed(1),nodes:result.totalNodes,attempts:result.attempts,placed,score:solution.evaluation.total,activity:solution.decorItems?.some(item=>item.kind==='activityZone')?'yes':'-'});
   }

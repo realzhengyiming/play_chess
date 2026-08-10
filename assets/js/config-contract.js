@@ -63,6 +63,7 @@
     const globalScore=requireObject('layoutConstraints.layoutIntelligence.globalScore')||{};
     for(const key of ['functionWeights','compositionWeights','groundWeights','groupSpread'])requireObject(`layoutConstraints.layoutIntelligence.globalScore.${key}`);
     const functionalGroups=requireObject('layoutConstraints.layoutIntelligence.functionalGroups')||{};
+    const activityZones=requireObject('layoutConstraints.layoutIntelligence.activityZones')||{};
     requireObject('layoutConstraints.search');
     requireObject('layoutConstraints.postLayout');
     for(const programId of PROGRAM_IDS){
@@ -70,6 +71,14 @@
       requireArray(`layoutConstraints.inventory.richMinimum.${programId}`,{nonEmpty:true});
       requireObject(`layoutConstraints.designGrammar.${programId}`);
       const groups=requireArray(`layoutConstraints.layoutIntelligence.functionalGroups.${programId}`,{nonEmpty:true});
+      const activity=activityZones[programId];
+      if(!isObject(activity))errors.push(`layoutConstraints.layoutIntelligence.activityZones.${programId} 必须是对象`);
+      else {
+        if(typeof activity.enabled!=='boolean')errors.push(`layoutConstraints.layoutIntelligence.activityZones.${programId}.enabled 必须是布尔值`);
+        if(!finite(activity.minRoomArea)||Number(activity.minRoomArea)<0)errors.push(`layoutConstraints.layoutIntelligence.activityZones.${programId}.minRoomArea 必须是非负数`);
+        if(!Array.isArray(activity.targetByArea)||!activity.targetByArea.length)errors.push(`layoutConstraints.layoutIntelligence.activityZones.${programId}.targetByArea 必须是非空数组`);
+        if(!Array.isArray(activity.sizeTiers)||!activity.sizeTiers.length)errors.push(`layoutConstraints.layoutIntelligence.activityZones.${programId}.sizeTiers 必须是非空数组`);
+      }
       const groupIds=new Set();
       for(const [index,group] of groups.entries()){
         const prefix=`layoutConstraints.layoutIntelligence.functionalGroups.${programId}[${index}]`;
@@ -139,6 +148,7 @@
       if(!isObject(rule?.service)||!finite(rule.service.depth)||Number(rule.service.depth)<0)errors.push(`${prefix}.service.depth 必须是非负数`);
       if(typeof rule?.service?.hard!=='boolean')errors.push(`${prefix}.service.hard 必须是布尔值`);
       if(typeof rule?.service?.sharedCirculation!=='boolean')errors.push(`${prefix}.service.sharedCirculation 必须是布尔值`);
+      if(rule?.service?.blocksFurniture!=null&&typeof rule.service.blocksFurniture!=='boolean')errors.push(`${prefix}.service.blocksFurniture 必须是布尔值`);
     }
     for(const programId of PROGRAM_IDS)if(!rules.some(rule=>rule.program===programId&&Number(rule.quantity?.min)>0))errors.push(`${programId} 至少需要一件 quantity.min > 0 的核心家具`);
 

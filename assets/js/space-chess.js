@@ -449,6 +449,18 @@
         Math.abs(a.y - b.y) < (a.d + b.d) / 2 + padding - EPS;
     }
 
+    function rectGap(a,b) {
+      const dx=Math.max(0,Math.abs(a.x-b.x)-(a.w+b.w)/2);
+      const dy=Math.max(0,Math.abs(a.y-b.y)-(a.d+b.d)/2);
+      return Math.hypot(dx,dy);
+    }
+
+    function footprintGap(item,pose,other,otherPose) {
+      let gap=Infinity;
+      for(const a of footprintRects(item,pose))for(const b of footprintRects(other,otherPose))gap=Math.min(gap,rectGap(a,b));
+      return gap;
+    }
+
     function pointInRect(p, r, padding = 0) {
       return Math.abs(p.x-r.x) <= r.w/2 + padding && Math.abs(p.y-r.y) <= r.d/2 + padding;
     }
@@ -1179,7 +1191,9 @@
     }
 
     function hardFunctionalZones(item,pose) {
-      return functionalZones(item,pose).filter(zone=>zone.hard);
+      // “是否可与其他功能/通行区共享”与“家具实体能否压进去”是两件事。
+      // blocksFurniture 只阻挡实体；区域之间仍可重叠，不会把共享通道误当碰撞。
+      return functionalZones(item,pose).filter(zone=>zone.hard||zone.blocksFurniture);
     }
 
     function ruleAllowsBody(zoneOwner,bodyItem,zone,bodyPose,zoneOwnerPose=null) {
@@ -1533,7 +1547,12 @@
       if (item.id.startsWith('bookcase')||item.id.startsWith('sideboard')||item.id.startsWith('display')||item.id==='console') {
         score += item.id.startsWith('sideboard')?27:20;
         if (windowOverlap(item,pose,scene)) score -= 64;
-        if (state.poses.diningTable&&item.id.startsWith('sideboard')) score += clamp(16-dist(pose,state.poses.diningTable)*4,-4,12);
+        if (state.poses.diningTable&&item.id.startsWith('sideboard')) {
+          const pair=DESIGN_GRAMMAR.living.pairs.diningSideboard||{},clearance=pair.clearance||{};
+          const ideal=clearance.ideal||pair.distance||[.75,3],min=Number(clearance.min??ideal[0]??.75),max=Number(ideal[1]??clearance.max??3),tolerance=Number(clearance.tolerance)||.35;
+          const gap=footprintGap(item,pose,ITEM_BY_ID.diningTable,state.poses.diningTable);
+          score += bandScore(gap,min,max,tolerance)*18-6;
+        }
       }
       if (!configuredEntry&&item.id.startsWith('floorLamp')) score += pose.relation==='seat-light'?42:pose.relation==='corner-light'?30:-12;
       if (!configuredEntry&&item.id.startsWith('plant')) score += pose.relation==='corner-accent'?32:-10;
@@ -2085,7 +2104,10 @@
         const pose=state.poses[item.id];
         if (!pose) return sum;
         let score=relationSatisfied(state,item.id)&&!windowOverlap(item,pose,scene)?1:0;
-        if (item.typeId==='sideboard'&&diningTable&&state.poses.diningTable) score*=bandScore(dist(pose,state.poses.diningTable),.65,3.0,1.2);
+        if (item.typeId==='sideboard'&&diningTable&&state.poses.diningTable) {
+          const pair=DESIGN_GRAMMAR.living.pairs.diningSideboard||{},clearance=pair.clearance||{},ideal=clearance.ideal||pair.distance||[.75,3];
+          score*=bandScore(footprintGap(item,pose,diningTable,state.poses.diningTable),Number(clearance.min??ideal[0]??.75),Number(ideal[1]??clearance.max??3),Number(clearance.tolerance)||.35);
+        }
         return sum+score;
       },0)/storage.length:1;
       const lightScore=lights.length?lights.filter(item=>relationSatisfied(state,item.id)).length/lights.length:1;
@@ -4040,32 +4062,37 @@
       // “活动区”是最终剩余空间的解释层。大房间可生成多块，但数量固定封顶；
       // 每选中一块就加入阻挡集合，后续活动区不会互相重叠。
       const synthesizeActivityZones=(solidComplements=[])=>{
-        if(roomScene.area<7.5)return [];
-        const hasSemanticSeating=currentProgram==='bedroom'?(!!first('bedroomLoveseat')||!!first('lounge')):(!!first('sofa')||all('arm').length>0);
-        const target=currentProgram==='bedroom'?(hasSemanticSeating?1:roomScene.area>=30?2:roomScene.area>=18?2:1):(roomScene.area>=26?1:0);
+        const rules=LAYOUT_CONSTRAINTS.layoutIntelligence?.activityZones?.[currentProgram];
+        if(!rules?.enabled||roomScene.area+EPS<Number(rules.minRoomArea||0))return [];
+        const targetRule=[...(rules.targetByArea||[])].filter(row=>roomScene.area+EPS>=Number(row.minArea||0)).sort((a,b)=>Number(b.minArea||0)-Number(a.minArea||0))[0];
+        const target=Math.min(Number(rules.maxCount)||1,Math.max(0,Math.round(Number(targetRule?.count)||0)));
         if(!target)return [];
         const occupied=[...baseOccupied,...solidComplements.map(row=>({x:row.x,y:row.y,w:row.w,d:row.d}))],hard=[...baseHard],selected=[];
-        const sizes=roomScene.area>=28?[[2.5,1.9],[2.2,1.7],[2.0,1.6],[1.8,1.4],[1.5,1.2],[1.0,.9]]:roomScene.area>=18?[[2.1,1.6],[1.8,1.4],[1.6,1.3],[1.3,1.1],[1.0,.9]]:[[1.5,1.2],[1.3,1.1],[1.15,1.0],[1.0,.9],[.9,.8],[.8,.8]];
+        const sizeTier=[...(rules.sizeTiers||[])].filter(row=>roomScene.area+EPS>=Number(row.minArea||0)).sort((a,b)=>Number(b.minArea||0)-Number(a.minArea||0))[0];
+        const sizes=Array.isArray(sizeTier?.sizes)?sizeTier.sizes:[];
+        if(!sizes.length)return [];
+        const clearance=Math.max(0,Number(rules.clearance)||0),doorClearance=Math.max(0,Number(rules.doorClearance)||0),sampleStep=Math.max(.08,Number(rules.sampleStep)||.14);
+        const minZoneArea=Math.max(0,Number(rules.minZoneArea)||.62),preferredMinArea=Math.max(minZoneArea,Number(rules.preferredMinArea)||1.35);
         const center={x:roomScene.width/2,y:roomScene.depth/2};
         for(let zoneIndex=0;zoneIndex<target;zoneIndex++){
           let best=null;
           for(const [w0,d0] of sizes){
             for(const [w,d] of [[w0,d0],[d0,w0]]){
-              for(let y=d/2+.08;y<=roomScene.depth-d/2-.08+EPS;y+=.14){
-                for(let x=w/2+.08;x<=roomScene.width-w/2-.08+EPS;x+=.14){
+              for(let y=d/2+clearance;y<=roomScene.depth-d/2-clearance+EPS;y+=sampleStep){
+                for(let x=w/2+clearance;x<=roomScene.width-w/2-clearance+EPS;x+=sampleStep){
                   const rect={x,y,w,d,rotation:0};
-                  if(!rectInsidePolygon(rect,roomScene.polygon)||overlapsDoorClearance(rect,roomScene,.04))continue;
-                  if(occupied.some(body=>rectsOverlap(rect,body,.08))||hard.some(zone=>rectsOverlap(rect,zone,.02)))continue;
+                  if(!rectInsidePolygon(rect,roomScene.polygon)||overlapsDoorClearance(rect,roomScene,doorClearance))continue;
+                  if(occupied.some(body=>rectsOverlap(rect,body,clearance))||hard.some(zone=>rectsOverlap(rect,zone,0)))continue;
                   const edge=Math.min(x-w/2,roomScene.width-x-w/2,y-d/2,roomScene.depth-y-d/2);
-                  const score=w*d-Math.hypot(x-center.x,y-center.y)*.07+Math.min(.35,edge)*.10-zoneIndex*.05;
+                  const score=w*d-Math.hypot(x-center.x,y-center.y)*Number(rules.centerBias||0)+Math.min(.35,edge)*Number(rules.edgeBonus||0)-zoneIndex*.05;
                   if(!best||score>best.score)best={...rect,score};
                 }
               }
             }
-            if(best&&best.w*best.d>=1.35)break;
+            if(best&&best.w*best.d>=preferredMinArea)break;
           }
-          if(!best||best.w*best.d<.62)break;
-          const row={kind:'activityZone',label:target>1?`活动区 ${zoneIndex+1}`:'活动区',x:best.x,y:best.y,w:best.w,d:best.d,rotation:0,color:'#2f8a78',layer:'floor',collision:'ignore'};
+          if(!best||best.w*best.d<minZoneArea)break;
+          const baseLabel=String(rules.label||'活动区'),row={kind:'activityZone',label:target>1?`${baseLabel} ${zoneIndex+1}`:baseLabel,x:best.x,y:best.y,w:best.w,d:best.d,rotation:0,color:String(rules.color||'#2f8a78'),layer:'floor',collision:'ignore'};
           selected.push(row);occupied.push({x:row.x,y:row.y,w:row.w,d:row.d});
         }
         return selected;
@@ -4074,6 +4101,7 @@
       const floorRule=LAYOUT_CONSTRAINTS.postLayout.floorOnly===true?(FLOOR_SURFACE_RULES[currentProgram]||[]).find(rule=>(rule.preferences?.defaultCount??rule.quantity?.min??1)>0&&roomScene.area+EPS>=Number(rule.surface?.minArea||0)&&roomScene.area-EPS<=Number(rule.surface?.maxArea??Infinity)):null;
       if(floorRule){const anchor=first(floorRule.surface?.relativeTo||(currentProgram==='bedroom'?'bed':'sofa')),body=bodyOf(anchor),padding=floorRule.surface?.padding||{},normal=anchor?.pose?.normal||{x:0,y:1};if(body){const side=Math.max(0,Number(padding.side)||0),front=Math.max(0,Number(padding.front)||0),back=Math.max(0,Number(padding.back)||0),normalHorizontal=Math.abs(normal.x)>.5,desiredW=Math.max(body.w+(normalHorizontal?front+back:side*2),Number(floorRule.geometry?.width)||0),desiredD=Math.max(body.d+(normalHorizontal?side*2:front+back),Number(floorRule.geometry?.depth)||0),w=Math.min(roomScene.width-.16,desiredW),d=Math.min(roomScene.depth-.16,desiredD),shift=(front-back)/2,x=Math.min(roomScene.width-w/2-.08,Math.max(w/2+.08,body.x+normal.x*shift)),y=Math.min(roomScene.depth-d/2-.08,Math.max(d/2+.08,body.y+normal.y*shift));add('rug',floorRule.label||'地毯',body,{x,y,w,d,color:floorRule.color||'#c9ad78',layer:'floor',collision:'ignore'})}}
       const wallComplements=synthesizeWallComplements();decor.push(...wallComplements);
+      decor.push(...synthesizeActivityZones(wallComplements));
       // 当前阶段只保留直接落地的实体/地面层：地毯与最终补柜。床品、抱枕、
       // 台灯、桌面绿植、挂画、搁板、窗帘等非落地陈设全部退出生成与计数。
       return decor;

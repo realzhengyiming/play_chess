@@ -63,7 +63,8 @@ setTimeout(() => {
       const deskWidth=deskPose?(deskPose.overrideW||engine.getFurniture().find(item=>item.id==='desk')?.w||0):null;
       const itemById=new Map(engine.getFurniture().map(item=>[item.id,item]));
       const placedTypeCount=typeId=>Object.keys(solution.poses||{}).filter(id=>itemById.get(id)?.typeId===typeId).length;
-      const elevatedDecor=(solution.decorItems||[]).filter(row=>!['rug','postDisplayCabinet'].includes(row.kind));
+      const elevatedDecor=(solution.decorItems||[]).filter(row=>!['rug','postDisplayCabinet','activityZone'].includes(row.kind));
+      const invalidActivityZones=(solution.decorItems||[]).filter(row=>row.kind==='activityZone'&&(row.layer!=='floor'||row.collision!=='ignore'||row.label!=='中央活动区'));
       const wallDetails=solution.evaluation.diagnostics.wallDetails||{},groundDetails=solution.evaluation.diagnostics.ground||{};
       const roomAspect=Math.max(room.width/Math.max(room.depth,.001),room.depth/Math.max(room.width,.001));
       const hotelBedroom=programId==='bedroom'&&room.area>=15&&roomAspect>=1.65;
@@ -101,6 +102,7 @@ setTimeout(() => {
       }
       if(programId==='bedroom'&&room.area>=10&&room.area<12&&(placedTypeCount('desk')<1||placedTypeCount('chair')<1))failures.push(`${label}: 10–12㎡卧室仍缺少紧凑书桌椅组`);
       if(elevatedDecor.length)failures.push(`${label}: 仍生成非落地陈设 ${elevatedDecor.map(row=>row.kind).join('|')}`);
+      if(invalidActivityZones.length)failures.push(`${label}: 中央活动区没有按配置作为地面解释层生成`);
       if (assertSpeed && result.totalTimeMs > 2000) failures.push(`${label}: 搜索 ${result.totalTimeMs.toFixed(0)}ms，超过 2s 目标`);
       if (verbose) console.dir({label, plans:result.plans, trials:result.trials, alternatives:(result.probe?.solutions||[]).map(row=>({total:row.evaluation.total,qualityPass:row.evaluation.qualityPass,placed:Object.keys(row.poses||{}).length,deskW:row.poses?.desk?.overrideW,sizePolicy:row.evaluation.diagnostics?.sizePolicy})), scores:solution.evaluation.scores, diagnostics:solution.evaluation.diagnostics, poses:Object.keys(solution.poses), decor:(solution.decorItems||[]).map(row=>({kind:row.kind,label:row.label}))}, {depth:5});
       if (!reach.hardPass) failures.push(`${label}: 存在不可达家具或孤岛`);

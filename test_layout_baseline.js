@@ -112,7 +112,8 @@ setTimeout(() => {
     if (testCase.programId === 'bedroom') assertOptionalRepeatedTypeCanSkipAndContinue(solution, result.probe.beamTree, 'night', label);
     if (testCase.programId === 'bedroom') {
       assert(!solution.decorItems?.some(item => item.kind === 'rug'), `${label}: 卧室不应自动生成地毯`);
-      assert(!solution.decorItems?.some(item => ['activityZone','activityTable','activityCushion','activityChair','activityLoveseat'].includes(item.kind)), `${label}: 不应再用活动区图形或免碰撞家具解释空白`);
+      assert(!solution.decorItems?.some(item => ['activityTable','activityCushion','activityChair','activityLoveseat'].includes(item.kind)), `${label}: 不应使用免碰撞假家具解释空白`);
+      for(const zone of solution.decorItems?.filter(item=>item.kind==='activityZone')||[])assert(zone.collision==='ignore'&&zone.label==='中央活动区'&&zone.w*zone.d>=.64,`${label}: 中央活动区没有按配置生成`);
       const benchItem=solution.inventoryItems?.find(item=>item.typeId==='bench'&&solution.poses[item.id]);
       if(benchItem){
         const benchPose=solution.poses[benchItem.id],zone=engine.functionalZones(benchItem,benchPose)[0];
@@ -136,6 +137,8 @@ setTimeout(() => {
     assert(Object.values(counts).reduce((sum, value) => sum + value, 0)+postLayoutFurniture >= testCase.minPlaced, `${label}: 实际落地家具过少 ${JSON.stringify(counts)} + 末轮柜 ${postLayoutFurniture}`);
     if (counts.diningTable) assert((counts.diningChair || 0) >= 2, `${label}: 出现有餐桌无至少两把餐椅的不完整餐组`);
     for(const item of solution.inventoryItems?.filter(item=>item.typeId==='diningChair'&&solution.poses[item.id])||[])assert(Math.abs(solution.poses[item.id].relationGap||0)<1e-6,`${label}: 餐椅没有紧靠餐桌`);
+    const sideboardItem=solution.inventoryItems?.find(item=>item.typeId==='sideboard'&&solution.poses[item.id]);
+    if(sideboardItem){const zone=engine.functionalZones(sideboardItem,solution.poses[sideboardItem.id])[0];assert(zone?.hard===false&&zone?.blocksFurniture===true&&zone?.sharedCirculation===true&&zone?.depth>=.75,`${label}: 餐边柜前没有保留可共享但禁止家具占用的通行区`)}
     const coffeeItem=solution.inventoryItems?.find(item=>item.typeId==='coffee'&&solution.poses[item.id]);
     if(coffeeItem){const gap=solution.poses[coffeeItem.id].relationGap;assert(gap>=.299&&gap<=.401,`${label}: 茶几没有使用 0.30–0.40m 紧凑距离 (${gap})`)}
     if ((counts.infillCabinet || 0) >= 2) {
@@ -183,14 +186,14 @@ setTimeout(() => {
     assert(tvRows.length&&tvRows.every(row=>Math.abs(row.pose.x-sofaPose.x)<1e-6),`${shape}: 电视柜没有对准沙发主体中心`);
   }
 
-  // 3.54×6.60m 大单间必须用正式硬家具会客组完成空间，不再用活动区解释空白。
+  // 3.54×6.60m 大单间必须用正式硬家具会客组完成空间；活动区只能解释真实留白，不能替代家具组。
   engine.applyFurnitureCatalog(serverConfig.furnitureRules);engine.setLayoutDensityMode('rich');
   const studioResult=engine.autoSelectInventory({programId:'bedroom',shape:'rect',width:3.54,depth:6.60}),studioSolution=studioResult.probe.solutions[0],studioCounts=actualCounts(studioSolution),studioItems=new Map(studioSolution.inventoryItems.map(item=>[item.typeId,item])),studioLoveseat=studioItems.get('bedroomLoveseat'),studioTv=studioItems.get('tvbench');
   requireTypes(studioCounts,{bedroomLoveseat:1,bedroomTeaTable:1,tvbench:1},'大单间会客组');
   const mediaPair=studioSolution.poses[studioTv.id].relation==='bedroom-media-facing'||
     (studioSolution.poses[studioLoveseat.id].relation==='bedroom-seat-media-facing'&&studioSolution.poses[studioLoveseat.id].relationTarget===studioTv.id);
   assert(mediaPair,'大单间小沙发与电视柜没有形成正对关系');
-  assert(!studioSolution.decorItems?.some(item=>item.kind==='activityZone'),'大单间仍用活动区图形解释空白');
+  assert(!studioSolution.decorItems?.some(item=>['activityLoveseat','activityChair','activityTable','activityCushion'].includes(item.kind)),'大单间仍用免碰撞假家具替代正式会客组');
 
   // 第一个户型识别样例中的 1 号长条卧室：墙段很多但面积不算大。
   // 这里专门防止定制柜预算再次退化成“只按面积最多下一次”。

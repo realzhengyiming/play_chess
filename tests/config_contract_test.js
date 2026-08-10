@@ -37,4 +37,12 @@ const invalidChallengeProfile=clone(read('current'));
 invalidChallengeProfile.layoutConstraints.layoutIntelligence.functionalGroups.living.find(group=>group.id==='dining').inventoryChallenges[0].counts.arm=-1;
 expectError('功能组棋谱变体数量越界',invalidChallengeProfile,/inventoryChallenges.*counts\.arm.*非负整数/);
 
+const invalidActivityZone=clone(read('current'));
+invalidActivityZone.layoutConstraints.layoutIntelligence.activityZones.bedroom.sizeTiers=[];
+expectError('中央活动区缺少尺寸配置',invalidActivityZone,/activityZones\.bedroom\.sizeTiers.*非空数组/);
+
+const invalidSharedPassage=clone(read('current'));
+invalidSharedPassage.furnitureRules.find(row=>row.id==='sideboard').service.blocksFurniture='yes';
+expectError('共享通行区实体阻挡标记错误',invalidSharedPassage,/blocksFurniture.*布尔值/);
+
 console.log('PASS: current/default 配置有效；不安全通路、悬空引用、数量越界和缺失策略均被拒绝');
