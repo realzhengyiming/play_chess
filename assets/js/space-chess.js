@@ -15,7 +15,11 @@
       return variants.length?variants:[{id:'box',label:type?.label||'沙发',w:CONFIGS.living.dimensions.sofa.w,d:CONFIGS.living.dimensions.sofa.d,shape:type?.shape||'box'}];
     }
     function configuredSofaVariant(selection) {
-      const aliases={lleft:'l-left',lright:'l-right',loveseat:'box',three:'box',four:'box'},id=aliases[selection]||selection,variants=configuredSofaVariants();
+      const aliases={lleft:'l-left',lright:'l-right',loveseat:'loveseat',three:'box',four:'box'},id=aliases[selection]||selection,variants=configuredSofaVariants();
+      if(id==='loveseat'&&!variants.some(variant=>variant.id==='loveseat')){
+        const preset=SOFA_PRESETS.loveseat;
+        return {id:'loveseat',label:preset.label,w:preset.w,d:preset.d,shape:preset.shape};
+      }
       return variants.find(variant=>variant.id===id)||variants.find(variant=>variant.shape===id)||variants.find(variant=>variant.shape==='box')||variants[0];
     }
 
@@ -492,7 +496,10 @@
     }
 
     function doorClearanceRect(center,inward,width,kind) {
-      const depth=kind==='swing'?width:.50,offset=depth/2;
+      // 户型识别只返回门洞线段，没有可信的铰链端和开启方向。
+      // 平开门按门宽（即门扇旋转半径）保护门前矩形；推拉门没有扫掠半径，
+      // 只保留一条浅 buffer。两者都只阻挡家具实体，允许与家具使用区/通行区共享。
+      const depth=kind==='swing'?width:kind==='slide'?clamp(width*.28,.24,.36):clamp(width*.18,.16,.24),offset=depth/2;
       const horizontal=Math.abs(inward.y)>=Math.abs(inward.x);
       return horizontal
         ?{x:center.x+inward.x*offset,y:center.y+inward.y*offset,w:width,d:depth}
@@ -501,6 +508,25 @@
 
     function sceneDoors(scene) {
       return scene.doors?.length?scene.doors:(scene.door?[scene.door]:[]);
+    }
+
+    function openingEndpoints(opening) {
+      if(opening?.a&&opening?.b)return {a:opening.a,b:opening.b};
+      return {a:{x:opening?.x0||0,y:opening?.y||0},b:{x:opening?.x1||0,y:opening?.y||0}};
+    }
+
+    function sceneWindows(scene) {
+      return scene?.windows?.length?scene.windows:(scene?.window?[scene.window]:[]);
+    }
+
+    function nearestWindow(scene,point=null) {
+      const rows=sceneWindows(scene);if(!rows.length)return null;
+      if(!point)return rows[0];
+      return rows.slice().sort((a,b)=>dist(point,a.mid)-dist(point,b.mid))[0];
+    }
+
+    function nearestWindowDistance(scene,point) {
+      const row=nearestWindow(scene,point);return row?dist(point,row.mid):Infinity;
     }
 
     function overlapsDoorClearance(rect,scene,padding=.01) {
@@ -529,9 +555,10 @@
         const syntheticDoorWidth=Math.min(.90,Math.max(.65,(doorMax-doorMin)*.28));
         const doorX0=clamp(doorMin+.18,doorMin,Math.max(doorMin,doorMax-syntheticDoorWidth));
         const doorY=(doorEdge.a.y+doorEdge.b.y)/2;
+        const syntheticDoorCenter={x:doorX0+syntheticDoorWidth/2,y:doorY};
         const syntheticDoor={a:{x:doorX0,y:doorY},b:{x:doorX0+syntheticDoorWidth,y:doorY},inward:{x:0,y:-1},
           x0:doorX0,x1:doorX0+syntheticDoorWidth,y:doorY,width:syntheticDoorWidth,
-          noGo:{x:doorX0+syntheticDoorWidth/2,y:doorY-syntheticDoorWidth/2,w:syntheticDoorWidth,d:syntheticDoorWidth},
+          noGo:doorClearanceRect(syntheticDoorCenter,{x:0,y:-1},syntheticDoorWidth,'swing'),
           entry:{x:doorX0+syntheticDoorWidth/2,y:doorY-syntheticDoorWidth+.16},recognized:false};
         syntheticDoor.type='door_open';syntheticDoor.kind='swing';syntheticDoor.isEntrance=true;
         const doorOpenings=scaledOpenings.filter(opening=>String(opening.type).startsWith('door')&&opening.points?.length>=2);
@@ -546,13 +573,22 @@
         if(!doors.length)doors.push(syntheticDoor);
         // 入户门作为水漫起点；普通房间没有入户门时使用最宽的室内门。
         const door=doors.find(row=>row.isEntrance)||doors.slice().sort((a,b)=>b.width-a.width)[0];
-        const windowEdge=top||{a:{x:0,y:0},b:{x:w,y:0}};
-        const windowMin=Math.min(windowEdge.a.x,windowEdge.b.x),windowMax=Math.max(windowEdge.a.x,windowEdge.b.x);
-        const windowWidth=Math.min(currentProgram==='living'?1.80:1.45,Math.max(.60,(windowMax-windowMin)*.40));
-        const windowX0=clamp((windowMin+windowMax-windowWidth)/2,windowMin,Math.max(windowMin,windowMax-windowWidth));
-        const window={x0:windowX0,x1:windowX0+windowWidth,y:(windowEdge.a.y+windowEdge.b.y)/2,mid:{x:windowX0+windowWidth/2,y:(windowEdge.a.y+windowEdge.b.y)/2}};
+        // 门和窗必须使用同一份识别几何。旧实现保留了门，却忽略真实窗户
+        // 并每次在顶墙伪造一扇窗，会直接误导窗边书桌、沙发和空墙评价。
+        const recognizedWindows=scaledOpenings.filter(opening=>/window/i.test(String(opening.type))&&opening.points?.length>=2).map(windowOpening=>{
+          const a={...windowOpening.points[0]},b={...windowOpening.points[1]},mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+          const wall=walls.slice().sort((left,right)=>pointSegmentDistance(mid,left.a,left.b)-pointSegmentDistance(mid,right.a,right.b))[0];
+          return {a,b,x0:a.x,x1:b.x,y:a.y,width:dist(a,b),mid,wallIndex:wall?.index??-1,recognized:true,sourceIndex:windowOpening.sourceIndex};
+        });
+        const windowEdge=top||{a:{x:0,y:0},b:{x:w,y:0}},windowMin=Math.min(windowEdge.a.x,windowEdge.b.x),windowMax=Math.max(windowEdge.a.x,windowEdge.b.x);
+        const syntheticWindowWidth=Math.min(currentProgram==='living'?1.80:1.45,Math.max(.60,(windowMax-windowMin)*.40));
+        const windowX0=clamp((windowMin+windowMax-syntheticWindowWidth)/2,windowMin,Math.max(windowMin,windowMax-syntheticWindowWidth));
+        const syntheticWindowA={x:windowX0,y:(windowEdge.a.y+windowEdge.b.y)/2},syntheticWindowB={x:windowX0+syntheticWindowWidth,y:(windowEdge.a.y+windowEdge.b.y)/2};
+        const syntheticWindowMid={x:(syntheticWindowA.x+syntheticWindowB.x)/2,y:syntheticWindowA.y},syntheticWindowWall=walls.slice().sort((left,right)=>pointSegmentDistance(syntheticWindowMid,left.a,left.b)-pointSegmentDistance(syntheticWindowMid,right.a,right.b))[0];
+        const syntheticWindow={a:syntheticWindowA,b:syntheticWindowB,x0:syntheticWindowA.x,x1:syntheticWindowB.x,y:syntheticWindowA.y,width:syntheticWindowWidth,mid:syntheticWindowMid,wallIndex:syntheticWindowWall?.index??-1,recognized:false};
+        const windows=recognizedWindows.length?recognizedWindows:[syntheticWindow],window=windows.slice().sort((a,b)=>b.width-a.width)[0];
         const scene={shape:'recognized',programId:currentProgram,baseWidth:baseW,baseDepth:baseD,areaMultiplier:multiplier,linearMultiplier,
-          width:w,depth:d,polygon,walls,door,doors,window,openings:scaledOpenings,area:polygonArea(polygon),compiledAnchors:[],designField:null,_flowContext:null};
+          width:w,depth:d,polygon,walls,door,doors,window,windows,openings:scaledOpenings,area:polygonArea(polygon),compiledAnchors:[],designField:null,_flowContext:null};
         scene.designField=compileDesignField(scene);scene.compiledAnchors=compileAnchorPreview(scene);return scene;
       }
       const baseW=clamp(Number(width)||program.defaultWidth,2.4,7.0);
@@ -570,18 +606,20 @@
         x1: doorX0 + doorWidth,
         y: d,
         width: doorWidth,
-        noGo: { x: doorX0 + doorWidth/2, y: d-doorWidth/2, w: doorWidth, d: doorWidth },
+        inward:{x:0,y:-1},
+        noGo: doorClearanceRect({x:doorX0+doorWidth/2,y:d},{x:0,y:-1},doorWidth,'swing'),
         entry: { x: doorX0 + doorWidth/2, y: d-doorWidth+.16 }
       };
-      door.type='door_open';door.kind='swing';door.isEntrance=true;
+      door.a={x:door.x0,y:door.y};door.b={x:door.x1,y:door.y};door.kind='swing';door.type='door_open';
+      door.isEntrance=true;
       const windowWidth=Math.min(currentProgram==='living'?1.80:1.45,w*.40);
       const windowCenter=w*.70;
       const windowX0=clamp(windowCenter-windowWidth/2,.18,Math.max(.18,w-windowWidth-.18));
-      const window = { x0:windowX0, x1:windowX0+windowWidth, y:0, mid:{x:windowX0+windowWidth/2,y:0} };
+      const window = { a:{x:windowX0,y:0},b:{x:windowX0+windowWidth,y:0},x0:windowX0, x1:windowX0+windowWidth, y:0,width:windowWidth,wallIndex:0,mid:{x:windowX0+windowWidth/2,y:0} };
       const scene = {
         shape, programId:currentProgram, baseWidth:baseW, baseDepth:baseD,
         areaMultiplier:multiplier, linearMultiplier,
-        width:w, depth:d, polygon, walls:getWalls(polygon), door, doors:[door], window,
+        width:w, depth:d, polygon, walls:getWalls(polygon), door, doors:[door], window,windows:[window],
         area:polygonArea(polygon), compiledAnchors:[],designField:null,_flowContext:null
       };
       scene.designField=compileDesignField(scene);
@@ -612,9 +650,10 @@
         intervals=subtractInterval(intervals,along-span/2-resolvedClearance,along+span/2+resolvedClearance);
       }
       const rule=furnitureRule(item);
-      if (rule.avoidWindow&&Math.abs(wall.a.y)<EPS&&Math.abs(wall.b.y)<EPS) {
-        const w0=dot({x:scene.window.x0-wall.a.x,y:-wall.a.y},wall.dir);
-        const w1=dot({x:scene.window.x1-wall.a.x,y:-wall.a.y},wall.dir);
+      if (rule.avoidWindow) for(const windowRow of sceneWindows(scene)) {
+        const {a,b}=openingEndpoints(windowRow),mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+        if(pointSegmentDistance(mid,wall.a,wall.b)>.10)continue;
+        const w0=dot({x:a.x-wall.a.x,y:a.y-wall.a.y},wall.dir),w1=dot({x:b.x-wall.a.x,y:b.y-wall.a.y},wall.dir);
         intervals=subtractInterval(intervals,Math.min(w0,w1)-.05,Math.max(w0,w1)+.05);
       }
       return intervals.filter(([a,b])=>b-a>.12);
@@ -957,6 +996,15 @@
       return candidates;
     }
 
+    function diningSeatImbalance(state,extraPose=null) {
+      const table=state.poses?.diningTable;if(!table)return 0;
+      const poses=FURNITURE.filter(item=>item.typeId==='diningChair'&&state.poses?.[item.id]).map(item=>state.poses[item.id]);
+      if(extraPose)poses.push(extraPose);if(poses.length<2)return 0;
+      const vectors=poses.map(pose=>({x:pose.x-table.x,y:pose.y-table.y})),averageRadius=vectors.reduce((sum,row)=>sum+Math.hypot(row.x,row.y),0)/vectors.length||1;
+      const center={x:vectors.reduce((sum,row)=>sum+row.x,0)/vectors.length,y:vectors.reduce((sum,row)=>sum+row.y,0)/vectors.length};
+      return clamp(Math.hypot(center.x,center.y)/averageRadius,0,1);
+    }
+
     function relativeBedBenchCandidates(item,state) {
       const bedPose=state.poses.bed,bed=ITEM_BY_ID.bed;
       if (!bedPose||!bed) return [];
@@ -1085,6 +1133,10 @@
 
     function configuredRuleCandidates(item,state,scene) {
       const rule=furnitureRule(item),candidate=rule?.candidate||{mode:'wall'};let entries=Array.isArray(candidate.rules)&&candidate.rules.length?candidate.rules.filter(entry=>entry.enabled!==false):[candidate];
+      // 同一件家具可以按面积切换候选语义：大客厅禁用贴墙餐桌，
+      // 小客厅则保留贴墙作为后备。面积只筛规则，不增加网格采样数。
+      entries=entries.filter(entry=>scene.area+EPS>=Number(entry.minArea??0)&&scene.area-EPS<=Number(entry.maxArea??Infinity));
+      if(!entries.length)return [];
       const bedroomAspect=Math.max(scene.width/Math.max(scene.depth,EPS),scene.depth/Math.max(scene.width,EPS));
       const hotelBedroom=currentProgram==='bedroom'&&scene.shape==='recognized'&&bedroomAspect>=1.65;
       const relationPolicy=(LAYOUT_CONSTRAINTS.relationPolicies||[]).find(policy=>policy.program===currentProgram&&policy.typeId===item.typeId&&
@@ -1104,10 +1156,14 @@
         // 顺序截前 N 个，第一面墙被床占满后就会误判“无位置”。只在这一档启用
         // 按墙轮采，避免改变普通房间已经稳定的墙面落子排序。
         if(mode==='wall'&&['tvbench','bedroomLoveseat'].includes(item.typeId)&&(roomAreaTier('bedroom',scene.area).id==='studio'||bedroomAspect>=1.65)&&rows.length>perRule){const wallBuckets=new Map();for(const pose of rows){const key=Number.isFinite(pose.wallIndex)?pose.wallIndex:-1;if(!wallBuckets.has(key))wallBuckets.set(key,[]);wallBuckets.get(key).push(pose)}const distributed=[];for(let index=0;distributed.length<rows.length;index++){let added=false;for(const bucket of wallBuckets.values())if(bucket[index]){distributed.push(bucket[index]);added=true}if(!added)break}rows=distributed}
+        // 墙面原始采样会包含被门、既有家具和使用区挡住的位置。若先按 maxSamples
+        // 截断再统一判合法，异形房间可能把某面墙真正可用的点全部挤出预算。
+        // 这里先剔除必然非法的墙点；它们在后续也不可能成为候选，因此不会改变规则语义。
+        if(mode==='wall')rows=rows.filter(pose=>isLegal(item,pose,state,scene));
         // 墙面按轮廓顺序生成，异形房间的窗边墙常排在最后。书桌若直接截取
         // 前 N 个候选，窗边位置甚至进不了评分。先把自然采光候选提到桶前面，
         // 其余位置仍由后续合法性、椅子和通路共同筛选。
-        if(item.typeId==='desk'&&mode==='wall'&&scene.window?.mid)rows.sort((a,b)=>dist(a,scene.window.mid)-dist(b,scene.window.mid));
+        if(item.typeId==='desk'&&mode==='wall'&&sceneWindows(scene).length)rows.sort((a,b)=>nearestWindowDistance(scene,a)-nearestWindowDistance(scene,b));
         // 带模数的沿墙家具已根据“当前剩余连续墙段”生成了 wall-run 语义点。
         // 先保留这些高信息量点，再用固定等分点补齐预算；不扩大 maxSamples，
         // 却能避免空墙中点被轮廓前部的无效原始点挤出 Beam。
@@ -1139,12 +1195,16 @@
     }
 
     function windowOverlap(item, pose, scene) {
-      return footprintRects(item,pose).some(rect=>{
-        const nearTop = rect.y - rect.d/2 < .09;
-        const x0 = rect.x-rect.w/2;
-        const x1 = rect.x+rect.w/2;
-        return nearTop&&x1>scene.window.x0&&x0<scene.window.x1;
-      });
+      return footprintRects(item,pose).some(rect=>sceneWindows(scene).some(windowRow=>{
+        const {a,b}=openingEndpoints(windowRow),mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+        const wall=scene.walls[windowRow.wallIndex]||scene.walls.slice().sort((left,right)=>pointSegmentDistance(mid,left.a,left.b)-pointSegmentDistance(mid,right.a,right.b))[0];
+        if(!wall)return false;
+        const halfNormal=Math.abs(wall.normal.x)>.5?rect.w/2:rect.d/2,perpendicular=dot({x:rect.x-wall.a.x,y:rect.y-wall.a.y},wall.normal);
+        if(Math.abs(perpendicular-halfNormal)>.10)return false;
+        const bodySpan=Math.abs(wall.dir.x)>.5?rect.w:rect.d,bodyAlong=dot({x:rect.x-wall.a.x,y:rect.y-wall.a.y},wall.dir);
+        const w0=dot({x:a.x-wall.a.x,y:a.y-wall.a.y},wall.dir),w1=dot({x:b.x-wall.a.x,y:b.y-wall.a.y},wall.dir);
+        return bodyAlong+bodySpan/2>Math.min(w0,w1)+EPS&&bodyAlong-bodySpan/2<Math.max(w0,w1)-EPS;
+      }));
     }
 
     function furnitureRule(item) {
@@ -1208,7 +1268,8 @@
       if (rule.avoidWindow&&windowOverlap(item,pose,scene)) return false;
       for (const zone of zones) {
         if (!rectInsidePolygon(zone.rect,scene.polygon)) return false;
-        if (overlapsDoorClearance(zone.rect,scene,.01)) return false;
+        // 门前区与家具使用区都是“空地语义”，允许彼此重叠；只有下面
+        // legalityCheck 的家具 footprint 才会被门前区拒绝。
       }
       return true;
     }
@@ -1332,12 +1393,26 @@
         (!group.activateWhenSelected||(group.members||[]).some(member=>FURNITURE.some(item=>item.typeId===member.typeId))));
     }
 
+    function functionalMemberTarget(group,member,scene) {
+      if(Array.isArray(member?.targetByArea)&&member.targetByArea.length)return Math.max(0,configuredAreaValue(member.targetByArea,scene.area));
+      return Math.max(0,Number(member?.target)||0);
+    }
+
+    function functionalGroupById(programId,id) {
+      return (LAYOUT_CONSTRAINTS.layoutIntelligence?.functionalGroups?.[programId]||[]).find(group=>group.id===id)||null;
+    }
+
+    function configuredDiningChairTarget(scene) {
+      const group=functionalGroupById('living','dining'),member=group?.members?.find(row=>row.typeId==='diningChair');
+      return Math.max(1,member?functionalMemberTarget(group,member,scene):Number(DESIGN_GRAMMAR.living.groups.dining.minimumChairs)||1);
+    }
+
     function stateTypeCount(state,typeId) {
       return Object.entries(state.poses||{}).filter(([id,pose])=>!pose?.skip&&ITEM_BY_ID[id]?.typeId===typeId).length;
     }
 
-    function functionalGroupProgress(group,state) {
-      const members=group.members||[];
+    function functionalGroupProgress(group,state,scene) {
+      const members=(group.members||[]).map(member=>({...member,_target:functionalMemberTarget(group,member,scene)})).filter(member=>member._target>0);
       const placedKinds=members.filter(member=>stateTypeCount(state,member.typeId)>0).length;
       if(Number(group.minimumKinds)>0){
         const ratio=clamp(placedKinds/Number(group.minimumKinds),0,1),complete=ratio+EPS>=Number(group.completionThreshold||1);
@@ -1345,7 +1420,7 @@
       }
       let weighted=0,totalWeight=0,required=0,requiredWeight=0;
       for(const member of members){
-        const ratio=clamp(stateTypeCount(state,member.typeId)/Math.max(1,Number(member.target)||1),0,1),weight=Math.max(EPS,Number(member.weight)||1);
+        const ratio=clamp(stateTypeCount(state,member.typeId)/Math.max(1,member._target),0,1),weight=Math.max(EPS,Number(member.weight)||1);
         weighted+=ratio*weight;totalWeight+=weight;if(member.required){required+=ratio*weight;requiredWeight+=weight}
       }
       const ratio=totalWeight?weighted/totalWeight:1,requiredRatio=requiredWeight?required/requiredWeight:ratio;
@@ -1355,7 +1430,7 @@
     function functionalGroupMetrics(state,scene) {
       const groups=activeFunctionalGroupConfigs(scene),details=[];let weighted=0,totalWeight=0;
       for(const group of groups){
-        const progress=functionalGroupProgress(group,state),weight=Math.max(EPS,Number(group.weight)||1),poses=[];
+        const progress=functionalGroupProgress(group,state,scene),weight=Math.max(EPS,Number(group.weight)||1),poses=[];
         for(const member of group.members||[])for(const [id,pose] of Object.entries(state.poses||{}))if(ITEM_BY_ID[id]?.typeId===member.typeId)poses.push(pose);
         const centroid=poses.length?{x:poses.reduce((sum,pose)=>sum+pose.x,0)/poses.length,y:poses.reduce((sum,pose)=>sum+pose.y,0)/poses.length}:null;
         weighted+=progress.ratio*weight;totalWeight+=weight;details.push({...progress,id:group.id,label:group.label,weight,centroid});
@@ -1373,7 +1448,7 @@
       if(!groups.length||pose.skip)return {total:0,progress:0,completed:[],orphaned:[]};
       const next={...state,poses:{...(state.poses||{}),[item.id]:pose}};let total=0,progress=0;const completed=[],orphaned=[];
       for(const group of groups){
-        const before=functionalGroupProgress(group,state),after=functionalGroupProgress(group,next),delta=Math.max(0,after.ratio-before.ratio),groupScale=clamp((Number(group.weight)||1)/2.4,.45,1);
+        const before=functionalGroupProgress(group,state,scene),after=functionalGroupProgress(group,next,scene),delta=Math.max(0,after.ratio-before.ratio),groupScale=clamp((Number(group.weight)||1)/2.4,.45,1);
         progress+=delta;total+=delta*Number(rules.progressBonus||0);
         if(!before.complete&&after.complete){completed.push(group.label||group.id);total+=Number(rules.completionBonus||0)*groupScale}
         if(item.typeId!==group.anchor&&stateTypeCount(next,group.anchor)===0){orphaned.push(group.label||group.id);total-=Number(rules.anchorMissingPenalty||0)}
@@ -1416,12 +1491,12 @@
         // 平分余量，而不是机械奖励“单侧零缝”。
         if(pose.wallIndex>=0){const wall=scene.walls[pose.wallIndex],residual=Math.max(0,wall.length-actual.w),installGap=DESIGN_QUALITY_RULES.wall.installGapMax;if(residual>installGap&&residual<=installGap*2+EPS){const targetGap=residual/2,actualGap=Math.max(0,Number(pose.wallEndGap)||0);score+=16-Math.min(16,Math.abs(actualGap-targetGap)*180)}}
         if(Number.isFinite(pose.wallSegmentFill))score+=clamp((pose.wallSegmentFill-.48)/.42,0,1)*6;
-        const nearWindow = Math.max(0, 1.6-dist(pose,scene.window.mid));
+        const nearWindow = Math.max(0, 1.6-nearestWindowDistance(scene,pose));
         score += nearWindow*22;
         if (windowOverlap(item,pose,scene)) score += 18;
       }
       if (item.id === 'vanity') {
-        score += 18+Math.max(0,1.8-dist(pose,scene.window.mid))*12;
+        score += 18+Math.max(0,1.8-nearestWindowDistance(scene,pose))*12;
         if (windowOverlap(item,pose,scene)) score += 8;
       }
       if (item.id.startsWith('chest')||item.id==='shelf'||item.id==='tvbench') {
@@ -1465,7 +1540,7 @@
       if(item.typeId==='bedroomLoveseat'&&recognizedHotelBedroom){
         // 酒店式长卧室里的小沙发是独立补座，不要求抢走床对电视的主轴。
         // 背靠剩余墙面最稳定，其次才是开放区；只要通行合法就应压过 skip。
-        score+=pose.anchor==='wall'?52:pose.relation==='bedroom-seat-media-facing'?34:22;
+        score+=pose.anchor==='wall'?94+(pose.wallEndGap<=.04?8:0):pose.relation==='bedroom-seat-media-facing'?18:6;
       }
       if(pose.anchor==='wall'&&Number.isFinite(pose.wallEndGap)&&['wardrobe','desk','chest','shelf','tvbench','bedroomDisplay','lounge','sideboard','bookcase','display','console'].includes(item.typeId)){
         // 成品家具的小/中/大模数不仅参与面积适配，也参与“墙端收口”评分。
@@ -1529,6 +1604,14 @@
         if (state.poses.sofa) score += clamp((dist(pose,state.poses.sofa)-1.35)*8,-18,18);
       }
       if (!configuredEntry&&item.id.startsWith('diningChair')) score += pose.relation==='dining-seat'?48:-16;
+      if(item.typeId==='diningChair'&&state.poses.diningTable){
+        const placed=FURNITURE.filter(row=>row.typeId==='diningChair'&&state.poses[row.id]).map(row=>state.poses[row.id]),table=state.poses.diningTable;
+        if(placed.length){
+          const vx=pose.x-table.x,vy=pose.y-table.y,length=Math.hypot(vx,vy)||1;
+          const bestOpposition=Math.max(...placed.map(other=>{const ox=other.x-table.x,oy=other.y-table.y,otherLength=Math.hypot(ox,oy)||1;return -(vx*ox+vy*oy)/(length*otherLength)}));
+          score+=Math.max(0,bestOpposition)*16+(1-diningSeatImbalance(state,pose))*12;
+        }
+      }
       if (item.id.startsWith('arm')) {
         score += pose.relation==='conversation-side'?68:pose.relation==='conversation-opposite'?56:pose.relation==='conversation-open-zone'?20:pose.relation==='conversation-wall'?12:-14;
         const placedArms=Object.entries(state.poses).filter(([id])=>id.startsWith('arm'));
@@ -1658,7 +1741,7 @@
       if(item.typeId==='chair'&&state.poses.desk&&item.slotIndex===0)return true;
       if(item.typeId==='vanityStool'&&state.poses.vanity&&item.slotIndex===0)return true;
       if(item.typeId==='diningChair'&&state.poses.diningTable){
-        const requested=Math.max(2,Number(CONFIGS.living.counts.diningChair)||0),required=layoutDensityMode==='rich'?Math.min(4,requested):2;
+        const requested=Math.max(2,Number(CONFIGS.living.counts.diningChair)||0),required=layoutDensityMode==='rich'?Math.min(configuredDiningChairTarget(scene),requested):2;
         if(item.slotIndex<required)return true;
       }
       // 面积档已选择“客餐厅”库存时，餐桌是该模块的锚点，不能在第一步被可选
@@ -2151,18 +2234,26 @@
           [placed('bed')?1:0,.58],[placed('wardrobe')?1:0,.42]
         ]);
         if(expected.has('work')||expected.has('micro-work'))add('work','工作组',1.25,[[placed('desk')?1:0,.55],[placed('chair')?1:0,.45]]);
-        if(expected.has('lounge'))add('lounge','卧室会客组',1.45,[[placed('bedroomLoveseat')?1:0,.42],[placed('bedroomTeaTable')?1:0,.25],[placed('tvbench')?1:0,.33]]);
+        if(expected.has('lounge')){
+          const loungeGroup=functionalGroupById('bedroom','lounge'),parts=(loungeGroup?.members||[]).map(member=>({member,target:functionalMemberTarget(loungeGroup,member,scene)})).filter(row=>row.target>0).map(({member,target})=>[Math.min(1,placedCount(member.typeId)/target),Number(member.weight)||1]);
+          add('lounge','卧室会客组',1.45,parts.length?parts:[[placed('bedroomLoveseat')?1:0,.55],[placed('tvbench')?1:0,.45]]);
+        }
         if(recognizedHotelMedia)add('hotel-media','酒店式床对电视墙',1.15,[[placed('tvbench')?1:0,1]]);
         if(expected.has('storage'))add('storage','扩展收纳组',.75,[[Math.min(1,(placedCount('bedroomDisplay')+placedCount('chest')+placedCount('shelf'))/2),1]]);
         if(placed('vanity')||placed('vanityStool'))add('vanity','梳妆组',.55,[[placed('vanity')?1:0,.58],[placed('vanityStool')?1:0,.42]]);
         if(placed('lounge'))add('reading','阅读角',.45,[[1,1]]);
       }else{
         add('conversation','视听会客组',2.5,[[placed('sofa')?1:0,.40],[placed('tv')?1:0,.34],[placed('coffee')?1:0,.26]]);
-        if(expected.has('guest-seating'))add('guest-seating','围合座位组',1.15,[[Math.min(1,placedCount('arm')),.55],[Math.min(1,placedCount('side')),.27],[Math.min(1,placedCount('floorLamp')),.18]]);
+        if(expected.has('guest-seating')){
+          const sofaEntry=FURNITURE.find(item=>item.typeId==='sofa'&&state.poses[item.id]),sofaShape=sofaEntry?(state.poses[sofaEntry.id]?.overrideShape||sofaEntry.shape||'box'):'box',lShapeGuestSeat=String(sofaShape).startsWith('l-');
+          // L 形沙发的贵妃位本身就是一席附加座位。房间被多扇门切碎时，不应
+          // 再强制塞入单人沙发才承认围合座位组；普通直沙发仍按单椅/边几验收。
+          add('guest-seating','围合座位组',1.15,lShapeGuestSeat?[[1,1]]:[[Math.min(1,placedCount('arm')),.55],[Math.min(1,placedCount('side')),.27],[Math.min(1,placedCount('floorLamp')),.18]]);
+        }
         if(expected.has('dining')){
           // 当前阶段以“真实第二功能区”为底线：一桌两椅即为完整紧凑餐组；
           // 更多餐椅仍可作为可选增量，不能为了凑四椅挤死通路和沿墙收纳。
-          const chairTarget=Math.max(1,Number(DESIGN_GRAMMAR.living.groups.dining.minimumChairs)||1);
+          const chairTarget=configuredDiningChairTarget(scene);
           const diningRatio=(placed('diningTable')?.42:0)+Math.min(1,placedCount('diningChair')/chairTarget)*.58;
           // 第二功能区必须是真实餐组，不能再用同一会客区里的两把单椅和两个柜子
           // 把模块分顶满。否则大房间视觉上仍只有一个中心团块。
@@ -2280,11 +2371,11 @@
         usefulBays++;largeGaps++;gapDetails.push({wallIndex,position,width:round(gap,3),severity:'useful'});return 'useful';
       };
       for(const wall of scene.walls){
-        const actual=byWall.get(wall.index)||[],claimed=claimedByWall.get(wall.index)||[],protectedRows=[],winA={x:scene.window.x0,y:scene.window.y},winB={x:scene.window.x1,y:scene.window.y};
+        const actual=byWall.get(wall.index)||[],claimed=claimedByWall.get(wall.index)||[],protectedRows=[];
         for(const door of sceneDoors(scene)){
           const doorA=door.a||{x:door.x0,y:door.y},doorB=door.b||{x:door.x1,y:door.y},gap=openingInterval(wall,doorA,doorB,.22);if(gap)protectedRows.push(gap);
         }
-        const windowGap=openingInterval(wall,winA,winB,.10);if(windowGap)protectedRows.push(windowGap);
+        for(const windowRow of sceneWindows(scene)){const {a,b}=openingEndpoints(windowRow),windowGap=openingInterval(wall,a,b,.10);if(windowGap)protectedRows.push(windowGap)}
         // 所有门窗和已经占墙的主体之外，连续达到 0.70m 的净墙段都属于可利用空墙。
         // 过去只有墙上已经有柜时才评价，整面空墙反而完全不扣分。
         const occupied=[...claimed,...protectedRows].sort((a,b)=>a.a-b.a),occupiedMerged=[];
@@ -2294,13 +2385,25 @@
         if(!actual.length)continue;activeWalls++;
         const rows=[...actual,...protectedRows];
         rows.sort((a,b)=>a.a-b.a);const merged=[];
-        for(const row of rows){const last=merged[merged.length-1];if(last&&row.a<=last.b+.03){last.b=Math.max(last.b,row.b);last.actual||=row.actual;last.protected||=row.protected}else merged.push({...row})}
+        for(const row of rows){
+          const normalized={...row,startProtected:!!row.protected,endProtected:!!row.protected};
+          const last=merged[merged.length-1];
+          if(last&&normalized.a<=last.b+.03){
+            // 门窗保护段与柜体投影相邻时可以合并用于计算连续占墙，但合并后
+            // 仍要记住区间两端究竟来自建筑开口还是家具。否则窗边天然保留的
+            // 30–40cm 墙垛会被误判成“柜体留下的非法角缝”。
+            if(normalized.a<last.a-EPS){last.a=normalized.a;last.startProtected=normalized.startProtected}
+            if(normalized.b>last.b+EPS){last.b=normalized.b;last.endProtected=normalized.endProtected}
+            else if(Math.abs(normalized.b-last.b)<=EPS)last.endProtected=last.endProtected||normalized.endProtected;
+            last.actual||=normalized.actual;last.protected||=normalized.protected;
+          }else merged.push(normalized)
+        }
         const first=merged[0],last=merged[merged.length-1],startGap=first.a,endGap=wall.length-last.b;
-        if(first.actual&&startGap>rules.installGapMax){
+        if(first.actual&&!first.startProtected&&startGap>rules.installGapMax){
           if(cornerGapFillable(wall,startGap,true)){gapLength+=startGap;classify(startGap,true,wall.index,'start')}
           else gapDetails.push({wallIndex:wall.index,position:'start',width:round(startGap,3),severity:'architectural'});
         }
-        if(last.actual&&endGap>rules.installGapMax){
+        if(last.actual&&!last.endProtected&&endGap>rules.installGapMax){
           if(cornerGapFillable(wall,endGap,false)){gapLength+=endGap;classify(endGap,true,wall.index,'end')}
           else gapDetails.push({wallIndex:wall.index,position:'end',width:round(endGap,3),severity:'architectural'});
         }
@@ -2551,9 +2654,9 @@
         diagnostics=quality;
       } else {
         const deskPose=state.poses.desk;
-        const deskNearWindow=deskPose?clamp(1-dist(deskPose,scene.window.mid)/2.3,0,1):0;
+        const deskNearWindow=deskPose?clamp(1-nearestWindowDistance(scene,deskPose)/2.3,0,1):0;
         const vanity=ITEM_BY_ID.vanity,vanityPose=state.poses.vanity;
-        const vanityNearWindow=vanity&&vanityPose?clamp(1-dist(vanityPose,scene.window.mid)/2.3,0,1):1;
+        const vanityNearWindow=vanity&&vanityPose?clamp(1-nearestWindowDistance(scene,vanityPose)/2.3,0,1):1;
         const storageItems=FURNITURE.filter(item=>['wardrobe','chest','shelf','tvbench'].includes(item.typeId));
         const placedStorage=storageItems.filter(item=>state.poses[item.id]);
         const storageClearWindow=placedStorage.length?placedStorage.filter(item=>!windowOverlap(item,state.poses[item.id],scene)).length/placedStorage.length:1;
@@ -2591,9 +2694,10 @@
       else if(weakField)total=Math.min(total,DESIGN_QUALITY_RULES.gates.weakFieldCap);
       if (allPlaced) total=Math.min(total,scores.function+14,scores.circulation+14,scores.relation+12,scores.storage+15,scores.ground+15,scores.comfort+18);
       const placedDiningChairs=placedItems.filter(item=>item.typeId==='diningChair').length;
-      const diningChairMinimum=Math.max(1,Number(DESIGN_GRAMMAR.living.groups.dining.minimumChairs)||1);
-      const diningCoherent=!state.poses.diningTable||placedDiningChairs>=Math.min(diningChairMinimum,CONFIGS.living.counts.diningChair||0);
-      const guestSeatingCoherent=currentProgram!=='living'||!roomAreaTier('living',scene.area).modules.includes('guest-seating')||placedItems.some(item=>item.typeId==='arm');
+      const diningChairMinimum=configuredDiningChairTarget(scene);
+      const diningSeatBalance=diningSeatImbalance(state),diningCoherent=!state.poses.diningTable||(placedDiningChairs>=Math.min(diningChairMinimum,CONFIGS.living.counts.diningChair||0)&&(placedDiningChairs<2||diningSeatBalance<=.38));
+      const placedSofa=placedItems.find(item=>item.typeId==='sofa'),placedSofaPose=placedSofa&&state.poses[placedSofa.id],lShapeGuestSeat=String(placedSofaPose?.overrideShape||placedSofa?.shape||'').startsWith('l-');
+      const guestSeatingCoherent=currentProgram!=='living'||!roomAreaTier('living',scene.area).modules.includes('guest-seating')||placedItems.some(item=>item.typeId==='arm')||lShapeGuestSeat;
       const focusChallenge=(LAYOUT_CONSTRAINTS.inventory.focusChallenges?.[currentProgram]||[]).find(row=>scene.area+EPS>=Number(row.minArea||0)&&scene.area-EPS<=Number(row.maxArea??Infinity));
       const focusChallengeCoherent=!focusChallenge||Object.entries(focusChallenge.target||{}).every(([typeId,count])=>placedItems.filter(item=>item.typeId===typeId).length>=Number(count));
       // 丰满度是质量门槛，不只是库存估算偏好。过去异形大客厅即使只落下
@@ -2613,7 +2717,9 @@
       const longBedroom=quality.longBedroomWall;
       const longBedroomWallRequired=currentProgram==='bedroom'&&scene.shape==='recognized'&&scene.area>=longBedroom.minArea&&bedroomAspect>=longBedroom.minAspect;
       const largestEmptyWallBay=Math.max(0,...(design.wallDetails.gapDetails||[]).filter(row=>row.severity==='useful'||row.severity==='architectural').map(row=>Number(row.width)||0));
-      const bedroomWallCoherent=!longBedroomWallRequired||largestEmptyWallBay<=longBedroom.maxEmptyBay;
+      const wallProgramTypes=Array.isArray(longBedroom.satisfyWithTypes)?longBedroom.satisfyWithTypes:[];
+      const bedroomWallProgramComplete=wallProgramTypes.length>0&&wallProgramTypes.every(typeId=>placedItems.some(item=>item.typeId===typeId));
+      const bedroomWallCoherent=!longBedroomWallRequired||largestEmptyWallBay<=longBedroom.maxEmptyBay||bedroomWallProgramComplete;
       const bedroomWallFinishable=bedroomWallCoherent||customCabinetEnabled;
       const searchSevereFieldDefect=ground.severe||(design.wallDetails.severe&&!customCabinetEnabled);
       // 大房间即使通路很漂亮，若最大连续空地仍超过约一半，也只是把家具堆成
@@ -2625,7 +2731,7 @@
       const qualityPass=allPlaced&&diningCoherent&&guestSeatingCoherent&&focusChallengeCoherent&&densityCoherent&&largeRoomGroundCoherent&&bedroomWallFinishable&&reach.hardPass&&!searchSevereFieldDefect&&
         scores.modules>=requiredModuleScore&&scores.circulation>=quality.minimumScores.circulation&&scores.relation>=quality.minimumScores.relation&&scores.composition>=quality.minimumScores.composition&&
         scores.storage>=DESIGN_QUALITY_RULES.gates.minWall&&scores.ground>=DESIGN_QUALITY_RULES.gates.minGround&&scores.comfort>=quality.minimumScores.comfort&&scores.preference>=quality.minimumScores.preference;
-      diagnostics={...diagnostics,...design,modules,preference,sizePolicy,activation,ground,functionCoverage:stateCoverage.coverage,diningCoherent,guestSeatingCoherent,focusChallengeCoherent,placedDiningChairs,richMinimum,densityCoherent,potentialPostFurniture,largeRoomGroundCoherent,longBedroomWallRequired,largestEmptyWallBay,bedroomWallCoherent,requiredModuleScore,severeFieldDefect,weakField};
+      diagnostics={...diagnostics,...design,modules,preference,sizePolicy,activation,ground,functionCoverage:stateCoverage.coverage,diningCoherent,diningSeatBalance,guestSeatingCoherent,focusChallengeCoherent,placedDiningChairs,richMinimum,densityCoherent,potentialPostFurniture,largeRoomGroundCoherent,longBedroomWallRequired,largestEmptyWallBay,bedroomWallProgramComplete,bedroomWallCoherent,requiredModuleScore,severeFieldDefect,weakField};
       return { total:round(total,1), scores, reach, qualityPass, diagnostics };
     }
 
@@ -2736,6 +2842,23 @@
               return anchorB-anchorA;
             }).slice(0,Math.max(1,Math.round(Number(policy.repairCandidateLimit)||12)));
             let best=null;
+            // 餐桌放大时，四把椅子原本已经形成了正确的上下左右语义槽。
+            // 先按桌面半径增量把原椅位等量外推；这比删掉整组再从头贪心生成
+            // 更能保住对称性，也避免 1.6m 桌明明可行却退回 1.4m。
+            if(item.typeId==='diningTable'&&dependentIds.length&&isLegal(item,anchoredPose,{poses:basePoses},scene)){
+              const preservedPoses={...basePoses,[item.id]:anchoredPose},oldDims=itemLocalDims(item,pose),newDims=itemLocalDims(item,anchoredPose);let preservedPass=true;
+              for(const dependentId of dependentIds){
+                const dependent=ITEM_BY_ID[dependentId],oldDependent=upgraded.poses[dependentId],dx=oldDependent.x-pose.x,dy=oldDependent.y-pose.y;
+                const horizontal=Math.abs(dx)/Math.max(oldDims.w/2,EPS)>=Math.abs(dy)/Math.max(oldDims.d/2,EPS);
+                const shifted={...oldDependent,x:oldDependent.x+(horizontal?Math.sign(dx||1)*(newDims.w-oldDims.w)/2:0),y:oldDependent.y+(!horizontal?Math.sign(dy||1)*(newDims.d-oldDims.d)/2:0)};
+                if(!isLegal(dependent,shifted,{poses:preservedPoses},scene)){preservedPass=false;break}
+                preservedPoses[dependentId]=shifted;
+              }
+              if(preservedPass){
+                const preserved={...upgraded,poses:preservedPoses},evaluation=evaluateFull(preserved,scene);
+                if(evaluation.reach.hardPass&&(!baseline.qualityPass||evaluation.qualityPass)&&evaluation.total+EPS>=baseline.total-tradeoff)best={...preserved,evaluation};
+              }
+            }
             for(const nextPose of poses){
               const nextPoses={...basePoses,[item.id]:nextPose};let dependentPass=true;
               for(const dependentId of dependentIds){
@@ -3361,7 +3484,7 @@
 
     function inventoryRoomFeatures(scene) {
       const wallPerimeter=scene.walls.filter(wall=>Math.abs(wall.dx)<EPS||Math.abs(wall.dy)<EPS).reduce((sum,wall)=>sum+wall.length,0);
-      const windowWidth=Math.max(0,scene.window.x1-scene.window.x0);
+      const windowWidth=sceneWindows(scene).reduce((sum,row)=>sum+(Number(row.width)||dist(openingEndpoints(row).a,openingEndpoints(row).b)),0);
       const doorWidth=sceneDoors(scene).reduce((sum,door)=>sum+(Number(door.width)||0),0);
       const availableWall=Math.max(1,wallPerimeter-doorWidth-windowWidth*.72);
       return {availableWall,compactness:clamp(scene.area/(scene.width*scene.depth),.45,1)};
@@ -3385,16 +3508,16 @@
     }
 
     function inventoryCoverage(programId,counts,scene) {
-      // 面积倍率用于放大几何，不应无限线性增加家具品类目标。超过约 44㎡后，
-      // 剩余空间交给最终活动区与墙面收口解释，避免 2.5×/3× 客厅追逐 25–30 件库存。
-      const area=programId==='living'?Math.min(scene.area,44):Math.min(scene.area,36),parts=[];
+      // 真正的厅堂型客厅和超大单间继续增加餐椅、会客位与沿墙收纳；
+      // 保留 72/48㎡ 的有限上限，避免面积倍率导致无限库存。
+      const area=programId==='living'?Math.min(scene.area,72):Math.min(scene.area,48),parts=[];
       const ratio=(value,target)=>target<=0?1:clamp((value||0)/target,0,1);
       if(programId==='living') {
         const core=((counts.sofa||0)>0&&(counts.tv||0)>0&&(counts.coffee||0)>0)?1:0;
         const armTarget=area<14?0:area<27?2:area<45?3:4;
         const sideTarget=area<14?0:area<34?1:2;
         const diningWanted=area>=19;
-        const dining=diningWanted?Math.min(ratio(counts.diningTable,1),ratio(counts.diningChair,area>=32?4:2)):1;
+        const dining=diningWanted?Math.min(ratio(counts.diningTable,1),ratio(counts.diningChair,configuredDiningChairTarget(scene))):1;
         const storageTarget=area<14?0:area<32?1:area<48?3:5;
         const storage=(counts.sideboard||0)+(counts.bookcase||0)+(counts.display||0)+(counts.console||0);
         const lightTarget=area<14?0:area<34?1:2;
@@ -3443,7 +3566,7 @@
         // 否则 18㎡ 左右的卧室会在过满候选与只剩核心家具之间跳跃。
         chest:0,bench:0,bedroomDisplay:0,lounge:0,
         bedroomLoveseat:layoutDensityMode==='rich'&&modules.has('lounge')&&!recognizedHotelMedia?1:0,
-        bedroomTeaTable:layoutDensityMode==='rich'&&modules.has('lounge')&&!recognizedHotelMedia?1:0,
+        bedroomTeaTable:layoutDensityMode==='rich'&&modules.has('lounge')&&!recognizedHotelMedia&&scene.area>=20?1:0,
         tvbench:layoutDensityMode==='rich'&&(modules.has('lounge')||recognizedHotelMedia)?1:0,
         bedroomInfillCabinet:0
       };
@@ -3606,7 +3729,7 @@
           .sort((a,b)=>Number(b.profile.richPriority??b.group.richPriority??0)-Number(a.profile.richPriority??a.group.richPriority??0))
           .map(({group,profile})=>{
             const target={...baseCounts};
-            for(const member of group.members||[])if(member.required!==false)target[member.typeId]=Math.max(target[member.typeId]||0,Number(member.target)||1);
+            for(const member of group.members||[]){const memberTarget=functionalMemberTarget(group,member,scene);if(member.required!==false&&memberTarget>0)target[member.typeId]=Math.max(target[member.typeId]||0,memberTarget)}
             for(const [typeId,count] of Object.entries(group.challengeCounts||{}))target[typeId]=count;
             for(const [typeId,count] of Object.entries(profile.counts||{}))target[typeId]=count;
             const priority=Number(profile.richPriority??group.richPriority)||0;
@@ -3677,14 +3800,17 @@
         if(area>=22)rows.push(make({...core,sideboard:1,bookcase:1,display:1}));
         // 大客餐厅仍保留会客核心，但家具增长以完整模块为单位。
         if(area>=30)rows.push(make({...core,arm:3,side:2,floorLamp:2,sideboard:2,bookcase:1,display:1,infillCabinet:0}));
-        const largeDiningChairTarget=2;
+        const largeDiningChairTarget=configuredDiningChairTarget(scene);
         if(area>=19)rows.push({...make({...conversation,arm:1,side:1,diningTable:1,diningChair:largeDiningChairTarget,...support}),moduleChallenge:true});
         if(area>=23)rows.push(make({...conversation,arm:1,side:1,diningTable:1,diningChair:4,sideboard:1}));
         // 大客厅优先尝试紧凑但完整的双区骨架：围合会客 + 双人餐组 +
         // 两种沿墙收纳。它比四椅三柜组合更容易保住 0.50m 连通通路。
-        if(area>=34)rows.push(make({...conversation,arm:1,side:1,floorLamp:1,diningTable:1,diningChair:2,sideboard:1,bookcase:1}));
+        if(area>=34)rows.push(make({...conversation,arm:1,side:1,floorLamp:1,diningTable:1,diningChair:largeDiningChairTarget,sideboard:1,bookcase:1}));
         if(modules.has('storage'))rows.push(make({...core,arm:2,side:1,floorLamp:1,diningTable:1,diningChair:4,sideboard:1,bookcase:1,display:1}));
-        if(modules.has('storage'))rows.push(make({...conversation,arm:1,side:1,diningTable:1,diningChair:2,sideboard:1,bookcase:1,display:1}));
+        if(modules.has('storage'))rows.push(make({...conversation,arm:1,side:1,diningTable:1,diningChair:largeDiningChairTarget,sideboard:1,bookcase:1,display:1}));
+        // 极端多门异形房间仍保留一个紧凑双人沙发的安全骨架。它只在完整会客/
+        // 餐饮挑战均失败后使用，保证最终不会输出带孤岛的半盘棋。
+        rows.push({...make(conversation),essentialFallback:true});
       }
       // 功能丰富从较多件数开始，通行优先从基线开始。
       // 综合方案则先尝试一个与面积相称的休闲/床尾构图，避免 A 方案永远只有基础家具。
@@ -3713,11 +3839,14 @@
       }else if(objectiveId==='balanced'&&programId==='living'&&modules.has('dining')){
         // 客餐厅先挑战完整餐组；随面积增加的沿墙辅助家具来自同一份配置，
         // 不再在这里写死“必须书柜”，避免多门异形客厅被某一柜型堵出孤岛。
-        const chairTarget=2;
+        const chairTarget=configuredDiningChairTarget(scene);
         const support=stagedSupportCounts(scene);
         const configuredGroupPreferred=rows.filter(row=>row.functionalGroupChallenge).sort((a,b)=>b.functionalGroupPriority-a.functionalGroupPriority)[0];
         const preferred=configuredGroupPreferred||rows.find(row=>(row.counts.diningTable||0)>0&&(row.counts.diningChair||0)>=chairTarget&&Object.entries(support).every(([typeId,count])=>(row.counts[typeId]||0)>=count));
-        if(preferred)rows.splice(0,rows.length,preferred,...rows.filter(row=>row!==preferred));
+        if(preferred){
+          const configuredFallbacks=rows.filter(row=>row!==preferred&&row.functionalGroupChallenge),essential=rows.find(row=>row.essentialFallback),rest=rows.filter(row=>row!==preferred&&!configuredFallbacks.includes(row)&&row!==essential);
+          rows.splice(0,rows.length,preferred,...configuredFallbacks,...(essential?[essential]:[]),...rest);
+        }
       }
       const unique=new Map();for(const row of rows)unique.set(inventoryCountsSignature(programId,row.counts),row);
       return [...unique.values()];
@@ -3736,7 +3865,7 @@
     function profileForInventory(programId,scene,objectiveId,candidate,forceCompact=false) {
       const objective=INVENTORY_OBJECTIVES[objectiveId],densityTarget=candidate.estimate.targetDensity;
       let mode='standard';
-      if (forceCompact||candidate.estimate.density>densityTarget+.035) mode='compact';
+      if (forceCompact||candidate.essentialFallback||candidate.estimate.density>densityTarget+.035) mode='compact';
       else if (candidate.estimate.density<densityTarget-.10&&scene.area>18&&candidate.estimate.pieces<candidate.estimate.softPieceCapacity*.72) mode='generous';
       // 全清单挑战中的多数家具本来就允许 skip，不能把“名义件数”误判为一定
       // 全部落地并整体缩小。长卧室先用真实常规模数下棋，放不下的单件再跳过。
@@ -3823,7 +3952,11 @@
         const largeBedroomLounge=programId==='bedroom'&&(candidate.counts.bedroomLoveseat||0)>0&&(largeRoom||trialBedroomAspect>=1.65);
         const bedroomMediaFallback=programId==='bedroom'&&candidate.hotelMediaFallback;
         const qualityDining=programId==='living'&&diningTier;
-        const calculatedBeamWidth=bedroomMediaFallback?120:largeBedroomLounge?(trialBedroomAspect>=1.65&&trialScene.area<28?120:72):qualityDining&&largeRoom?152:(richFinal||qualityDining
+        // 大客餐厅的餐桌与成对餐椅已有语义区、对称性和前向检查约束，继续使用
+        // 152 宽 Beam 只是在重复展开同构座位。固定预算由配置控制，面积放大不再
+        // 线性放大搜索树。
+        const largeDiningBeamWidth=Number(autoSearch.largeDiningBeamWidth)||72;
+        const calculatedBeamWidth=bedroomMediaFallback?120:largeBedroomLounge?(trialBedroomAspect>=1.65&&trialScene.area<28?120:72):qualityDining&&largeRoom?largeDiningBeamWidth:(richFinal||qualityDining
           ?(largeRoom?Math.min(52,34+Math.round(FURNITURE.length*.8)):(FURNITURE.length>=20?92:Math.min(62,44+Math.round(FURNITURE.length*1.2))))
           :(largeRoom?Math.min(36,24+Math.round(FURNITURE.length*.55)):(compactLivingBudget||(FURNITURE.length>=20?52:Math.min(44,28+Math.round(FURNITURE.length*.8))))));
         const beamWidth=layoutDensityMode==='rich'?Math.max(calculatedBeamWidth,configuredAreaValue(autoSearch.richMinimumBeamWidthByArea,trialScene.area)):calculatedBeamWidth;
@@ -4154,7 +4287,7 @@
       const largeRoomWallCoherent=!(currentProgram==='living'&&scene.area>=largeWall.minArea&&scene.area<=largeWall.maxArea&&
         (wall.unusedWallRatio>largeWall.maxUnusedWallRatio||wall.emptyWallScore<largeWall.minEmptyWallScore));
       const finalLargestEmptyWallBay=Math.max(0,...(wall.gapDetails||[]).filter(row=>row.severity==='useful'||row.severity==='architectural').map(row=>Number(row.width)||0));
-      const finalBedroomWallCoherent=diagnostics.longBedroomWallRequired!==true||finalLargestEmptyWallBay<=quality.longBedroomWall.maxEmptyBay;
+      const finalBedroomWallCoherent=diagnostics.longBedroomWallRequired!==true||finalLargestEmptyWallBay<=quality.longBedroomWall.maxEmptyBay||diagnostics.bedroomWallProgramComplete===true;
       const largeGround=quality.largeRoomGround;
       const finalLargeRoomGroundCoherent=!(currentProgram==='living'&&scene.area>=largeGround.minArea&&scene.area<=largeGround.maxArea&&
         (currentGround||baseline).largestVoidRatio>largeGround.maxLargestVoidRatio);
@@ -4498,6 +4631,25 @@
         <p class="config-note">尺寸是实际家具尺寸，不随房间面积倍率缩放。数量表示上限：除必选最小数量外，每个槽位都会同时搜索“摆放 / 跳过”，最终输出可以少于该数量。${requiredNote}${modeNote}${dependencyNote}</p>`;
     }
 
+    function renderLegend(state=activeState) {
+      if(!ui.legend)return;
+      const placed=[],seen=new Set();
+      for(const item of FURNITURE){if(!state?.poses?.[item.id]||seen.has(item.typeId))continue;seen.add(item.typeId);placed.push(item)}
+      // 空棋盘显示当前库的所有类型；搜索步骤和终局只显示已落子类型。
+      // 因此图例不再被“库中前 3 件”截断，也不会列出本局根本没有的家具。
+      const rows=placed.length?placed:[...new Map(FURNITURE.map(item=>[item.typeId,item])).values()];
+      const decor=state?.decorItems||[],hasPost=decor.some(row=>row.kind==='postDisplayCabinet'),hasActivity=decor.some(row=>row.kind==='activityZone');
+      const doorKinds=new Set(scene?sceneDoors(scene).map(door=>door.kind||recognizedDoorKind(door.type)):['swing']);
+      const doorLegend=(doorKinds.has('swing')?'<span><i style="border:1px dashed #ff5b38;background:rgba(255,91,56,.08)"></i>平开门禁摆区</span>':'')+
+        (doorKinds.has('slide')?'<span><i style="border:1px dashed #168c83;background:rgba(22,140,131,.08)"></i>推拉门浅缓冲</span>':'')+
+        (doorKinds.has('opening')?'<span><i style="border:1px dashed #bc765f;background:rgba(188,118,95,.07)"></i>门洞通行缓冲</span>':'');
+      ui.legend.innerHTML=rows.map(item=>`<span><i style="background:${item.color}"></i>${item.label.replace(/\s+[A-Z]$/,'')}</span>`).join('')+
+        (hasPost?'<span><i style="background:#5d7f78"></i>定制收口柜</span>':'')+
+        doorLegend+
+        '<span><i style="border:1px dashed #2f8a78;background:rgba(47,138,120,.06)"></i>家具软使用区</span>'+
+        (hasActivity?'<span><i style="border:1px dashed #2f8a78;background:rgba(47,138,120,.10)"></i>最后活动区</span>':'');
+    }
+
     function setupStaticUI() {
       const program=PROGRAMS[currentProgram];
       ui.appTitle.textContent=program.title;
@@ -4516,9 +4668,7 @@
           <span><strong>${item.label}</strong> · ${item.role}<small>${zone.label}${zone.hard?' · 硬约束':' · 评分区'}</small></span>
           <span>${dimensionText}</span>
         </div>`}).join('');
-      ui.legend.innerHTML=FURNITURE.slice(0,3).map(item=>`<span><i style="background:${item.color}"></i>${item.label}</span>`).join('')+
-        '<span><i style="border:1px dashed #ff5b38;background:rgba(255,91,56,.08)"></i>硬功能区</span>'+
-        '<span><i style="border:1px dashed #2f8a78;background:rgba(47,138,120,.06)"></i>家具软使用区</span>';
+      renderLegend();
       ui.scoreList.innerHTML=SCORE_KEYS.map(([key,label])=>`
         <div class="score-row" data-score="${key}">
           <span class="score-name">${label}</span>
@@ -4557,6 +4707,7 @@
       // 页面初次加载或切换房间时，ResizeObserver 可能早于 scene 编译完成触发。
       // 此时只清空旧帧，等正常编译流程再次调用，避免读取空场景宽深。
       if(!scene){ctx.clearRect(0,0,width,height);return;}
+      renderLegend(activeState);
       updateCandidateBadge();
       drawBoard(width,height);
     }
@@ -4747,21 +4898,22 @@
     function drawDoorWindow(tr) {
       ctx.save();
       for(const d of sceneDoors(scene)){
-        const rawA=d.a||{x:d.x0,y:d.y},rawB=d.b||{x:d.x1,y:d.y},inward=d.inward||{x:0,y:-1},a=tr.p(rawA),b=tr.p(rawB),kind=d.kind||recognizedDoorKind(d.type),hinge=b;
+        const rawA=d.a||{x:d.x0,y:d.y},rawB=d.b||{x:d.x1,y:d.y},inward=d.inward||{x:0,y:-1},a=tr.p(rawA),b=tr.p(rawB),kind=d.kind||recognizedDoorKind(d.type);
         ctx.strokeStyle=kind==='opening'?'#bc765f':'#ff5b38';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
-        if(kind==='swing'){
-          ctx.lineWidth=1.5;ctx.setLineDash([5,5]);ctx.beginPath();
-          const closedAngle=Math.atan2(a.y-b.y,a.x-b.x),openRaw={x:rawB.x+inward.x*d.width,y:rawB.y+inward.y*d.width},open=tr.p(openRaw),openAngle=Math.atan2(open.y-b.y,open.x-b.x);
-          ctx.arc(hinge.x,hinge.y,d.width*tr.scale,closedAngle,openAngle);ctx.stroke();ctx.beginPath();ctx.moveTo(hinge.x,hinge.y);ctx.lineTo(open.x,open.y);ctx.stroke();ctx.setLineDash([]);
-        }else if(kind==='slide'){
+        // 户型数据没有可信铰链方向，因此不画猜测的圆弧；三种门都直接画出
+        // 真正参与家具碰撞判定的矩形。平开门为门宽深，推拉门/门洞仅为浅缓冲。
+        if(d.noGo){
+          const clearance=tr.rect(d.noGo),stroke=kind==='slide'?'rgba(22,140,131,.80)':kind==='opening'?'rgba(188,118,95,.72)':'rgba(255,91,56,.72)',fill=kind==='slide'?'rgba(22,140,131,.055)':kind==='opening'?'rgba(188,118,95,.045)':'rgba(255,91,56,.045)';
+          ctx.save();ctx.lineWidth=1.25;ctx.setLineDash([5,4]);ctx.strokeStyle=stroke;ctx.fillStyle=fill;ctx.fillRect(clearance.x,clearance.y,clearance.w,clearance.h);ctx.strokeRect(clearance.x,clearance.y,clearance.w,clearance.h);ctx.restore();
+        }
+        if(kind==='slide'){
           const offset={x:inward.x*.055,y:inward.y*.055},sa=tr.p({x:rawA.x+offset.x,y:rawA.y+offset.y}),sb=tr.p({x:rawB.x+offset.x,y:rawB.y+offset.y});ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(sa.x,sa.y);ctx.lineTo(sb.x,sb.y);ctx.stroke();
         }
         const midRaw={x:(rawA.x+rawB.x)/2+inward.x*.18,y:(rawA.y+rawB.y)/2+inward.y*.18},mid=tr.p(midRaw),typeLabel=kind==='slide'?'推拉门':kind==='opening'?'门洞':'门',label=`${typeLabel} ${d.width.toFixed(1)} m`;
         ctx.font='800 11px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';const labelWidth=ctx.measureText(label).width+12;
         ctx.fillStyle='rgba(255,255,255,.92)';ctx.fillRect(mid.x-labelWidth/2,mid.y-10,labelWidth,20);ctx.fillStyle='#d94326';ctx.fillText(label,mid.x,mid.y);
       }
-      const w=scene.window;const wa=tr.p({x:w.x0,y:w.y}),wb=tr.p({x:w.x1,y:w.y});
-      ctx.strokeStyle='#43a8bd';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(wa.x,wa.y);ctx.lineTo(wb.x,wb.y);ctx.stroke();
+      ctx.strokeStyle='#43a8bd';ctx.lineWidth=8;for(const windowRow of sceneWindows(scene)){const {a,b}=openingEndpoints(windowRow),wa=tr.p(a),wb=tr.p(b);ctx.beginPath();ctx.moveTo(wa.x,wa.y);ctx.lineTo(wb.x,wb.y);ctx.stroke()}
       ctx.restore();
     }
 
@@ -4834,12 +4986,26 @@
     }
 
     function drawCenteredFurnitureLabel(drawCtx,label,labelRect,{fontMin=8,fontMax=14,background='rgba(20,40,49,.34)'}={}){
-      // 只旋转真正的长条窄柜；床等轻微纵向的主体家具仍保持横排，更符合读图习惯。
+      // 竖向长条家具采用真正的中文竖排：字符从上到下排列，但每个字本身正立。
+      // 不能旋转整行文字，否则“贵妃位/衣柜”等标签需要歪头阅读。
       const vertical=labelRect.h>labelRect.w*1.55&&labelRect.h>=42;
       const availableLength=vertical?labelRect.h:labelRect.w,availableThickness=vertical?labelRect.w:labelRect.h;
-      const fontSize=Math.max(fontMin,Math.min(fontMax,availableThickness*.30,availableLength*.12));
       const x=labelRect.x+labelRect.w/2,y=labelRect.y+labelRect.h/2;
-      drawCtx.save();drawCtx.translate(x,y);if(vertical)drawCtx.rotate(-Math.PI/2);
+      drawCtx.save();drawCtx.translate(x,y);
+      if(vertical){
+        let glyphs=Array.from(String(label).replace(/\s+/g,''));
+        let fontSize=Math.min(fontMax,availableThickness*.38,(availableLength-8)/Math.max(1,glyphs.length*1.08));
+        if(fontSize<7){
+          fontSize=7;const maxGlyphs=Math.max(2,Math.floor((availableLength-8)/(fontSize*1.08)));
+          if(glyphs.length>maxGlyphs)glyphs=[...glyphs.slice(0,Math.max(1,maxGlyphs-1)),'…'];
+        }
+        const lineHeight=fontSize*1.08,totalHeight=glyphs.length*lineHeight,textWidth=Math.min(availableThickness-2,fontSize+7);
+        if(background){drawCtx.fillStyle=background;drawCtx.beginPath();drawCtx.roundRect(-textWidth/2,-totalHeight/2-3,textWidth,totalHeight+6,4);drawCtx.fill();}
+        drawCtx.font=`800 ${fontSize}px system-ui`;drawCtx.textAlign='center';drawCtx.textBaseline='middle';drawCtx.fillStyle='#fff';
+        const startY=-(glyphs.length-1)*lineHeight/2;glyphs.forEach((glyph,index)=>drawCtx.fillText(glyph,0,startY+index*lineHeight));
+        drawCtx.restore();return;
+      }
+      const fontSize=Math.max(fontMin,Math.min(fontMax,availableThickness*.30,availableLength*.12));
       drawCtx.font=`800 ${fontSize}px system-ui`;drawCtx.textAlign='center';drawCtx.textBaseline='middle';
       const textWidth=Math.max(8,Math.min(availableLength-4,drawCtx.measureText(label).width+8)),textHeight=Math.min(availableThickness-2,fontSize+5);
       if(background){drawCtx.fillStyle=background;drawCtx.beginPath();drawCtx.roundRect(-textWidth/2,-textHeight/2,textWidth,textHeight,4);drawCtx.fill();}
@@ -4988,7 +5154,7 @@
       beamCtx.beginPath();scene.polygon.forEach((p,i)=>{const q=point(p);i?beamCtx.lineTo(q.x,q.y):beamCtx.moveTo(q.x,q.y);});beamCtx.closePath();beamCtx.fillStyle='#fffef9';beamCtx.fill();beamCtx.strokeStyle='#56615d';beamCtx.lineWidth=1.2;beamCtx.stroke();
       for(const [id,pose] of Object.entries(node.poses||{})){const item=ITEM_BY_ID[id];if(!item)continue;for(const body of footprintRects(item,pose)){const r=rect(body);beamCtx.fillStyle=item.color;beamCtx.strokeStyle=id===node.itemId?'#ff5b38':'rgba(13,25,21,.5)';beamCtx.lineWidth=id===node.itemId?2.2:1;beamCtx.beginPath();beamCtx.roundRect(r.x,r.y,r.w,r.h,Math.min(3,r.w*.12,r.h*.12));beamCtx.fill();beamCtx.stroke();}}
       beamCtx.strokeStyle='#ff5b38';beamCtx.lineWidth=2;for(const door of sceneDoors(scene)){const doorA=point(door.a||{x:door.x0,y:door.y}),doorB=point(door.b||{x:door.x1,y:door.y});beamCtx.beginPath();beamCtx.moveTo(doorA.x,doorA.y);beamCtx.lineTo(doorB.x,doorB.y);beamCtx.stroke();}
-      const winA=point({x:scene.window.x0,y:0}),winB=point({x:scene.window.x1,y:0});beamCtx.strokeStyle='#43a8bd';beamCtx.beginPath();beamCtx.moveTo(winA.x,winA.y);beamCtx.lineTo(winB.x,winB.y);beamCtx.stroke();
+      beamCtx.strokeStyle='#43a8bd';for(const windowRow of sceneWindows(scene)){const {a,b}=openingEndpoints(windowRow),winA=point(a),winB=point(b);beamCtx.beginPath();beamCtx.moveTo(winA.x,winA.y);beamCtx.lineTo(winB.x,winB.y);beamCtx.stroke()}
     }
 
     function renderBeamBoardTree() {
@@ -5118,11 +5284,10 @@
           pctx.beginPath();pctx.roundRect(r.x,r.y,r.w,r.h,Math.min(6,r.w*.08,r.h*.08));pctx.fill();pctx.stroke();
         }
         const first=rect(footprintRects(item,pose)[0]);
-        if (first.w>45&&first.h>22) {pctx.fillStyle='rgba(255,255,255,.95)';pctx.font='700 9px system-ui';pctx.textAlign='center';pctx.textBaseline='middle';pctx.fillText(itemDisplayLabel(item,pose),first.x+first.w/2,first.y+first.h/2);}
+        if (first.w>22&&first.h>22) drawCenteredFurnitureLabel(pctx,itemDisplayLabel(item,pose),first,{fontMin:7,fontMax:9,background:'rgba(20,40,49,.32)'});
       }
       pctx.strokeStyle='#ff5b38';pctx.lineWidth=4;for(const door of sceneDoors(scene)){const doorA=point(door.a||{x:door.x0,y:door.y}),doorB=point(door.b||{x:door.x1,y:door.y});pctx.beginPath();pctx.moveTo(doorA.x,doorA.y);pctx.lineTo(doorB.x,doorB.y);pctx.stroke();}
-      const winA=point({x:scene.window.x0,y:0}),winB=point({x:scene.window.x1,y:0});
-      pctx.strokeStyle='#43a8bd';pctx.lineWidth=5;pctx.beginPath();pctx.moveTo(winA.x,winA.y);pctx.lineTo(winB.x,winB.y);pctx.stroke();
+      pctx.strokeStyle='#43a8bd';pctx.lineWidth=5;for(const windowRow of sceneWindows(scene)){const {a,b}=openingEndpoints(windowRow),winA=point(a),winB=point(b);pctx.beginPath();pctx.moveTo(winA.x,winA.y);pctx.lineTo(winB.x,winB.y);pctx.stroke()}
     }
 
     function renderSolutions() {
@@ -5133,7 +5298,7 @@
       const scoreLabels=result.autoSelection?['总分','通行','功能']:['总分','总分','总分'];
       const program=PROGRAMS[currentProgram];
       ui.solutionStrip.innerHTML=result.solutions.map((s,i)=>{
-        const label=s.inventoryLabel||labels[i]||'候选方案';
+        const qualityPass=!!s.evaluation?.qualityPass,label=`${s.inventoryLabel||labels[i]||'候选方案'}${qualityPass?'':' · 待优化'}`;
         const itemCount=Object.keys(s.poses).length,decorCount=(s.decorItems||synthesizeSoftDecor(s,scene,s.inventoryItems)).length;
         const modeName={compact:'紧凑',standard:'标准',generous:'宽裕'}[s.inventoryProfile?.mode]||'自定义';
         const details=program.primaryIds.map((id,j)=>{
@@ -5145,7 +5310,7 @@
         // 会客/餐组/收纳方案显示成 66%，与右侧功能模块 100 分互相矛盾。
         const coverage=Math.round(Number(s.evaluation.scores?.modules)||0);
         return `
-        <button class="solution-card ${i===activeSolution?'active':''}" data-solution="${i}" aria-label="查看方案 ${String.fromCharCode(65+i)} ${label}">
+        <button class="solution-card ${i===activeSolution?'active':''} ${qualityPass?'':'quality-warning'}" data-solution="${i}" aria-label="查看方案 ${String.fromCharCode(65+i)} ${label}">
           <span class="solution-preview-viewport" title="固定比例方案缩略图"><canvas class="solution-preview" width="480" height="300" data-preview="${i}" aria-hidden="true"></canvas></span>
           <span class="solution-meta">
             <span class="solution-letter">${String.fromCharCode(65+i)}</span>
@@ -5165,7 +5330,7 @@
       const trace=activePlanTrace();activeState=chosen;traceIndex=trace.length-1;
       candidateSnapshotCache={key:null,value:null};
       updateScores(chosen.evaluation);renderSolutions();renderTrace();resizeAndDraw();renderBeamTree();
-      ui.boardStatus.textContent=`方案 ${String.fromCharCode(65+index)} · 硬规则、多尺度通行与设计语法验证通过${result?.autoSelection?` · 上限 ${FURNITURE.length} 件 / 实际 ${Object.keys(chosen.poses).length} 件硬家具 + ${(chosen.decorItems||synthesizeSoftDecor(chosen,scene,chosen.inventoryItems)).length} 件后补落地件`:''}`;
+      ui.boardStatus.textContent=`方案 ${String.fromCharCode(65+index)} · ${chosen.evaluation.qualityPass?'已通过硬规则、通行和最终质量验收':'硬通路可用，但墙地/丰富度未达最终验收，仅作待优化候选'}${result?.autoSelection?` · 上限 ${FURNITURE.length} 件 / 实际 ${Object.keys(chosen.poses).length} 件硬家具 + ${(chosen.decorItems||synthesizeSoftDecor(chosen,scene,chosen.inventoryItems)).length} 件后补落地件`:''}`;
     }
 
     function renderTrace() {
@@ -5175,7 +5340,8 @@
       ui.traceKicker.textContent=`${Math.max(0,trace.length-1)} 个落子`;
       const current=trace[traceIndex];
       const nextItem=trace[traceIndex+1]?.lastMove?ITEM_BY_ID[trace[traceIndex+1].lastMove.itemId]:null;
-      ui.traceStatus.textContent=nextItem?`已放 ${current.depth||0} 件 · 下一手 ${nextItem.label}`:`第 ${current.depth||0} 手 / ${FURNITURE.length} · 已完成`;
+      const finalQuality=result?.solutions?.[activeSolution]?.evaluation?.qualityPass;
+      ui.traceStatus.textContent=nextItem?`已放 ${current.depth||0} 件 · 下一手 ${nextItem.label}`:`第 ${current.depth||0} 手 / ${FURNITURE.length} · ${finalQuality?'已验收':'待优化候选'}`;
       ui.traceRange.min='0';ui.traceRange.max=String(Math.max(0,trace.length-1));ui.traceRange.value=String(traceIndex);
       ui.traceRangeOutput.textContent=`${traceIndex} / ${Math.max(0,trace.length-1)}`;
       ui.traceLog.innerHTML=trace.map((s,i)=>{
@@ -5227,7 +5393,7 @@
       updateScores(evaluation);
       ui.depthMetric.textContent=`${traceIndex} / ${FURNITURE.length}`;
       const nextItem=trace[traceIndex+1]?.lastMove?ITEM_BY_ID[trace[traceIndex+1].lastMove.itemId]:null;
-      ui.boardStatus.textContent=nextItem?`${traceIndex?`第 ${traceIndex} 手后`:'空房间'} · 正在显示 ${nextItem.label} 的下一手采样点`:`第 ${traceIndex} 手 · 完整方案`;
+      ui.boardStatus.textContent=nextItem?`${traceIndex?`第 ${traceIndex} 手后`:'空房间'} · 正在显示 ${nextItem.label} 的下一手采样点`:`第 ${traceIndex} 手 · ${evaluation.qualityPass?'已验收完整方案':'待优化候选（未达最终质量门槛）'}`;
       renderTrace();resizeAndDraw();renderBeamTree();
       requestAnimationFrame(()=>{if(window.scrollX!==viewportX||window.scrollY!==viewportY)window.scrollTo(viewportX,viewportY);});
     }
@@ -5274,7 +5440,7 @@
       const run=comparisonRuns[profileId];if(!run)return;applyServerConfigProfile(profileId);setProgram(currentProgram);scene=run.scene;result=run.result;activeConfigProfile=profileId;activeSolution=0;
       if(result.solutions.length)activateSolutionInventory(result.solutions[0]);setupStaticUI();ui.multiplierOutput.textContent=`${scene.areaMultiplier.toFixed(2)}×`;ui.liveRoomArea.textContent=`${scene.area.toFixed(2)} m²`;ui.roomArea.textContent=`${scene.area.toFixed(2)} m² · ${scene.width.toFixed(2)}×${scene.depth.toFixed(2)} m · ${scene.compiledAnchors.length} 锚点`;ui.nodes.textContent=result.stats.nodes.toLocaleString();ui.time.textContent=result.stats.timeMs<10?`${result.stats.timeMs.toFixed(2)} ms`:`${result.stats.timeMs.toFixed(1)} ms`;ui.us.textContent=`${result.stats.avgUs.toFixed(2)} μs`;
       if(!result.solutions.length){activeState={poses:{}};updateScores(null);ui.boardStatus.textContent='当前全局配置没有通过质量门槛的方案';renderSolutions();renderTrace();renderConfigComparisonSwitches();resizeAndDraw();renderBeamTree();return}
-      const trace=activePlanTrace();traceIndex=0;activeState=trace[0];ui.depthMetric.textContent=`${trace.length-1} / ${FURNITURE.length}`;beamRoundIndex=1;treeInspectNodeId=null;resetBeamBoardView();const solution=result.solutions[0];ui.boardStatus.textContent=`正在查看当前全局配置 · ${Object.keys(solution.poses||{}).length} 件 · 总分 ${solution.evaluation.total.toFixed(1)} · 地面 ${solution.evaluation.scores.ground} · 墙面 ${solution.evaluation.scores.storage}`;renderSolutions();renderTrace();showTraceStep(lSofaDemoPending?1:0);renderConfigComparisonSwitches();renderBeamTree();
+      const trace=activePlanTrace();traceIndex=0;activeState=trace[0];ui.depthMetric.textContent=`${trace.length-1} / ${FURNITURE.length}`;beamRoundIndex=1;treeInspectNodeId=null;resetBeamBoardView();const solution=result.solutions[0];ui.boardStatus.textContent=`正在查看当前全局配置 · ${solution.evaluation.qualityPass?'已验收':'待优化'} · ${Object.keys(solution.poses||{}).length} 件 · 总分 ${solution.evaluation.total.toFixed(1)} · 地面 ${solution.evaluation.scores.ground} · 墙面 ${solution.evaluation.scores.storage}`;renderSolutions();renderTrace();showTraceStep(lSofaDemoPending?1:0);renderConfigComparisonSwitches();renderBeamTree();
     }
 
     function performSearch() {

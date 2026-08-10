@@ -65,7 +65,11 @@
     const functionalGroups=requireObject('layoutConstraints.layoutIntelligence.functionalGroups')||{};
     const activityZones=requireObject('layoutConstraints.layoutIntelligence.activityZones')||{};
     requireObject('layoutConstraints.search');
+    requireObject('layoutConstraints.search.auto');
+    requireFinite('layoutConstraints.search.auto.largeDiningBeamWidth',{min:24,max:240});
     requireObject('layoutConstraints.postLayout');
+    const longBedroomWall=requireObject('layoutConstraints.qualityPass.longBedroomWall')||{};
+    if(!Array.isArray(longBedroomWall.satisfyWithTypes)||!longBedroomWall.satisfyWithTypes.length)errors.push('layoutConstraints.qualityPass.longBedroomWall.satisfyWithTypes 必须是非空数组');
     for(const programId of PROGRAM_IDS){
       requireArray(`layoutConstraints.inventory.roomAreaModules.${programId}`,{nonEmpty:true});
       requireArray(`layoutConstraints.inventory.richMinimum.${programId}`,{nonEmpty:true});
@@ -94,6 +98,10 @@
           if(!finite(member?.target)||Number(member.target)<=0)errors.push(`${memberPrefix}.target 必须大于 0`);
           if(!finite(member?.weight)||Number(member.weight)<=0)errors.push(`${memberPrefix}.weight 必须大于 0`);
           if(typeof member?.required!=='boolean')errors.push(`${memberPrefix}.required 必须是布尔值`);
+          if(member?.targetByArea!=null){
+            if(!Array.isArray(member.targetByArea)||!member.targetByArea.length)errors.push(`${memberPrefix}.targetByArea 必须是非空数组`);
+            else for(const [targetIndex,row] of member.targetByArea.entries())if(!finite(row?.minArea)||Number(row.minArea)<0||!finite(row?.value)||Number(row.value)<0)errors.push(`${memberPrefix}.targetByArea[${targetIndex}] 必须包含非负 minArea/value`);
+          }
         }
         const challenges=Array.isArray(group?.inventoryChallenges)?group.inventoryChallenges:[];
         for(const [challengeIndex,challenge] of challenges.entries()){
@@ -143,6 +151,8 @@
         if(relativeTo&&!rules.some(other=>(other.program===program||other.program==='shared')&&other.id===relativeTo))errors.push(`${prefix}.candidate.rules[${candidateIndex}].relativeTo=${relativeTo} 未引用同房间家具`);
         const distance=candidate?.distance;
         if(distance&&(!finite(distance.min)||!finite(distance.max)||Number(distance.min)<0||Number(distance.max)<Number(distance.min)))errors.push(`${prefix}.candidate.rules[${candidateIndex}].distance 必须满足 0 <= min <= max`);
+        const minArea=Number(candidate?.minArea??0),maxArea=Number(candidate?.maxArea??Infinity);
+        if(minArea<0||maxArea<minArea)errors.push(`${prefix}.candidate.rules[${candidateIndex}] 面积范围无效`);
       }
       if(!isObject(rule?.placement))errors.push(`${prefix}.placement 必须是对象`);
       if(!isObject(rule?.service)||!finite(rule.service.depth)||Number(rule.service.depth)<0)errors.push(`${prefix}.service.depth 必须是非负数`);

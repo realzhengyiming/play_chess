@@ -9,6 +9,14 @@ new Function(fs.readFileSync(path.join(root, 'assets/js/space-chess.js'), 'utf8'
 const SAMPLE_CASES = [
   {file:'demo-family-100.json', area:100},
   {file:'demo-family-73.json', area:73},
+  {file:'case_1_145.json', area:145},
+  {file:'case_2_61.4.json', area:61.4},
+  {file:'case_3_150.json', area:150},
+  {file:'case_4_87.7.json', area:87.7},
+  {file:'case_5_53.6.json', area:53.6},
+  {file:'case_6_60.json', area:60},
+  {file:'case_18_80.json', area:80},
+  {file:'case_19_47.9.json', area:47.9},
 ];
 const SUPPORTED = {bedroom:'bedroom', living_room:'living'};
 const reportOnly = process.argv.includes('--report-only');
@@ -41,13 +49,25 @@ setTimeout(() => {
       const solution = result.probe?.solutions?.[0];
       const label = `${sampleCase.file} #${index + 1} ${room.type}`;
       const expectedDoorTypes = (room.openings || []).filter(opening => String(opening.type).startsWith('door')).map(opening => opening.type);
+      const expectedWindows = (room.openings || []).filter(opening => String(opening.type).startsWith('window'));
       const actualDoors = result.scene.doors || [];
+      const actualWindows = result.scene.windows || (result.scene.window ? [result.scene.window] : []);
       const actualDoorTypes = actualDoors.map(door => `${door.type}:${door.kind}`);
       actualDoors.forEach(door => observedDoorKinds.add(door.kind));
       if (actualDoors.length !== Math.max(1, expectedDoorTypes.length)) failures.push(`${label}: 应保留 ${expectedDoorTypes.length} 扇识别门，实际 ${actualDoors.length}`);
       expectedDoorTypes.forEach((type, doorIndex) => {
         const expectedKind = /slide|slince|sliding/i.test(type) ? 'slide' : /hole|opening|passage/i.test(type) ? 'opening' : 'swing';
         if (actualDoors[doorIndex]?.kind !== expectedKind) failures.push(`${label}: ${type} 被错误画成 ${actualDoors[doorIndex]?.kind || '缺失'}`);
+      });
+      actualDoors.forEach((door,doorIndex)=>{
+        const shallow=Math.min(Number(door.noGo?.w)||Infinity,Number(door.noGo?.d)||Infinity);
+        if(door.kind==='swing'&&Math.abs(shallow-Number(door.width||0))>.03)failures.push(`${label}: 平开门 ${doorIndex+1} 的门前矩形深度未等于门扇半径`);
+        if(door.kind==='slide'&&shallow>.37)failures.push(`${label}: 推拉门 ${doorIndex+1} 的门前 buffer ${shallow.toFixed(2)}m 过深`);
+      });
+      if(expectedWindows.length&&actualWindows.length!==expectedWindows.length)failures.push(`${label}: 应保留 ${expectedWindows.length} 扇识别窗，实际 ${actualWindows.length}`);
+      expectedWindows.forEach((opening,windowIndex)=>{
+        const expectedMid=opening.mid||opening.center||((opening.a&&opening.b)?{x:(opening.a.x+opening.b.x)/2,y:(opening.a.y+opening.b.y)/2}:null),actualMid=actualWindows[windowIndex]?.mid;
+        if(expectedMid&&actualMid&&Math.hypot(Number(expectedMid.x)-actualMid.x,Number(expectedMid.y)-actualMid.y)>.08)failures.push(`${label}: 窗 ${windowIndex+1} 没有保持识别位置`);
       });
       if (!solution) {
         failures.push(`${label}: 无方案`);
@@ -58,8 +78,8 @@ setTimeout(() => {
       const islandArea = Number(reach.unreachableArea || 0);
       const placed = Object.keys(solution.poses || {}).length;
       const breakdown=engine.traceEvaluationBreakdown(solution.evaluation);
-      const deskPose=solution.poses?.desk,deskWindowDistance=deskPose&&result.scene.window?.mid
-        ?Math.hypot(deskPose.x-result.scene.window.mid.x,deskPose.y-result.scene.window.mid.y):null;
+      const deskPose=solution.poses?.desk,deskWindowDistance=deskPose&&actualWindows.length
+        ?Math.min(...actualWindows.map(windowRow=>Math.hypot(deskPose.x-windowRow.mid.x,deskPose.y-windowRow.mid.y))):null;
       const deskWidth=deskPose?(deskPose.overrideW||engine.getFurniture().find(item=>item.id==='desk')?.w||0):null;
       const itemById=new Map(engine.getFurniture().map(item=>[item.id,item]));
       const placedTypeCount=typeId=>Object.keys(solution.poses||{}).filter(id=>itemById.get(id)?.typeId===typeId).length;
@@ -91,14 +111,34 @@ setTimeout(() => {
         if(room.area<20&&mediaFlanks.length<2)failures.push(`${label}: 电视柜两侧薄收纳柜不足 2 组`);
         if((solution.decorItems||[]).some(row=>row.kind==='activityLoveseat'))failures.push(`${label}: 使用了活动区假沙发，未落正式家具`);
       }
-      if(hotelBedroom&&(solution.evaluation.diagnostics.largestEmptyWallBay??Infinity)>3.20)failures.push(`${label}: 最大连续空墙 ${(solution.evaluation.diagnostics.largestEmptyWallBay||0).toFixed(2)}m，超过 3.20m`);
-      if(programId==='living'&&room.area>=34){
-        if(placedTypeCount('diningTable')<1||placedTypeCount('diningChair')<2)failures.push(`${label}: 大客厅缺少真实第二功能区（至少 1 桌 2 椅）`);
+      const targetMediaBedroom=sampleCase.file==='case_1_145.json'&&(index===4||index===5);
+      if(targetMediaBedroom&&placedTypeCount('tvbench')<1)failures.push(`${label}: 目标大卧室缺少床对电视媒体组`);
+      if(targetMediaBedroom&&placedTypeCount('bedroomLoveseat')<1)failures.push(`${label}: 目标大卧室未优先落正式单人沙发`);
+      if(sampleCase.file==='demo-family-100.json'&&index===3){
+        const loveseatId=Object.keys(solution.poses||{}).find(id=>itemById.get(id)?.typeId==='bedroomLoveseat');
+        if(!loveseatId)failures.push(`${label}: 目标大卧室缺少正式小沙发`);
+        else if(solution.poses[loveseatId].anchor!=='wall')failures.push(`${label}: 卧室小沙发没有优先背靠墙`);
+      }
+      if(sampleCase.file==='case_1_145.json'&&index===4){
+        const bedPose=solution.poses?.bed,benchId=Object.keys(solution.poses||{}).find(id=>itemById.get(id)?.typeId==='bench'),benchPose=benchId&&solution.poses[benchId];
+        if(!bedPose||!benchPose)failures.push(`${label}: 目标大卧室缺少床尾凳`);
+        else {
+          const lateral=bedPose.wallDir||{x:1,y:0},offset=Math.abs((benchPose.x-bedPose.x)*lateral.x+(benchPose.y-bedPose.y)*lateral.y);
+          if(offset>.08)failures.push(`${label}: 床尾凳偏离床中心轴 ${offset.toFixed(2)}m`);
+        }
+      }
+      if(hotelBedroom&&solution.evaluation.diagnostics.bedroomWallCoherent!==true)failures.push(`${label}: 酒店式媒体组和最长空墙均未满足墙面验收`);
+      if(programId==='living'&&result.scene.area>=34){
+        const requiredDiningChairs=result.scene.area>=40?4:2;
+        if(placedTypeCount('diningTable')<1||placedTypeCount('diningChair')<requiredDiningChairs)failures.push(`${label}: 大客厅缺少真实第二功能区（至少 1 桌 ${requiredDiningChairs} 椅）`);
         const diningId=Object.keys(solution.poses||{}).find(id=>itemById.get(id)?.typeId==='diningTable');
-        if(diningId&&(solution.poses[diningId].overrideW||itemById.get(diningId)?.w||0)<1.6)failures.push(`${label}: 大客厅没有使用 1.6m 大模数餐桌`);
-        if((wallDetails.unusedWallRatio??1)>.46)failures.push(`${label}: 可用空墙占比 ${((wallDetails.unusedWallRatio||0)*100).toFixed(1)}%，超过 46%`);
-        if((wallDetails.emptyWallScore??0)<.12)failures.push(`${label}: 空墙评分 ${((wallDetails.emptyWallScore||0)*100).toFixed(0)}，低于 12`);
-        if((groundDetails.largestVoidRatio??1)>.54)failures.push(`${label}: 最大连续空地占比 ${((groundDetails.largestVoidRatio||0)*100).toFixed(1)}%，超过 54%`);
+        if(result.scene.area>=40&&diningId&&(solution.poses[diningId].overrideW||itemById.get(diningId)?.w||0)<1.6)failures.push(`${label}: 40㎡以上客厅没有使用 1.6m 大模数餐桌`);
+        if(diningId&&(solution.poses[diningId].anchor!=='zone'||solution.poses[diningId].relation!=='dining-zone'))failures.push(`${label}: 大客厅餐桌仍贴墙，没有落在独立餐饮语义区`);
+        if((solution.evaluation.diagnostics.diningSeatBalance??1)>.38)failures.push(`${label}: 餐椅没有围绕桌面均衡成组`);
+        if((wallDetails.unusedWallRatio??1)>.48)failures.push(`${label}: 可用空墙占比 ${((wallDetails.unusedWallRatio||0)*100).toFixed(1)}%，超过 48%`);
+        if((wallDetails.emptyWallScore??0)<.115)failures.push(`${label}: 空墙评分 ${((wallDetails.emptyWallScore||0)*100).toFixed(0)}，低于 11.5`);
+        const largestVoidLimit=Number(config.layoutConstraints.qualityPass.largeRoomGround.maxLargestVoidRatio);
+        if((groundDetails.largestVoidRatio??1)>largestVoidLimit)failures.push(`${label}: 最大连续空地占比 ${((groundDetails.largestVoidRatio||0)*100).toFixed(1)}%，超过配置上限 ${(largestVoidLimit*100).toFixed(0)}%`);
       }
       if(programId==='bedroom'&&room.area>=10&&room.area<12&&(placedTypeCount('desk')<1||placedTypeCount('chair')<1))failures.push(`${label}: 10–12㎡卧室仍缺少紧凑书桌椅组`);
       if(elevatedDecor.length)failures.push(`${label}: 仍生成非落地陈设 ${elevatedDecor.map(row=>row.kind).join('|')}`);

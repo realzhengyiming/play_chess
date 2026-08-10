@@ -231,6 +231,36 @@
               "display": 1,
               "console": 1
             }
+          },
+          {
+            "minArea": 48,
+            "target": {
+              "sideboard": 1,
+              "bookcase": 2,
+              "display": 1,
+              "console": 1
+            },
+            "irregularTarget": {
+              "sideboard": 1,
+              "bookcase": 2,
+              "display": 1,
+              "console": 1
+            }
+          },
+          {
+            "minArea": 60,
+            "target": {
+              "sideboard": 2,
+              "bookcase": 2,
+              "display": 1,
+              "console": 1
+            },
+            "irregularTarget": {
+              "sideboard": 1,
+              "bookcase": 2,
+              "display": 1,
+              "console": 1
+            }
           }
         ],
         "bedroom": [
@@ -265,6 +295,15 @@
             "modules": [
               "sleep",
               "work"
+            ]
+          },
+          {
+            "id": "media-bedroom",
+            "label": "影音卧室",
+            "minArea": 15,
+            "modules": [
+              "sleep",
+              "lounge"
             ]
           },
           {
@@ -321,6 +360,28 @@
             "id": "grand-living-dining",
             "label": "大客餐厅",
             "minArea": 34,
+            "modules": [
+              "conversation",
+              "guest-seating",
+              "dining",
+              "storage"
+            ]
+          },
+          {
+            "id": "expanded-living-dining",
+            "label": "扩展大客餐厅",
+            "minArea": 48,
+            "modules": [
+              "conversation",
+              "guest-seating",
+              "dining",
+              "storage"
+            ]
+          },
+          {
+            "id": "hall-living-dining",
+            "label": "厅堂型客餐厅",
+            "minArea": 60,
             "modules": [
               "conversation",
               "guest-seating",
@@ -388,6 +449,16 @@
             "minArea": 34,
             "value": 10,
             "irregular": 9
+          },
+          {
+            "minArea": 48,
+            "value": 12,
+            "irregular": 11
+          },
+          {
+            "minArea": 60,
+            "value": 14,
+            "irregular": 13
           }
         ]
       }
@@ -425,18 +496,23 @@
       "longBedroomWall": {
         "minArea": 15,
         "minAspect": 1.65,
-        "maxEmptyBay": 3.2
+        "maxEmptyBay": 3.2,
+        "satisfyWithTypes": [
+          "tvbench",
+          "bedroomLoveseat",
+          "bedroomDisplay"
+        ]
       },
       "largeRoomGround": {
         "minArea": 34,
         "maxArea": 80,
-        "maxLargestVoidRatio": 0.54
+        "maxLargestVoidRatio": 0.56
       },
       "largeRoomWall": {
         "minArea": 34,
         "maxArea": 80,
         "maxUnusedWallRatio": 0.48,
-        "minEmptyWallScore": 0.12
+        "minEmptyWallScore": 0.115
       }
     },
     "relationPolicies": [
@@ -733,14 +809,30 @@
             "id": "lounge",
             "label": "卧室会客组",
             "anchor": "bedroomLoveseat",
+            "inventoryChallenges": [
+              {
+                "id": "medium-media-bedroom",
+                "richPriority": 96,
+                "minArea": 15,
+                "maxArea": 19.99,
+                "maxAspect": 1.64,
+                "counts": {"night": 1, "desk": 0, "chair": 0, "bedroomTeaTable": 0, "bench": 1, "bedroomDisplay": 1, "lounge": 0, "vanity": 0, "vanityStool": 0}
+              },
+              {
+                "id": "suite-media-bedroom",
+                "richPriority": 92,
+                "minArea": 20,
+                "counts": {"night": 1, "bedroomTeaTable": 1, "bench": 1, "bedroomDisplay": 1}
+              }
+            ],
             "activeModules": ["lounge"],
             "weight": 1.55,
-            "completionThreshold": 0.82,
+            "completionThreshold": 0.98,
             "members": [
               {"typeId": "bedroomLoveseat", "target": 1, "weight": 0.40, "required": true},
               {"typeId": "tvbench", "target": 1, "weight": 0.34, "required": true},
-              {"typeId": "bedroomTeaTable", "target": 1, "weight": 0.16, "required": false},
-              {"typeId": "lounge", "target": 1, "weight": 0.10, "required": false}
+              {"typeId": "bedroomTeaTable", "target": 1, "targetByArea": [{"minArea": 0, "value": 0}, {"minArea": 20, "value": 1}], "weight": 0.16, "required": false},
+              {"typeId": "lounge", "target": 1, "targetByArea": [{"minArea": 0, "value": 0}], "weight": 0.10, "required": false}
             ]
           },
           {
@@ -825,7 +917,33 @@
                 "minArea": 22,
                 "maxArea": 30,
                 "maxAspect": 1.15,
-                "counts": {"arm": 1, "bookcase": 0, "display": 0}
+                "counts": {"arm": 0, "side": 0, "bookcase": 0, "display": 1}
+              },
+              {
+                "id": "large-floating-dining",
+                "richPriority": 94,
+                "minArea": 34,
+                "maxArea": 54.99,
+                "counts": {"diningChair": 4, "arm": 1, "side": 1}
+              },
+              {
+                "id": "large-core-dining",
+                "richPriority": 92,
+                "minArea": 40,
+                "maxArea": 54.99,
+                "counts": {"diningChair": 4, "arm": 0, "side": 0, "floorLamp": 0, "sideboard": 1, "bookcase": 0, "display": 1, "console": 0}
+              },
+              {
+                "id": "hall-floating-dining",
+                "richPriority": 100,
+                "minArea": 55,
+                "counts": {"diningChair": 4, "arm": 1, "side": 1}
+              },
+              {
+                "id": "large-compact-dining",
+                "richPriority": 88,
+                "minArea": 34,
+                "counts": {"diningChair": 2, "arm": 0, "side": 0, "floorLamp": 0, "sideboard": 0, "bookcase": 0, "display": 1, "console": 0}
               }
             ],
             "activeModules": ["dining"],
@@ -833,7 +951,7 @@
             "completionThreshold": 0.98,
             "members": [
               {"typeId": "diningTable", "target": 1, "weight": 0.42, "required": true},
-              {"typeId": "diningChair", "target": 2, "weight": 0.46, "required": true},
+              {"typeId": "diningChair", "target": 2, "targetByArea": [{"minArea": 0, "value": 2}, {"minArea": 40, "value": 4}], "weight": 0.46, "required": true},
               {"typeId": "sideboard", "target": 1, "weight": 0.12, "required": false}
             ]
           },
@@ -920,7 +1038,24 @@
             "maxTotalTradeoff": 8
           }
         },
-        "living": {}
+        "living": {
+          "diningTable": {
+            "mode": "max-feasible",
+            "targetByArea": [
+              {"minArea": 0, "width": 1.4},
+              {"minArea": 34, "width": 1.6},
+              {"minArea": 55, "width": 1.6}
+            ],
+            "dependentTypes": ["diningChair"],
+            "repairCandidateLimit": 14,
+            "positionBuckets": 10,
+            "anchorTolerance": 0.08,
+            "fallbacksPerAnchor": 1,
+            "localPriorityBonus": 54,
+            "finalPriority": true,
+            "maxTotalTradeoff": 8
+          }
+        }
       },
       "orderByShape": {
         "recognized": {
@@ -1011,12 +1146,13 @@
         ]
       },
       "auto": {
+        "largeDiningBeamWidth": 72,
         "attemptLimit": {
           "normal": 12,
           "large": 6,
           "largeArea": 28,
           "geometryProfiles": [
-            {"shape": "recognized", "minAspect": 1.65, "value": 1},
+            {"shape": "recognized", "minAspect": 1.65, "value": 2},
             {"shape": "recognized", "minAspect": 0, "value": 2}
           ]
         },
@@ -1063,9 +1199,9 @@
           "required": 18
         },
         "largeLiving": {
-          "core": 24,
-          "optional": 9,
-          "required": 14
+          "core": 20,
+          "optional": 7,
+          "required": 11
         }
       }
     },
@@ -1118,7 +1254,7 @@
             "depth": 0.38,
             "minWidth": 0.1,
             "maxWidth": 8,
-            "maxBudget": 5,
+            "maxBudget": 7,
             "budgetByArea": [
               {
                 "minArea": 0,
@@ -1130,7 +1266,7 @@
               },
               {
                 "minArea": 40,
-                "value": 5
+                "value": 7
               }
             ],
             "mediaFlank": {
@@ -2308,7 +2444,7 @@
               "toward"
             ],
             "maxSamples": 4,
-            "weight": 1.42,
+            "weight": 2.35,
             "collisionClearance": 0.025,
             "allowFunctionalOverlap": true,
             "referenceShapePolicy": {
@@ -2344,7 +2480,7 @@
               "toward"
             ],
             "maxSamples": 4,
-            "weight": 1.5,
+            "weight": 0.7,
             "collisionClearance": 0.025,
             "allowFunctionalOverlap": true,
             "referenceShapePolicy": {
@@ -2380,7 +2516,7 @@
               "toward"
             ],
             "maxSamples": 4,
-            "weight": 1.5,
+            "weight": 0.7,
             "collisionClearance": 0.025,
             "allowFunctionalOverlap": true,
             "referenceShapePolicy": {
@@ -3221,7 +3357,7 @@
               "toward"
             ],
             "maxSamples": 24,
-            "weight": 1.65,
+            "weight": 0.65,
             "collisionClearance": 0.025,
             "allowFunctionalOverlap": false,
             "referenceShapePolicy": {
@@ -3257,7 +3393,7 @@
               "parallel"
             ],
             "maxSamples": 12,
-            "weight": 1.18,
+            "weight": 2.5,
             "collisionClearance": 0.025,
             "allowFunctionalOverlap": false,
             "referenceShapePolicy": {
@@ -3293,7 +3429,7 @@
               "parallel"
             ],
             "maxSamples": 10,
-            "weight": 1,
+            "weight": 0.55,
             "collisionClearance": 0.025,
             "allowFunctionalOverlap": false,
             "referenceShapePolicy": {
@@ -3331,7 +3467,7 @@
           "toward"
         ],
         "maxSamples": 24,
-        "weight": 1.65,
+        "weight": 0.65,
         "collisionClearance": 0.025,
         "allowFunctionalOverlap": false,
         "referenceShapePolicy": {
@@ -5274,6 +5410,7 @@
           {
             "id": "dining-wall",
             "enabled": true,
+            "maxArea": 33.99,
             "mode": "wall",
             "rotations": [
               0,
@@ -5293,7 +5430,7 @@
               "parallel"
             ],
             "maxSamples": 28,
-            "weight": 1.7,
+            "weight": 1.1,
             "collisionClearance": 0,
             "allowFunctionalOverlap": false,
             "referenceShapePolicy": {
@@ -5328,8 +5465,8 @@
             "facing": [
               "parallel"
             ],
-            "maxSamples": 20,
-            "weight": 1.25,
+            "maxSamples": 24,
+            "weight": 2,
             "collisionClearance": 0,
             "allowFunctionalOverlap": false,
             "referenceShapePolicy": {
@@ -8277,7 +8414,7 @@
               "toward"
             ],
             "maxSamples": 4,
-            "weight": 1.42,
+            "weight": 2.35,
             "collisionClearance": 0.025,
             "allowFunctionalOverlap": true,
             "referenceShapePolicy": {
@@ -8313,7 +8450,7 @@
               "toward"
             ],
             "maxSamples": 4,
-            "weight": 1.5,
+            "weight": 0.7,
             "collisionClearance": 0.025,
             "allowFunctionalOverlap": true,
             "referenceShapePolicy": {
@@ -8349,7 +8486,7 @@
               "toward"
             ],
             "maxSamples": 4,
-            "weight": 1.5,
+            "weight": 0.7,
             "collisionClearance": 0.025,
             "allowFunctionalOverlap": true,
             "referenceShapePolicy": {
@@ -8492,7 +8629,7 @@
               "toward"
             ],
             "maxSamples": 24,
-            "weight": 1.65,
+            "weight": 0.65,
             "collisionClearance": 0.025,
             "allowFunctionalOverlap": false,
             "referenceShapePolicy": {
@@ -8528,7 +8665,7 @@
               "parallel"
             ],
             "maxSamples": 12,
-            "weight": 1.18,
+            "weight": 2.5,
             "collisionClearance": 0.025,
             "allowFunctionalOverlap": false,
             "referenceShapePolicy": {
@@ -8564,7 +8701,7 @@
               "parallel"
             ],
             "maxSamples": 10,
-            "weight": 1,
+            "weight": 0.55,
             "collisionClearance": 0.025,
             "allowFunctionalOverlap": false,
             "referenceShapePolicy": {
@@ -8602,7 +8739,7 @@
           "toward"
         ],
         "maxSamples": 24,
-        "weight": 1.65,
+        "weight": 0.65,
         "collisionClearance": 0.025,
         "allowFunctionalOverlap": false,
         "referenceShapePolicy": {
@@ -10542,6 +10679,7 @@
           {
             "id": "dining-wall",
             "enabled": true,
+            "maxArea": 33.99,
             "mode": "wall",
             "rotations": [
               0,
@@ -10561,7 +10699,7 @@
               "parallel"
             ],
             "maxSamples": 28,
-            "weight": 1.7,
+            "weight": 1.1,
             "collisionClearance": 0,
             "allowFunctionalOverlap": false,
             "referenceShapePolicy": {
@@ -10596,8 +10734,8 @@
             "facing": [
               "parallel"
             ],
-            "maxSamples": 20,
-            "weight": 1.25,
+            "maxSamples": 24,
+            "weight": 2,
             "collisionClearance": 0,
             "allowFunctionalOverlap": false,
             "referenceShapePolicy": {

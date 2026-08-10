@@ -44,6 +44,7 @@ uvicorn floorplan_api:app --host 127.0.0.1 --port 8765 --reload
 │  ├─ furniture-config-default.json  # 服务端基础默认配置
 │  └─ furniture-config-current.json  # 网页修改后生效的唯一全局配置
 ├─ samples/                          # 户型示例图片及缓存识别 JSON
+├─ scripts/batch_recognize_samples.py # 批量上传“样例图片数据”并固化识别 JSON
 ├─ test_layout_baseline.js           # 基础房型/配置回归
 └─ test_layout_stress.js             # 多尺寸、多轮搜索压力回归
 ```
@@ -113,6 +114,14 @@ node tests/layout_quality_benchmark.js --assert-quality
 node tests/recognized_room_suite.js --assert-quality --assert-speed
 python -m py_compile floorplan_api.py
 ```
+
+新增户型图片时，可将文件按 `case_编号_面积.jpg/png` 命名后放入 `样例图片数据`，启动本地服务并运行：
+
+```powershell
+python scripts/batch_recognize_samples.py
+```
+
+脚本会跳过已有 JSON；需要重新请求全部结果时追加 `--force`。
 
 上述回归默认读取实际生效的 `furniture-config-current.json`。如需验证另一份配置，显式设置 `ROOM_CHESS_CONFIG=/absolute/path/to/config.json`，测试不会再悄悄改用 default。
 
