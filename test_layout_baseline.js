@@ -89,9 +89,9 @@ setTimeout(() => {
     {programId:'bedroom', width:3.2, depth:4.7, required:{bed:1,wardrobe:1,night:2,desk:1,chair:1}, minPlaced:7, enrich:['bedroomLoveseat','lounge','bench','bedroomDisplay','bedroomInfillCabinet']},
     // 13.68㎡在床尾凳改为“10–15cm 缝 + 外侧 0.42m 共享落脚区”后，
     // 不再强迫每个解都塞入床尾凳；较大的 4.2×4.5 房间仍必须覆盖该语义。
-    // 紧贴桌边后，13.68㎡房间可放下完整梳妆组；与其强制第二个床头柜，
-    // 更应验证“一床头柜 + 工作组 + 梳妆组”的真实功能丰富度。
-    {programId:'bedroom', width:3.6, depth:3.8, required:{bed:1,wardrobe:1,night:1,desk:1,chair:1,vanity:1,vanityStool:1}, minPlaced:8},
+    // 紧贴桌边后，13.68㎡房间可以同时完成双床头柜、工作组和梳妆组；
+    // 若两侧几何都合法，就不应在库存阶段提前把第二只床头柜删掉。
+    {programId:'bedroom', width:3.6, depth:3.8, required:{bed:1,wardrobe:1,night:2,desk:1,chair:1,vanity:1,vanityStool:1}, minPlaced:9},
     // 填缝柜已改为搜索完成后的墙面补全，不再计入 Beam 的硬家具落地数。
     {programId:'bedroom', width:4.2, depth:4.5, required:{bed:1,wardrobe:1,night:2,desk:1,chair:1,bench:1}, minPlaced:7},
     {programId:'living', width:4.2, depth:3.8, required:{sofa:1,tv:1,coffee:1,arm:1}, minPlaced:6},

@@ -1588,6 +1588,9 @@
         // 可编辑规则生成的床尾候选也必须得到语义奖励，否则正确候选会被“跳过 0 件”压掉。
         score+=pose.relation==='bed-foot'?58:-18;
         if(pose.relation==='bed-foot'&&Number.isFinite(Number(pose.relationGap)))score+=Math.max(-8,12-Math.abs(Number(pose.relationGap)-.12)*80);
+        // 常规中等卧室的床尾凳默认沿床中轴居中；左右候选只是门扇、通道冲突时的退路。
+        // 更大的长卧室不加这层强化，让侧置候选继续用于保住纵向通道。
+        if(scene.area<=14.5&&pose.relation==='bed-foot'&&pose.crossAlign==='center')score+=14;
       }
       if (!configuredEntry&&item.id === 'vanityStool') score += pose.relation === 'vanity-seat' ? 50 : -16;
       if(item.typeId==='lounge'){
@@ -3840,8 +3843,15 @@
           .map(({group,profile})=>{
             const target={...baseCounts};
             for(const member of group.members||[]){const memberTarget=functionalMemberTarget(group,member,scene);if(member.required!==false&&memberTarget>0)target[member.typeId]=Math.max(target[member.typeId]||0,memberTarget)}
-            for(const [typeId,count] of Object.entries(group.challengeCounts||{}))target[typeId]=count;
-            for(const [typeId,count] of Object.entries(profile.counts||{}))target[typeId]=count;
+            const setChallengeCount=(typeId,count)=>{
+              // 梳妆组挑战只是在基础睡眠组上增加梳妆台，不应顺手把已选中的双床头柜
+              // 降成一只。两柜方案若确实摆不下，会由后面的普通库存候选回退到一柜。
+              // 会客组仍允许主动用一只床头柜交换沙发空间，这是另一种明确的设计取舍。
+              const preserveBedsidePair=programId==='bedroom'&&group.id==='vanity'&&typeId==='night'&&area>=9&&(baseCounts.night||0)>=2;
+              target[typeId]=preserveBedsidePair?Math.max(Number(target[typeId])||0,Number(count)||0):count;
+            };
+            for(const [typeId,count] of Object.entries(group.challengeCounts||{}))setChallengeCount(typeId,count);
+            for(const [typeId,count] of Object.entries(profile.counts||{}))setChallengeCount(typeId,count);
             const priority=Number(profile.richPriority??group.richPriority)||0;
             return {...make(target),moduleChallenge:true,functionalGroupChallenge:`${group.id}:${profile.id||'default'}`,functionalGroupPriority:priority};
           });

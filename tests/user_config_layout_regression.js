@@ -24,6 +24,8 @@ setTimeout(()=>{
   };
 
   const bedroom=run({programId:'bedroom',shape:'rect',width:3.6,depth:3.8});
+  const bedroomNightCount=Object.keys(bedroom.solution.poses).filter(id=>bedroom.items.get(id)?.typeId==='night').length;
+  if(bedroomNightCount!==2)failures.push(`3.6×3.8 卧室床两侧可用时应保留双床头柜，实际 ${bedroomNightCount} 只`);
   const bedId=Object.keys(bedroom.solution.poses).find(id=>bedroom.items.get(id)?.typeId==='bed');
   const benchId=Object.keys(bedroom.solution.poses).find(id=>bedroom.items.get(id)?.typeId==='bench');
   if(bedId&&benchId){
