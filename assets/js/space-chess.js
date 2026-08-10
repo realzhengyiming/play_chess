@@ -1724,6 +1724,19 @@
       // 若几何上放不下，外层会回退较小库存，而不是输出名义完整、实际缺件的方案。
       if(currentProgram==='bedroom'&&item.typeId==='desk'&&item.slotIndex===0&&(CONFIGS.bedroom.counts.desk||0)>0)return true;
       if(currentProgram==='bedroom'&&item.typeId==='night'&&item.slotIndex===0&&(CONFIGS.bedroom.counts.night||0)>0&&state.poses.bed)return true;
+      // 某些面积档会把“相关家具”提升为完整功能组。只有配置显式开启
+      // enforceSelectedTargets 时，已进入本轮库存且目标数量大于 0 的必需组员
+      // 才禁止走 skip；几何确实无解时由外层改试更轻的库存，而不是输出半组家具。
+      for(const group of activeFunctionalGroupConfigs(scene)){
+        if(group.enforceSelectedTargets!==true)continue;
+        const member=(group.members||[]).find(row=>row.typeId===item.typeId&&row.required!==false);
+        const target=member?functionalMemberTarget(group,member,scene):0;
+        const selected=Math.max(0,Number(CONFIGS[currentProgram]?.counts?.[item.typeId])||0);
+        if(target>0&&selected>item.slotIndex&&item.slotIndex<target){
+          const anchorSelected=Math.max(0,Number(CONFIGS[currentProgram]?.counts?.[group.anchor])||0)>0;
+          if(item.typeId===group.anchor||stateTypeCount(state,group.anchor)>0||anchorSelected)return true;
+        }
+      }
       const bedroomAspect=Math.max(scene.width/Math.max(scene.depth,EPS),scene.depth/Math.max(scene.width,EPS));
       const selectedHotelAnchor=currentProgram==='bedroom'&&scene.shape==='recognized'&&bedroomAspect>=1.65&&item.slotIndex===0&&
         (CONFIGS.bedroom.counts[item.typeId]||0)>0&&['tvbench','bedroomLoveseat'].includes(item.typeId);
@@ -3362,7 +3375,10 @@
     }
 
     function sortFurnitureForScene(scene){
-      const shapeTypes=LAYOUT_CONSTRAINTS.search.orderByShape?.[scene.shape]?.[currentProgram],rows=LAYOUT_CONSTRAINTS.search.orderByArea?.[currentProgram]||[],configured=[...rows].sort((a,b)=>Number(b.minArea)-Number(a.minArea)).find(row=>scene.area+EPS>=Number(row.minArea)),types=shapeTypes||configured?.types;
+      const shapeTypes=LAYOUT_CONSTRAINTS.search.orderByShape?.[scene.shape]?.[currentProgram],rows=LAYOUT_CONSTRAINTS.search.orderByArea?.[currentProgram]||[],configured=[...rows].sort((a,b)=>Number(b.minArea)-Number(a.minArea)).find(row=>scene.area+EPS>=Number(row.minArea));
+      // minArea>0 的顺序是明确的面积档覆盖（大客餐厅先成餐组、厅堂先成会客组）；
+      // 基础档仍允许识别轮廓使用 shape 专属顺序，避免把所有房型压成同一棋谱。
+      const types=Number(configured?.minArea)>0?configured.types:(shapeTypes||configured?.types);
       if(!types?.length)return;
       const rank=new Map(types.map((typeId,index)=>[typeId,index])),stable=new Map(FURNITURE.map((item,index)=>[item.id,index]));
       FURNITURE.sort((a,b)=>(rank.get(a.typeId)??999)-(rank.get(b.typeId)??999)||(stable.get(a.id)??0)-(stable.get(b.id)??0));

@@ -420,8 +420,13 @@
           },
           {
             "minArea": 20,
-            "value": 8,
-            "irregular": 7
+            "value": 10,
+            "irregular": 9
+          },
+          {
+            "minArea": 32,
+            "value": 12,
+            "irregular": 10
           }
         ],
         "living": [
@@ -751,7 +756,7 @@
           ],
           "sizeTiers": [
             {"minArea": 0, "sizes": [[1.5, 1.2], [1.3, 1.1], [1.15, 1.0], [1.0, 0.9], [0.9, 0.8], [0.8, 0.8]]},
-            {"minArea": 18, "sizes": [[2.1, 1.6], [1.8, 1.4], [1.6, 1.3], [1.3, 1.1], [1.0, 0.9]]}
+            {"minArea": 18, "sizes": [[1.5, 1.2], [1.3, 1.1], [1.15, 1.0], [1.0, 0.9], [0.9, 0.8], [0.8, 0.8]]}
           ],
           "minZoneArea": 0.64,
           "preferredMinArea": 1.1,
@@ -822,17 +827,18 @@
                 "id": "suite-media-bedroom",
                 "richPriority": 92,
                 "minArea": 20,
-                "counts": {"night": 1, "bedroomTeaTable": 1, "bench": 1, "bedroomDisplay": 1}
+                "counts": {"night": 1, "bedroomTeaTable": 1, "bench": 1, "bedroomDisplay": 1, "lounge": 1}
               }
             ],
             "activeModules": ["lounge"],
+            "enforceSelectedTargets": true,
             "weight": 1.55,
             "completionThreshold": 0.98,
             "members": [
               {"typeId": "bedroomLoveseat", "target": 1, "weight": 0.40, "required": true},
               {"typeId": "tvbench", "target": 1, "weight": 0.34, "required": true},
-              {"typeId": "bedroomTeaTable", "target": 1, "targetByArea": [{"minArea": 0, "value": 0}, {"minArea": 20, "value": 1}], "weight": 0.16, "required": false},
-              {"typeId": "lounge", "target": 1, "targetByArea": [{"minArea": 0, "value": 0}], "weight": 0.10, "required": false}
+              {"typeId": "bedroomTeaTable", "target": 1, "targetByArea": [{"minArea": 0, "value": 0}], "weight": 0.16, "required": false},
+              {"typeId": "lounge", "target": 1, "targetByArea": [{"minArea": 0, "value": 0}, {"minArea": 20, "value": 1}], "weight": 0.10, "required": true}
             ]
           },
           {
@@ -903,6 +909,14 @@
             "label": "餐饮组",
             "anchor": "diningTable",
             "inventoryChallenges": [
+              {
+                "id": "long-multidoor-dining",
+                "richPriority": 98,
+                "minArea": 34,
+                "maxArea": 44.99,
+                "minAspect": 1.65,
+                "counts": {"diningChair": 4, "arm": 1, "side": 1, "floorLamp": 0, "sideboard": 1, "bookcase": 0, "display": 1, "console": 0}
+              },
               {
                 "id": "medium-rect-dining",
                 "richPriority": 85,
@@ -1033,7 +1047,7 @@
             "positionBuckets": 10,
             "anchorTolerance": 0.08,
             "fallbacksPerAnchor": 1,
-            "localPriorityBonus": 22,
+            "localPriorityBonus": 60,
             "finalPriority": true,
             "maxTotalTradeoff": 8
           }
@@ -1109,6 +1123,46 @@
               "sofa",
               "tv",
               "coffee",
+              "side",
+              "arm",
+              "diningTable",
+              "diningChair",
+              "ottoman",
+              "sideboard",
+              "bookcase",
+              "display",
+              "console",
+              "floorLamp",
+              "plant",
+              "infillCabinet"
+            ]
+          },
+          {
+            "minArea": 40,
+            "types": [
+              "sofa",
+              "tv",
+              "coffee",
+              "diningTable",
+              "diningChair",
+              "side",
+              "arm",
+              "ottoman",
+              "sideboard",
+              "bookcase",
+              "display",
+              "console",
+              "floorLamp",
+              "plant",
+              "infillCabinet"
+            ]
+          },
+          {
+            "minArea": 45,
+            "types": [
+              "sofa",
+              "tv",
+              "coffee",
               "arm",
               "side",
               "diningTable",
@@ -1124,15 +1178,15 @@
             ]
           },
           {
-            "minArea": 34,
+            "minArea": 55,
             "types": [
               "sofa",
               "tv",
               "coffee",
-              "diningTable",
-              "diningChair",
               "arm",
               "side",
+              "diningTable",
+              "diningChair",
               "ottoman",
               "sideboard",
               "bookcase",
@@ -1780,7 +1834,7 @@
       "color": "#59a391",
       "geometry": {
         "width": 0.5,
-        "depth": 0.5,
+        "depth": 0.32,
         "shape": "box",
         "variants": [
           {
@@ -3820,7 +3874,7 @@
         "step": 0.1,
         "fill": [
           0.62,
-          0.94
+          1
         ]
       },
       "infill": false
@@ -5048,7 +5102,7 @@
       "color": "#79927e",
       "geometry": {
         "width": 0.5,
-        "depth": 0.5,
+        "depth": 0.32,
         "shape": "box",
         "variants": [
           {
@@ -9392,7 +9446,7 @@
         "step": 0.1,
         "fill": [
           0.62,
-          0.94
+          1
         ]
       },
       "infill": false
