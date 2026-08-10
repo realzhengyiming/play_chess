@@ -123,34 +123,47 @@
 
           <section class="group">
             <h3>3 · 候选点生成</h3>
+            <p class="simple-section-intro">通常只需设置生成方式、参照家具、相对位置、净距和偏好。采样数量、碰撞和 L 型兼容等参数已收进高级设置。</p>
             <div class="candidate-toolbar">
               <div class="candidate-tabs" id="candidateRuleTabs"></div>
               <button class="btn" id="addCandidateRuleBtn" type="button">＋ 添加候选规则</button>
               <button class="btn danger" id="deleteCandidateRuleBtn" type="button">删除本条</button>
             </div>
-            <div class="grid three">
+            <div class="grid three candidate-basic-grid">
               <div class="field"><label for="candidateMode">候选生成方式</label><select id="candidateMode" name="candidateMode"><option value="wall">沿墙采样</option><option value="zone">功能区采样</option><option value="corner">角落采样</option><option value="relation">相对家具采样</option></select></div>
-              <div class="field"><label for="requiredAnchor">必须锚定</label><select id="requiredAnchor" name="requiredAnchor"><option value="none">无</option><option value="wall">墙</option><option value="zone">功能区</option><option value="relation">其他家具</option></select></div>
-              <label class="check"><input id="allowCorner" name="allowCorner" type="checkbox" />允许贴墙端进入角落</label>
-              <div class="field"><label for="rotations">允许旋转角度（非关系型）</label><input id="rotations" name="rotations" placeholder="0, 90" /></div>
-              <div class="field"><label for="relativeTo">相对家具类型</label><select id="relativeTo" name="relativeTo"><option value="">无</option></select></div>
-              <div class="field"><label for="relationSide">相对方位（位置）</label><select id="relationSide"><option value="front">正面</option><option value="back">背面</option><option value="left">左侧</option><option value="right">右侧</option></select></div>
-              <div class="field"><label for="crossAlign">沿参照物方向对齐</label><select id="crossAlign"><option value="center">居中</option><option value="back">靠后 / 靠床头</option><option value="front">靠前 / 靠床尾</option><option value="left">靠左端</option><option value="right">靠右端</option></select></div>
-              <div class="field"><label for="relation">关系名称</label><input id="relation" name="relation" placeholder="例如 sofa-front" /></div>
-              <div class="field"><label for="relationGapMin">最小净距 m</label><input id="relationGapMin" type="number" min="0" max="5" step="0.01" /></div>
-              <div class="field"><label for="relationGapMax">最大净距 m</label><input id="relationGapMax" type="number" min="0" max="5" step="0.01" /></div>
-              <div class="field"><label for="relationGapStep">距离采样步长 m</label><input id="relationGapStep" type="number" min="0.05" max="2" step="0.05" /></div>
-              <div class="field"><span>家具朝向（可多选）</span><div class="compact-checks" id="facingModes"><label><input type="checkbox" value="toward" />面向参照物</label><label><input type="checkbox" value="away" />背向参照物</label><label><input type="checkbox" value="parallel" />与参照物同向</label></div></div>
-              <div class="field"><label for="candidateRuleLimit">本规则最多候选点</label><input id="candidateRuleLimit" type="number" min="1" max="48" step="1" /></div>
+              <div class="field relation-only"><label for="relativeTo">参照哪件家具</label><select id="relativeTo" name="relativeTo"><option value="">无</option></select></div>
+              <div class="field relation-only"><label for="relationSide">摆在参照物哪一侧</label><select id="relationSide"><option value="front">正面</option><option value="back">背面</option><option value="left">左侧</option><option value="right">右侧</option></select></div>
+              <div class="field relation-only"><label for="crossAlign">位置对齐</label><select id="crossAlign"><option value="center">居中</option><option value="back">靠后 / 靠床头</option><option value="front">靠前 / 靠床尾</option><option value="left">靠左端</option><option value="right">靠右端</option></select></div>
               <div class="field"><label for="candidateRuleWeight">本规则偏好（1 为中性）</label><input id="candidateRuleWeight" type="number" min="0" max="3" step="0.1" /></div>
-              <div class="field"><label for="candidateCollisionClearance">与参照物碰撞净距 m</label><input id="candidateCollisionClearance" type="number" min="0" max="1" step="0.005" /></div>
-              <label class="check"><input id="candidateAllowFunctionalOverlap" type="checkbox" />允许与参照物使用区重叠</label>
-              <div class="field"><label for="lShapeEnabled">参照物为 L 型沙发时</label><select id="lShapeEnabled"><option value="allow">允许本条关系</option><option value="deny">禁用本条关系</option></select></div>
-              <div class="field"><label for="lShapeLateralSide">L 型沙发左右侧策略</label><select id="lShapeLateralSide"><option value="any">左右侧都允许</option><option value="non-chaise">仅非贵妃侧</option><option value="chaise-only">仅贵妃侧</option></select></div>
-              <div class="field"><label for="lShapeFrontAlign">L 型沙发正面横向对齐</label><select id="lShapeFrontAlign"><option value="body-center">按沙发主体中心（忽略贵妃侧）</option><option value="main-seat">按非贵妃主坐面对齐</option><option value="bbox">按整个外包框</option></select></div>
-              <div class="field"><label for="candidateTotalLimit">该家具候选总上限</label><input id="candidateTotalLimit" type="number" min="4" max="72" step="1" /></div>
-              <label class="check"><input id="avoidWindow" name="avoidWindow" type="checkbox" />避开窗户</label>
+              <div class="field non-relation-only"><label for="rotations">允许旋转角度</label><input id="rotations" name="rotations" placeholder="0, 90" /></div>
             </div>
+            <div class="distance-editor relation-only">
+              <div class="distance-editor-head"><strong>家具之间净距</strong><span>从最小值到最大值，按步长生成多个候选位置</span></div>
+              <div class="distance-input-grid">
+                <div class="field"><label for="relationGapMin">最小净距 m</label><input id="relationGapMin" type="number" min="0" max="5" step="0.01" /></div>
+                <div class="field"><label for="relationGapMax">最大净距 m</label><input id="relationGapMax" type="number" min="0" max="5" step="0.01" /></div>
+                <div class="field"><label for="relationGapStep">每次增加 m</label><input id="relationGapStep" type="number" min="0.05" max="2" step="0.05" /></div>
+              </div>
+              <div class="distance-ruler" id="candidateDistanceGuide"><span class="distance-range"></span><i class="distance-min-marker"></i><i class="distance-max-marker"></i></div>
+              <div class="distance-ruler-label" id="candidateDistanceLabel"></div>
+            </div>
+            <details class="advanced-settings">
+              <summary><span>高级设置</span><small>朝向、采样性能、碰撞与 L 型兼容</small></summary>
+              <div class="grid three advanced-grid">
+                <div class="field"><label for="requiredAnchor">必须锚定</label><select id="requiredAnchor" name="requiredAnchor"><option value="none">无</option><option value="wall">墙</option><option value="zone">功能区</option><option value="relation">其他家具</option></select></div>
+                <label class="check"><input id="allowCorner" name="allowCorner" type="checkbox" />允许贴墙端进入角落</label>
+                <div class="field relation-only"><label for="relation">关系名称（程序标识）</label><input id="relation" name="relation" placeholder="例如 sofa-front" /></div>
+                <div class="field relation-only"><span>家具朝向（可多选）</span><div class="compact-checks" id="facingModes"><label><input type="checkbox" value="toward" />面向参照物</label><label><input type="checkbox" value="away" />背向参照物</label><label><input type="checkbox" value="parallel" />与参照物同向</label></div></div>
+                <div class="field"><label for="candidateRuleLimit">本规则候选上限</label><input id="candidateRuleLimit" type="number" min="1" max="48" step="1" /></div>
+                <div class="field relation-only"><label for="candidateCollisionClearance">与参照物碰撞净距 m</label><input id="candidateCollisionClearance" type="number" min="0" max="1" step="0.005" /></div>
+                <label class="check relation-only"><input id="candidateAllowFunctionalOverlap" type="checkbox" />允许与参照物使用区重叠</label>
+                <div class="field l-shape-only"><label for="lShapeEnabled">参照物为 L 型沙发时</label><select id="lShapeEnabled"><option value="allow">允许本条关系</option><option value="deny">禁用本条关系</option></select></div>
+                <div class="field l-shape-only"><label for="lShapeLateralSide">L 型沙发左右侧策略</label><select id="lShapeLateralSide"><option value="any">左右侧都允许</option><option value="non-chaise">仅非贵妃侧</option><option value="chaise-only">仅贵妃侧</option></select></div>
+                <div class="field l-shape-only"><label for="lShapeFrontAlign">L 型沙发正面横向对齐</label><select id="lShapeFrontAlign"><option value="body-center">按沙发主体中心（忽略贵妃侧）</option><option value="main-seat">按非贵妃主坐面对齐</option><option value="bbox">按整个外包框</option></select></div>
+                <div class="field"><label for="candidateTotalLimit">该家具候选总上限</label><input id="candidateTotalLimit" type="number" min="4" max="72" step="1" /></div>
+                <label class="check"><input id="avoidWindow" name="avoidWindow" type="checkbox" />避开窗户</label>
+              </div>
+            </details>
             <p class="candidate-hint" id="candidateEstimate">距离和朝向会组合采样，但会先受“本规则上限”裁切，再受“家具总上限”裁切，不会无限扩张。</p>
           </section>
 
@@ -160,13 +173,18 @@
               <div class="field"><label for="serviceLabel">使用区名称</label><input id="serviceLabel" name="serviceLabel" /></div>
               <div class="field"><label for="serviceSide">使用区方向</label><select id="serviceSide" name="serviceSide"><option value="front">正面</option><option value="back">背面</option><option value="left">左侧</option><option value="right">右侧</option></select></div>
               <div class="field"><label for="serviceDepth">使用区深度 m</label><input id="serviceDepth" name="serviceDepth" type="number" min="0" max="3" step="0.01" /></div>
-              <div class="field"><label for="spanExtra">两侧加宽 m</label><input id="spanExtra" name="spanExtra" type="number" min="-1" max="2" step="0.01" /></div>
-              <label class="check"><input id="serviceAlignStart" type="checkbox" />上边界对齐家具</label>
-              <label class="check"><input id="adaptiveFootZone" type="checkbox" />关系间距足够时复用间隔作为使用区</label>
-              <label class="check"><input id="serviceSharedCirculation" type="checkbox" />此区域同时计入通行与孤岛检查</label>
-              <div class="field"><span>允许进入的家具（可多选）</span><div class="enum-checklist" id="allowBodyTypes" role="group" aria-label="允许进入使用区的家具"></div></div>
               <label class="check"><input id="serviceHard" name="serviceHard" type="checkbox" />禁止家具实体进入此使用区</label>
             </div>
+            <details class="advanced-settings compact-advanced">
+              <summary><span>使用区高级设置</span><small>加宽、通行属性与例外家具</small></summary>
+              <div class="grid three advanced-grid">
+                <div class="field"><label for="spanExtra">两侧加宽 m</label><input id="spanExtra" name="spanExtra" type="number" min="-1" max="2" step="0.01" /></div>
+                <label class="check"><input id="serviceAlignStart" type="checkbox" />上边界对齐家具</label>
+                <label class="check"><input id="adaptiveFootZone" type="checkbox" />关系间距足够时复用间隔作为使用区</label>
+                <label class="check"><input id="serviceSharedCirculation" type="checkbox" />同时计入通行与孤岛检查</label>
+                <div class="field advanced-wide"><span>允许进入的家具（可多选）</span><div class="enum-checklist" id="allowBodyTypes" role="group" aria-label="允许进入使用区的家具"></div></div>
+              </div>
+            </details>
             <p class="schema-note" style="margin-top:8px">使用区之间始终允许互相重叠；只有勾选上项时，家具实体进入该区才会判为非法。</p>
             <p class="schema-note" id="orientationHint" style="margin-top:4px"></p>
           </section>
@@ -174,7 +192,9 @@
           <section class="group">
             <h3>5 · 可变长度柜体</h3>
             <label class="check"><input id="runEnabled" name="runEnabled" type="checkbox" />允许沿剩余墙段连续变长</label>
-            <div class="grid three" id="runFields">
+            <details class="advanced-settings compact-advanced" id="runAdvancedSettings">
+              <summary><span>柜体长度高级设置</span><small>范围、步长与墙面数量预算</small></summary>
+            <div class="grid three advanced-grid" id="runFields">
               <div class="field"><label for="runMin">最小宽度 m</label><input id="runMin" name="runMin" type="number" min="0.1" max="8" step="0.01" /></div>
               <div class="field"><label for="runMax">最大宽度 m</label><input id="runMax" name="runMax" type="number" min="0.1" max="8" step="0.01" /></div>
               <div class="field"><label for="runStep">搜索步长 m</label><input id="runStep" name="runStep" type="number" min="0.01" max="1" step="0.01" /></div>
@@ -185,6 +205,7 @@
               <div class="field"><label for="runWallCountCap">最多统计墙面（面）</label><input id="runWallCountCap" name="runWallCountCap" type="number" min="1" max="12" step="1" /></div>
               <div class="field"><label for="runAreaPerCabinet">每增加一组所需面积 m²</label><input id="runAreaPerCabinet" name="runAreaPerCabinet" type="number" min="2" max="40" step="1" /></div>
             </div>
+            </details>
             <p class="schema-note" style="margin-top:8px">实际数量取“家具最多数量、可用墙面预算、面积预算”三者中的最小值；默认每面墙只放一组，避免同一面墙被重复切碎。</p>
           </section>
         </form>

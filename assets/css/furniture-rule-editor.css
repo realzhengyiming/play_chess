@@ -25,3 +25,27 @@
     .sample-metric span,.sample-rule-chip{font-size:10px}.sample-metric strong{font-size:15px}
     .room-plan-head p,.room-item small{font-size:12px}.room-item strong{font-size:14px}
     @media(max-width:1120px){.workspace{grid-template-columns:280px minmax(0,1fr)}}
+
+    /* 渐进式配置：常用字段直接可见，工程参数收进高级设置。 */
+    .grid{align-items:start}
+    .simple-section-intro{margin:-3px 0 12px;padding:10px 12px;border-left:3px solid var(--green);border-radius:0 10px 10px 0;background:#f2f7f4;color:var(--muted);font-size:12px;line-height:1.6}
+    .candidate-basic-grid{margin-bottom:12px}
+    .distance-editor{margin:2px 0 12px;padding:12px;border:1px solid rgba(18,108,92,.2);border-radius:13px;background:#f7fbf8}
+    .distance-editor-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px}
+    .distance-editor-head strong{color:var(--green);font-size:13px}.distance-editor-head span{color:var(--muted);font-size:11px}
+    .distance-input-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+    .distance-ruler{--range-start:0%;--range-end:0%;position:relative;height:30px;margin:10px 3px 0;border-bottom:2px solid #bdc8c2;background:repeating-linear-gradient(90deg,transparent 0,transparent calc(10% - 1px),rgba(18,108,92,.2) calc(10% - 1px),rgba(18,108,92,.2) 10%)}
+    .distance-ruler::after{content:"0m                                                 标尺";position:absolute;right:0;bottom:-19px;left:0;color:var(--muted);font-size:9px;white-space:pre;text-align:justify}
+    .distance-range{position:absolute;bottom:-2px;left:var(--range-start);width:max(3px,calc(var(--range-end) - var(--range-start)));height:7px;border-radius:5px;background:var(--accent)}
+    .distance-min-marker,.distance-max-marker{position:absolute;bottom:-5px;width:2px;height:15px;background:var(--accent)}
+    .distance-min-marker{left:var(--range-start)}.distance-max-marker{left:var(--range-end)}
+    .distance-ruler-label{margin-top:22px;color:var(--muted);font-size:11px;text-align:center}
+    .advanced-settings{margin-top:10px;border:1px solid var(--line);border-radius:13px;background:#fbfcfa;overflow:hidden}
+    .advanced-settings>summary{display:flex;align-items:center;gap:9px;padding:11px 13px;cursor:pointer;list-style:none;color:var(--green);font-size:13px;font-weight:800;user-select:none}
+    .advanced-settings>summary::-webkit-details-marker{display:none}.advanced-settings>summary::before{content:"＋";display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;background:#e7f3ee}
+    .advanced-settings[open]>summary::before{content:"−"}.advanced-settings>summary small{margin-left:auto;color:var(--muted);font-size:11px;font-weight:600}
+    .advanced-settings[open]>summary{border-bottom:1px solid var(--line)}.advanced-grid{padding:12px}.advanced-wide{grid-column:1/-1}
+    .compact-advanced{margin-top:10px}
+    .relation-only[hidden],.non-relation-only[hidden],.l-shape-only[hidden]{display:none!important}
+    @media(max-width:760px){.distance-input-grid{grid-template-columns:1fr 1fr 1fr}.distance-editor-head{align-items:flex-start;flex-direction:column}.advanced-settings>summary small{display:none}}
+    @media(max-width:470px){.distance-input-grid{grid-template-columns:1fr}}
