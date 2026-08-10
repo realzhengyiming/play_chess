@@ -4633,7 +4633,9 @@
     let beamHitTargets=[];
     let treeInspectNodeId=null;
     let beamVisualMode='board';
-    let beamExpansionMode='all';
+    // 搜索树默认只展开最终输出路径，避免几千个调试节点首次进入页面就全部绘制。
+    // 用户仍可通过“全部展开”查看完整 Beam 记录；该开关只影响可视化，不影响搜索计算。
+    let beamExpansionMode='focus';
     let beamExpandedNodes=new Set(['n0']);
     let beamFocusPath=new Set(['n0']);
     let beamOutputPath=new Set();
