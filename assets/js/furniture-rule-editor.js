@@ -160,8 +160,7 @@
     const ruleKey=rule=>`${rule.program}:${rule.id}`;
     const profileId=()=>`profile-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,7)}`;
     function normalizeProfile(row){
-      const rawCatalog=normalizeCatalog(row.catalog),upgradeIds=['bedroomLoveseat','bedroomTeaTable','bedroomDisplay'];
-      const upgrading=Number(row.baselineVersion||0)<BASELINE_VERSION;
+      const upgrading=Number(row.baselineVersion||0)<BASELINE_VERSION,rawCatalog=normalizeCatalog(row.catalog,{upgradeLegacy:upgrading}),upgradeIds=['bedroomLoveseat','bedroomTeaTable','bedroomDisplay'];
       if(upgrading)for(const id of upgradeIds){const base=defaults.find(rule=>rule.id===id);if(base&&!rawCatalog.some(rule=>rule.id===id))rawCatalog.push(normalizeRule(clone(base),rawCatalog.length))}
       const catalog=[...new Map(rawCatalog.map(rule=>[rule.id,rule])).values()],defaultsByRule=clone(row.defaultsByRule||{}),roomTypes=Array.isArray(row.roomTypes)?clone(row.roomTypes):clone(DEFAULT_ROOM_TYPES),roomAssignments=clone(row.roomAssignments||{}),roomSettings=clone(row.roomSettings||{}),hasAssignments=!!row.roomAssignments;
       for(const rule of rawCatalog)if(!['shared','library'].includes(rule.program)&&!roomTypes.some(type=>type.id===rule.program))roomTypes.push({id:rule.program,label:rule.program,engineEnabled:false});for(const base of DEFAULT_ROOM_TYPES)if(!roomTypes.some(type=>type.id===base.id))roomTypes.push(clone(base));
@@ -231,7 +230,7 @@
       return sides.map((side,index)=>normalizeCandidateEntry({...candidate,id:`candidate-${index+1}`,side,distance:candidate.distance||{min:Number(candidate.gap)||0,max:Number(candidate.gap)||0,step:.2}},index));
     }
 
-    function normalizeRule(rule,index=0){
+    function normalizeRule(rule,index=0,{upgradeLegacy=false}={}){
       const value=clone(rule),finite=(input,fallback)=>Number.isFinite(Number(input))?Number(input):fallback,min=Math.max(0,Math.round(finite(value.quantity?.min,0))),max=Math.max(min,Math.round(finite(value.quantity?.max,1)));
       const defaultCount=DEFAULT_COUNTS[value.program]?.[value.id]??min;
       value.quantity={min,max};value.preferences={defaultCount:Math.min(max,Math.max(min,Math.round(finite(value.preferences?.defaultCount,defaultCount)))),weight:Math.min(3,Math.max(0,finite(value.preferences?.weight,1))),priority:Math.max(1,Math.round(finite(value.preferences?.priority,(index+1)*10)))};
@@ -239,17 +238,18 @@
       const modulePresets=DEFAULT_MODULE_VARIANTS[`${value.program}:${value.id}`];if(modulePresets&&!Array.isArray(value.geometry.variants))value.geometry.variants=modulePresets.map((dims,moduleIndex)=>({id:`${value.id}-m${moduleIndex+1}`,label:`${value.label} ${moduleIndex+1}号`,width:dims[0],depth:dims[1],shape:'box'}));
       if(!Object.prototype.hasOwnProperty.call(value.geometry,'searchVariants'))value.geometry.searchVariants=DEFAULT_SEARCH_VARIANTS.has(`${value.program}:${value.id}`);
       if(Array.isArray(value.geometry.variants))value.geometry.variants=value.geometry.variants.filter(row=>row&&row.shape).map((row,index)=>({id:row.id||`${row.shape}-${index+1}`,label:row.label||row.id||row.shape,width:Math.max(.1,finite(row.width??row.w,value.geometry.width)),depth:Math.max(.1,finite(row.depth??row.d,value.geometry.depth)),shape:row.shape}));value.candidate={rules:candidateRulesFromCandidate(value.candidate||{}),maxCandidates:Math.min(72,Math.max(4,Math.round(Number(value.candidate?.maxCandidates)||32)))};value.placement={requiredAnchor:'none',avoidWindow:false,allowCorner:false,...value.placement};value.placement.allowCorner=!!value.placement.allowCorner;value.service={sharedCirculation:false,...(value.service||{label:'日常使用区',side:'front',depth:.42,spanExtra:0,hard:false,allowBodyTypes:[]})};
-      // 迁移旧配置：休闲椅不能只采样四个墙角，还要少量采样真正空闲的地面区域。
-      if(value.program==='bedroom'&&value.id==='lounge'){
+      // 下面都是旧版配置迁移，只能在 baselineVersion 落后时执行一次。
+      // 当前版本的用户 JSON 必须逐字段保留，不能在刷新/导入时再次塞回内置偏好。
+      if(upgradeLegacy&&value.program==='bedroom'&&value.id==='lounge'){
         if(!value.candidate.rules.some(entry=>entry.mode==='zone'))value.candidate.rules.push(normalizeCandidateEntry({id:'reading-open-zone',mode:'zone',rotations:[0,90],relation:'reading-open-zone',maxSamples:10,weight:1.18},value.candidate.rules.length));
         value.candidate.maxCandidates=Math.max(14,value.candidate.maxCandidates);
       }
-      if(value.program==='bedroom'&&value.id==='night')for(const entry of value.candidate.rules)if(entry.relativeTo==='bed'||entry.relation==='bed-side'){
+      if(upgradeLegacy&&value.program==='bedroom'&&value.id==='night')for(const entry of value.candidate.rules)if(entry.relativeTo==='bed'||entry.relation==='bed-side'){
         entry.crossAlign='back';entry.distance={min:0,max:0,step:.05};entry.collisionClearance=0;entry.allowFunctionalOverlap=true;entry.weight=Math.max(1.55,entry.weight||1);
       }
       // 旧配置只有“相对沙发的前/左/右”，没有区分 L 型沙发的贵妃侧与主坐面。
       // 在编辑器中补齐同一套缺省语义，用户打开旧规则时即可看到、修改并自动保存。
-      if(value.program==='living')for(const entry of value.candidate.rules){
+      if(upgradeLegacy&&value.program==='living')for(const entry of value.candidate.rules){
         const policy=lShapePolicy(entry,false);
         if(value.id==='coffee'&&entry.relativeTo==='sofa'&&entry.side==='front'&&policy.frontAlign==null)policy.frontAlign='main-seat';
         if(value.id==='tv'&&entry.relativeTo==='sofa'&&entry.side==='front')policy.frontAlign='body-center';
@@ -260,34 +260,31 @@
         if(value.id==='side'&&entry.relativeTo==='sofa'&&(entry.side==='left'||entry.side==='right')&&policy.lateralSide==null)policy.lateralSide='non-chaise';
         writeLShapePolicy(entry,{enabled:policy.enabled??true,lateralSide:policy.lateralSide||'any',frontAlign:policy.frontAlign||'bbox'});
       }
-      if(value.program==='living'&&value.id==='arm'){
+      if(upgradeLegacy&&value.program==='living'&&value.id==='arm'){
         value.candidate.rules=value.candidate.rules.filter(entry=>entry.side!=='outward');
         if(!value.candidate.rules.some(entry=>entry.relativeTo==='side'&&entry.side==='front'))value.candidate.rules.push(normalizeCandidateEntry({id:'arm-side-front',mode:'relation',relativeTo:'side',relation:'sofa-side-chair-chain',side:'front',distance:{min:.04,max:.16,step:.06},facing:['parallel'],maxSamples:10,weight:1.9,allowFunctionalOverlap:true,compoundConstraint:{ancestorRelativeTo:'sofa',side:'front',gap:.04}},value.candidate.rules.length));
         for(const entry of value.candidate.rules)if(entry.relativeTo==='side'&&entry.side==='front'){entry.allowFunctionalOverlap=true;entry.compoundConstraint={ancestorRelativeTo:'sofa',side:'front',gap:.04,...(entry.compoundConstraint||{})}}
       }
-      if(value.program==='bedroom'&&value.id==='tvbench'&&!value.candidate.rules.some(entry=>entry.relativeTo==='bedroomLoveseat'))value.candidate.rules.unshift(normalizeCandidateEntry({id:'tvbench-loveseat-facing',mode:'relation',relativeTo:'bedroomLoveseat',relation:'bedroom-media-facing',side:'front',distance:{min:1,max:2.8,step:.25},facing:['toward'],maxSamples:18,weight:1.55},0));
-      if(value.program==='bedroom'&&value.id==='tvbench'){for(const entry of value.candidate.rules){if(entry.relativeTo==='bedroomLoveseat'){entry.distance={...(entry.distance||{}),min:Math.min(1,Number(entry.distance?.min)||1)};writeLShapePolicy(entry,{enabled:true,lateralSide:'any',frontAlign:'body-center'})}if(entry.mode==='wall')entry.maxSamples=Math.max(40,Number(entry.maxSamples)||0)}value.candidate.maxCandidates=Math.max(56,value.candidate.maxCandidates||0)}
+      if(upgradeLegacy&&value.program==='bedroom'&&value.id==='tvbench'&&!value.candidate.rules.some(entry=>entry.relativeTo==='bedroomLoveseat'))value.candidate.rules.unshift(normalizeCandidateEntry({id:'tvbench-loveseat-facing',mode:'relation',relativeTo:'bedroomLoveseat',relation:'bedroom-media-facing',side:'front',distance:{min:1,max:2.8,step:.25},facing:['toward'],maxSamples:18,weight:1.55},0));
+      if(upgradeLegacy&&value.program==='bedroom'&&value.id==='tvbench'){for(const entry of value.candidate.rules){if(entry.relativeTo==='bedroomLoveseat'){entry.distance={...(entry.distance||{}),min:Math.min(1,Number(entry.distance?.min)||1)};writeLShapePolicy(entry,{enabled:true,lateralSide:'any',frontAlign:'body-center'})}if(entry.mode==='wall')entry.maxSamples=Math.max(40,Number(entry.maxSamples)||0)}value.candidate.maxCandidates=Math.max(56,value.candidate.maxCandidates||0)}
       for(const entry of value.candidate.rules)writeLShapePolicy(entry);
-      if(value.program==='bedroom'&&value.id==='desk'&&!value.geometry.variants?.length)value.geometry.variants=[
+      if(upgradeLegacy&&value.program==='bedroom'&&value.id==='desk'&&!value.geometry.variants?.length)value.geometry.variants=[
         {id:'desk-90',label:'书桌 0.9 m',width:.9,depth:.55,shape:'box'},
         {id:'desk-120',label:'书桌 1.2 m',width:1.2,depth:.55,shape:'box'},
         {id:'desk-140',label:'书桌 1.4 m',width:1.4,depth:.55,shape:'box'},
         {id:'desk-160',label:'书桌 1.6 m',width:1.6,depth:.55,shape:'box'}
       ];
-      if(value.program==='bedroom'&&value.id==='chair'&&value.service.label==='座椅后退区'&&Math.abs(finite(value.service.depth,.6)-.6)<1e-6){value.service.label='工作椅占位';value.service.depth=0;value.service.hard=false;value.service.spanExtra=0;}
+      if(upgradeLegacy&&value.program==='bedroom'&&value.id==='chair'&&value.service.label==='座椅后退区'&&Math.abs(finite(value.service.depth,.6)-.6)<1e-6){value.service.label='工作椅占位';value.service.depth=0;value.service.hard=false;value.service.spanExtra=0;}
       const cabinetUpgrade={wardrobe:['柜前取用区',.42],chest:['抽屉取用区',.48],shelf:['取物站立区',.42],tvbench:['设备取用区',.40],bedroomDisplay:['展示柜取用区',.42],bedroomInfillCabinet:['定制柜取用区',.45],sideboard:['柜前取用区',.50],bookcase:['取书站立区',.42],display:['展示柜取用区',.45],console:['窄柜取用区',.40],infillCabinet:['定制柜取用区',.45]}[value.id];
       const legacyWardrobe=value.id==='wardrobe'&&value.service.label==='柜门开启区'&&Math.abs(finite(value.service.depth,.42)-.42)<1e-6;
-      if(cabinetUpgrade&&value.service.hard!==false&&(legacyWardrobe||Math.abs(finite(value.service.depth,.6)-.6)<1e-6)){value.service.label=cabinetUpgrade[0];value.service.depth=cabinetUpgrade[1];value.service.hard=false;value.service.spanExtra=0;}
-      if(value.program==='bedroom'&&['desk','vanity'].includes(value.id))value.service.hard=false;
-      if(value.program==='bedroom'&&value.id==='bench'){
-        value.service.label='床尾凳共享落脚区';value.service.depth=.42;value.service.hard=false;value.service.spanExtra=0;value.service.allowBodyTypes=[];value.service.sharedCirculation=true;value.service.adaptiveFootZone=true;value.service.adaptiveGapThreshold=.30;
-        const desired=[candidateRule('bench-bed-foot-center','relation',{relativeTo:'bed',relation:'bed-foot',side:'front',crossAlign:'center',distance:{min:.10,max:.15,step:.05},facing:['toward'],maxSamples:4,allowFunctionalOverlap:true,weight:1.42}),candidateRule('bench-bed-foot-left','relation',{relativeTo:'bed',relation:'bed-foot',side:'front',crossAlign:'left',crossOffset:-.25,distance:{min:.08,max:.12,step:.04},facing:['toward'],maxSamples:4,allowFunctionalOverlap:true,weight:1.5}),candidateRule('bench-bed-foot-right','relation',{relativeTo:'bed',relation:'bed-foot',side:'front',crossAlign:'right',crossOffset:.25,distance:{min:.08,max:.12,step:.04},facing:['toward'],maxSamples:4,allowFunctionalOverlap:true,weight:1.5})];
-        value.candidate.rules=desired.map(normalizeCandidateEntry);value.candidate.maxCandidates=12;
-      }
+      if(upgradeLegacy&&cabinetUpgrade&&value.service.hard!==false&&(legacyWardrobe||Math.abs(finite(value.service.depth,.6)-.6)<1e-6)){value.service.label=cabinetUpgrade[0];value.service.depth=cabinetUpgrade[1];value.service.hard=false;value.service.spanExtra=0;}
+      if(upgradeLegacy&&value.program==='bedroom'&&['desk','vanity'].includes(value.id))value.service.hard=false;
+      // 默认床尾凳语义已经写在 defaults 中。这里不能再次强制覆盖，否则用户导出的
+      // service/candidate 改动会在刷新或重新导入时悄悄恢复成内置值。
       value.service.alignStart=!!value.service.alignStart;
       return value;
     }
-    function normalizeCatalog(rows){return rows.map(normalizeRule)}
+    function normalizeCatalog(rows,options){return rows.map((rule,index)=>normalizeRule(rule,index,options))}
     function compactRule(rule){
       const value=clone(rule);delete value.schemaVersion;
       value.candidate={rules:clone(value.candidate?.rules||[]),maxCandidates:value.candidate?.maxCandidates??32};
@@ -319,10 +316,10 @@
       }catch(error){serverReady=false;status.className='status error';status.textContent=`全局配置连接失败：${error.message}`;}
     }
     function scheduleGlobalSave(){
-      if(!serverReady)return;clearTimeout(remoteSaveTimer);remoteSaveTimer=setTimeout(async()=>{
-        try{const nextConfig=globalConfigPayload();globalThis.RoomChessConfigContract.assertGlobalConfig(nextConfig);localStorage.setItem(USER_GLOBAL_CONFIG_KEY,JSON.stringify(nextConfig));localStorage.setItem(ACTIVE_CONFIG_SOURCE_KEY,'user');status.className='status ok';status.textContent=`已保存到当前浏览器 ${new Date().toLocaleTimeString('zh-CN',{hour12:false})}`;}
-        catch(error){status.className='status error';status.textContent=`浏览器用户配置保存失败：${error.message}`;}
-      },320);
+      if(!serverReady)return false;
+      clearTimeout(remoteSaveTimer);
+      try{const nextConfig=globalConfigPayload();globalThis.RoomChessConfigContract.assertGlobalConfig(nextConfig);localStorage.setItem(USER_GLOBAL_CONFIG_KEY,JSON.stringify(nextConfig));localStorage.setItem(ACTIVE_CONFIG_SOURCE_KEY,'user');status.className='status ok';status.textContent=`已保存到当前浏览器 ${new Date().toLocaleTimeString('zh-CN',{hour12:false})}`;return true;}
+      catch(error){status.className='status error';status.textContent=`浏览器用户配置保存失败：${error.message}`;return false;}
     }
     function persist({remote=true}={}){
       const profile=profiles.find(row=>row.id===activeProfileId);if(profile){profile.catalog=clone(catalog);profile.updatedAt=new Date().toISOString()}
@@ -618,7 +615,13 @@
     function restoreCurrentRuleDefault(){
       clearTimeout(autoSaveTimer);const current=active();if(!current)return;if(pendingDefaultKeys.has(ruleKey(current))||!defaultForRule(current))finalizeRuleDefault(current);const baseline=defaultForRule(current);if(!baseline)return;if(!confirm(`将“${current.label}”恢复为第一次创建时的默认配置？`))return;const index=catalog.indexOf(current);catalog[index]=clone(baseline);selectedId=baseline.id;persist();setForm(catalog[index]);renderList();$('autoSaveKicker').textContent='已恢复默认并保存';status.className='status ok';status.textContent='已恢复当前家具的独立默认配置，并自动应用。';
     }
-    function exportCatalog(){const current=currentProfile(),payload={...globalConfigPayload(current),exportedAt:new Date().toISOString()},blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`room-chess-${(current?.name||'furniture-rules').replace(/[\\/:*?"<>|]/g,'-')}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),0)}
+    function exportCatalog(){
+      // 导出是一次显式提交：即使用户刚输入、0.5 秒自动保存尚未触发，也必须把
+      // 当前表单完整写入 catalog/localStorage 后再生成 JSON。
+      clearTimeout(autoSaveTimer);if(!save({automatic:true,silent:true}))return;
+      const current=currentProfile(),payload={...globalConfigPayload(current),exportedAt:new Date().toISOString()};globalThis.RoomChessConfigContract.assertGlobalConfig(payload);
+      const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`room-chess-${(current?.name||'furniture-rules').replace(/[\\/:*?"<>|]/g,'-')}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),0);status.className='status ok';status.textContent='当前表单已提交，并导出完整用户配置。';
+    }
     function importCatalog(file){const reader=new FileReader();reader.onload=()=>{try{const parsed=JSON.parse(reader.result);globalThis.RoomChessConfigContract.assertGlobalConfig(parsed);applyGlobalConfigPayload(parsed);selectedId=catalog[0]?.id||null;activeRoomTypeId='bedroom';persist();renderList();setForm(active());renderGlobalConstraints();status.className='status ok';status.textContent='已导入完整用户配置并保存到当前浏览器；服务器全局配置未改变。';}catch(error){status.className='status error';status.textContent=`导入失败：${error.message}`}};reader.readAsText(file)}
 
     form.addEventListener('submit',event=>{event.preventDefault();clearTimeout(autoSaveTimer);save({automatic:true})});
