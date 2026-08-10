@@ -18,11 +18,13 @@ unsafePassage.layoutConstraints.circulation.levels.find(row=>row.id===unsafePass
 expectError('0.40m 硬通路',unsafePassage,/0\.50m/);
 
 const brokenReference=clone(read('current'));
-brokenReference.furnitureRules.find(row=>row.id==='coffee').candidate.rules[0].relativeTo='missingSofa';
+delete brokenReference.furnitureRules;
+brokenReference.furnitureLibrary.find(row=>row.id==='coffee').candidate.rules[0].relativeTo='missingSofa';
 expectError('家具关系悬空引用',brokenReference,/missingSofa.*未引用/);
 
 const invalidQuantity=clone(read('current'));
-invalidQuantity.furnitureRules.find(row=>row.id==='night').preferences.defaultCount=99;
+delete invalidQuantity.furnitureRules;
+invalidQuantity.roomSettings.bedroom.night.defaultCount=99;
 expectError('默认数量越界',invalidQuantity,/defaultCount.*min\/max/);
 
 const missingPolicy=clone(read('current'));
@@ -42,7 +44,15 @@ invalidActivityZone.layoutConstraints.layoutIntelligence.activityZones.bedroom.s
 expectError('中央活动区缺少尺寸配置',invalidActivityZone,/activityZones\.bedroom\.sizeTiers.*非空数组/);
 
 const invalidSharedPassage=clone(read('current'));
-invalidSharedPassage.furnitureRules.find(row=>row.id==='sideboard').service.blocksFurniture='yes';
+delete invalidSharedPassage.furnitureRules;
+invalidSharedPassage.furnitureLibrary.find(row=>row.id==='sideboard').service.blocksFurniture='yes';
 expectError('共享通行区实体阻挡标记错误',invalidSharedPassage,/blocksFurniture.*布尔值/);
+
+const canonical=clone(read('default'));
+delete canonical.furnitureRules;
+contract.assertGlobalConfig(canonical);
+if(!contract.compileFurnitureRules(canonical).length)throw new Error('精简配置无法运行时编译');
+const bed=canonical.furnitureLibrary.find(row=>row.id==='bed');
+if(!Array.isArray(bed?.geometry?.variants)||bed.geometry.variants.length<3)throw new Error('多尺寸 variants 未保留');
 
 console.log('PASS: current/default 配置有效；不安全通路、悬空引用、数量越界和缺失策略均被拒绝');

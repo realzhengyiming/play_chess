@@ -9,6 +9,30 @@
   const isObject=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
   const finite=value=>Number.isFinite(Number(value));
   const at=(value,path)=>path.split('.').reduce((current,key)=>current?.[key],value);
+  const clone=value=>JSON.parse(JSON.stringify(value));
+
+  // Canonical configuration stores each furniture definition once. Room-specific
+  // quantity and ordering are expanded only when the engine/validator needs them.
+  function compileFurnitureRules(config){
+    const library=Array.isArray(config?.furnitureLibrary)?config.furnitureLibrary:[];
+    const byId=new Map(library.filter(row=>row?.id).map(row=>[row.id,row]));
+    const roomTypes=Array.isArray(config?.roomTypes)?config.roomTypes:[];
+    const result=[];
+    for(const room of roomTypes){
+      const program=String(room?.id||'');
+      if(!program||room?.engineEnabled===false)continue;
+      const ids=Array.isArray(config?.roomAssignments?.[program])?config.roomAssignments[program]:[];
+      ids.forEach((id,index)=>{
+        const source=byId.get(id);if(!source)return;
+        const rule=clone(source),setting=config?.roomSettings?.[program]?.[id]||{};
+        rule.program=program;
+        rule.quantity={min:setting.min??rule.quantity?.min??0,max:setting.max??rule.quantity?.max??1};
+        rule.preferences={...(rule.preferences||{}),defaultCount:setting.defaultCount??rule.preferences?.defaultCount??rule.quantity.min,weight:setting.weight??rule.preferences?.weight??1,priority:setting.priority??rule.preferences?.priority??(index+1)*10};
+        result.push(rule);
+      });
+    }
+    return result;
+  }
 
   function validateGlobalConfig(config){
     const errors=[];
@@ -128,10 +152,13 @@
       else if(libraryIds.has(id))errors.push(`furnitureLibrary id 重复：${id}`);else libraryIds.add(id);
     }
 
-    const rules=requireArray('furnitureRules',{nonEmpty:true});
+    // furnitureRules was a fully duplicated compatibility cache before schema v9.
+    // Accept it on import, but canonical v9 documents derive it from the library.
+    const rules=Array.isArray(config.furnitureRules)&&config.furnitureRules.length?config.furnitureRules:compileFurnitureRules(config);
+    if(!rules.length)errors.push('无法由 furnitureLibrary / roomAssignments 编译家具规则');
     const ruleIdsByProgram=Object.fromEntries(PROGRAM_IDS.map(id=>[id,new Set()]));
     for(const [index,rule] of rules.entries()){
-      const prefix=`furnitureRules[${index}]`,id=String(rule?.id||'').trim(),program=String(rule?.program||'');
+      const prefix=`compiledRules[${index}]`,id=String(rule?.id||'').trim(),program=String(rule?.program||'');
       if(!PROGRAM_IDS.includes(program))errors.push(`${prefix}.program 必须是 bedroom 或 living`);
       if(!id)errors.push(`${prefix} 缺少 id`);
       else if(ruleIdsByProgram[program]?.has(id))errors.push(`${program} 家具规则 id 重复：${id}`);else ruleIdsByProgram[program]?.add(id);
@@ -182,5 +209,5 @@
     return true;
   }
 
-  return {PROGRAM_IDS:[...PROGRAM_IDS],validateGlobalConfig,assertGlobalConfig};
+  return {PROGRAM_IDS:[...PROGRAM_IDS],compileFurnitureRules,validateGlobalConfig,assertGlobalConfig};
 });

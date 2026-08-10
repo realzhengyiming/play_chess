@@ -84,7 +84,7 @@
       </aside>
 
       <section class="panel">
-        <div class="panel-head"><h2>规则字段</h2><span class="kicker" id="autoSaveKicker">修改后自动保存</span></div>
+        <div class="panel-head"><div><h2>规则字段</h2><strong class="editing-rule-title" id="editingRuleTitle">当前编辑家具</strong></div><span class="kicker" id="autoSaveKicker">修改后自动保存</span></div>
         <form class="panel-body editor" id="ruleForm">
           <section class="group">
             <h3>1 · 家具身份、尺寸与数量</h3>
@@ -97,16 +97,18 @@
               <div class="field"><label for="ruleColor">显示颜色</label><input id="ruleColor" name="color" type="color" /></div>
             </div>
             <div class="grid three" style="margin-top:10px">
-              <div class="field"><label for="width">宽度 m</label><input id="width" name="width" type="number" min="0.1" max="8" step="0.01" /></div>
-              <div class="field"><label for="depth">深度 m</label><input id="depth" name="depth" type="number" min="0.1" max="5" step="0.01" /></div>
-              <div class="field"><label for="shape">实体形状</label><select id="shape" name="shape"><option value="box">Box</option><option value="l-left">左贵妃 L 形</option><option value="l-right">右贵妃 L 形</option></select></div>
-              <div class="field"><span>主页允许搜索的形状变体</span><div class="compact-checks" id="shapeVariants"><label><input type="checkbox" value="box" />普通矩形</label><label><input type="checkbox" value="l-left" />左贵妃 L</label><label><input type="checkbox" value="l-right" />右贵妃 L</label></div></div>
-              <div class="field"><label for="lVariantWidth">L 型总宽 m</label><input id="lVariantWidth" type="number" min="1" max="6" step="0.05" /></div>
-              <div class="field"><label for="lVariantDepth">L 型总深 m</label><input id="lVariantDepth" type="number" min="0.8" max="4" step="0.05" /></div>
+              <div class="field"><label for="width">基础宽度 m</label><input id="width" name="width" type="number" min="0.1" max="8" step="0.01" /></div>
+              <div class="field"><label for="depth">基础深度 m</label><input id="depth" name="depth" type="number" min="0.1" max="5" step="0.01" /></div>
+              <div class="field"><label for="shape">基础形状</label><select id="shape" name="shape"><option value="box">普通矩形</option><option value="l-left">左贵妃 L 形</option><option value="l-right">右贵妃 L 形</option></select></div>
               <div class="field room-only-editor"><label for="minCount">最少数量</label><input id="minCount" name="minCount" type="number" min="0" max="20" step="1" /></div>
               <div class="field room-only-editor"><label for="maxCount">最多数量</label><input id="maxCount" name="maxCount" type="number" min="0" max="20" step="1" /></div>
               <div class="field room-only-editor"><label for="defaultCount">默认数量 / 搜索上限</label><input id="defaultCount" name="defaultCount" type="number" min="0" max="20" step="1" /></div>
               <label class="check"><input id="accessTarget" name="accessTarget" type="checkbox" />入口必须可达</label>
+            </div>
+            <div class="variant-editor">
+              <div class="variant-editor-head"><div><strong>可搜索尺寸清单</strong><p>JSON 的 geometry.variants 会逐条完整保留；每行就是主页可尝试的一种真实尺寸。</p></div><div><label class="check"><input id="searchVariants" type="checkbox" />主页搜索这些尺寸</label><button class="btn" id="addGeometryVariantBtn" type="button">＋ 添加尺寸</button></div></div>
+              <div class="variant-table-head"><span>名称</span><span>宽 m</span><span>深 m</span><span>形状</span><span>操作</span></div>
+              <div id="geometryVariantList"></div>
             </div>
           </section>
 

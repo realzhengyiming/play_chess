@@ -146,7 +146,7 @@
       globalThis.RoomChessConfigContract.assertGlobalConfig(config);
       if(!applyDesignQualityRules(config.designQualityRules))throw new Error('缺少 designQualityRules');
       applyLayoutConstraints(config.layoutConstraints);
-      const catalog=config.furnitureRules||config.furnitureLibrary;
+      const catalog=globalThis.RoomChessConfigContract.compileFurnitureRules(config);
       if(!applyFurnitureCatalog(catalog))throw new Error('家具配置为空');
       refreshFurniture();
       return true;

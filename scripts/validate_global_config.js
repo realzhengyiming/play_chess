@@ -13,5 +13,5 @@ if(errors.length){
   process.stderr.write(errors.join('\n'));
   process.exitCode=2;
 }else{
-  process.stdout.write(JSON.stringify({ok:true,schemaVersion:config.schemaVersion,furnitureRules:config.furnitureRules.length}));
+  process.stdout.write(JSON.stringify({ok:true,schemaVersion:config.schemaVersion,furnitureRules:contract.compileFurnitureRules(config).length}));
 }

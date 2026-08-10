@@ -14,12 +14,21 @@ new Function(scriptSource)();
 
 setTimeout(() => {
   const config = globalThis.FurnitureConfigBaseline;
-  if (!config?.furnitureLibrary?.length || !config?.furnitureRules?.length) throw new Error('默认配置编译失败');
+  if (!config?.furnitureLibrary?.length || !config?.roomAssignments || !config?.roomSettings) throw new Error('默认配置编译失败');
+  const existingFile=path.join(root,'server_config','furniture-config-default.json');
+  if(fs.existsSync(existingFile)){
+    const existing=JSON.parse(fs.readFileSync(existingFile,'utf8'));
+    // The editor owns furniture defaults; the server baseline remains the source
+    // of truth for the much larger global scoring/search policy document.
+    config.designQualityRules=existing.designQualityRules;
+    config.layoutConstraints=existing.layoutConstraints;
+  }
   globalThis.RoomChessConfigContract.assertGlobalConfig(config);
   const directory = path.join(root, 'server_config');
   fs.mkdirSync(directory, {recursive:true});
   const payload = `${JSON.stringify(config, null, 2)}\n`;
   fs.writeFileSync(path.join(directory, 'furniture-config-default.json'), payload, 'utf8');
   if (process.argv.includes('--activate')) fs.writeFileSync(path.join(directory, 'furniture-config-current.json'), payload, 'utf8');
-  console.log(`已导出 FastAPI 基础默认配置 v${config.baselineVersion}：${config.furnitureLibrary.length} 个家具定义，${config.furnitureRules.length} 条房间规则`);
+  const compiled=globalThis.RoomChessConfigContract.compileFurnitureRules(config);
+  console.log(`已导出 FastAPI 基础默认配置 v${config.baselineVersion}：${config.furnitureLibrary.length} 个家具定义，运行时编译 ${compiled.length} 条房间规则`);
 }, 0);
