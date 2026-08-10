@@ -115,6 +115,7 @@
       background: #edf0eb;
     }
     .baseline-config-badge { display:inline-flex; align-items:center; min-height:40px; padding:0 13px; border:1px solid #bbb5ed; border-radius:12px; color:#5142b6; background:#f1efff; font-size:12px; font-weight:850; white-space:nowrap; }
+    .config-source-control{display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:0 9px 0 12px;border:1px solid #bbb5ed;border-radius:12px;color:#5142b6;background:#f1efff;font-size:12px;font-weight:850;white-space:nowrap}.config-source-control select{height:30px;padding:0 7px;border:1px solid rgba(81,66,182,.24);border-radius:8px;color:#403697;background:#fff;font-weight:850}.config-source-control select:disabled{opacity:.55}
 
     .shape-tab, .program-tab, .density-tab, .config-run-tab, .ghost-btn, .icon-btn, .solution-card {
       border: 0;

@@ -16,24 +16,24 @@
         <button class="btn" id="duplicateBtn" type="button">复制家具</button>
         <label class="btn" for="importFile">导入 JSON</label><input class="hidden" id="importFile" type="file" accept="application/json,.json" />
         <button class="btn green" id="exportBtn" type="button">导出规则库</button>
-        <button class="btn" id="restoreDefaultsBtn" type="button">恢复基础配置</button>
+        <button class="btn" id="restoreDefaultsBtn" type="button">恢复为全局配置</button>
       </div>
     </header>
 
-    <section class="profile-bar" aria-label="FastAPI 全局配置">
-      <strong>FastAPI 全局配置</strong>
+    <section class="profile-bar" aria-label="浏览器用户配置">
+      <strong>浏览器用户配置</strong>
       <select id="profileSelect" aria-label="切换配置档案"></select>
       <button class="btn primary hidden" id="newProfileBtn" type="button">新建空白档案</button>
       <button class="btn hidden" id="copyProfileBtn" type="button">复制当前档案</button>
       <button class="btn danger hidden" id="deleteProfileBtn" type="button">删除档案</button>
-      <span class="profile-note">全局只保留一个当前版本 · 修改自动覆盖服务端配置</span>
+      <span class="profile-note">修改只保存在当前浏览器 · 不会覆盖服务器全局配置</span>
     </section>
 
     <nav class="config-mode-bar" aria-label="配置板块切换">
       <button class="config-mode-btn active" id="libraryModeBtn" type="button">① 家具物品库</button>
       <button class="config-mode-btn" id="roomModeBtn" type="button">② 房间落子清单</button>
       <button class="config-mode-btn" id="constraintsModeBtn" type="button">③ 全局约束</button>
-      <span class="config-mode-note">唯一配置源：家具、房间清单、全局约束</span>
+      <span class="config-mode-note">用户实验副本：家具、房间清单、全局约束</span>
     </nav>
 
     <section class="room-type-bar" aria-label="房间类型配置">

@@ -78,10 +78,12 @@
     // 这里只保存运行态容器；尺寸、数量和家具类型必须由服务端当前配置填入。
     const CONFIGS = {bedroom:{dimensions:{},counts:{}},living:{dimensions:{},counts:{}}};
     const DEFAULT_CONFIGS=JSON.parse(JSON.stringify(CONFIGS));
-    // 浏览器不再持久化配置；家具规则统一从 FastAPI 的单例全局配置读取。
+    // 本次选量与完整用户规则分开保存，避免两种 JSON 互相覆盖。
     const ENABLE_LOCAL_CONFIG_PERSISTENCE=false;
     const GLOBAL_CONFIG_API='/api/furniture-config';
-    let serverConfigProfiles={current:null};
+    const USER_GLOBAL_CONFIG_KEY='room-chess-user-global-config-v1';
+    const ACTIVE_CONFIG_SOURCE_KEY='room-chess-active-config-source-v1';
+    let serverConfigProfiles={global:null,user:null};
     const LOCAL_CONFIG_KEY='room-chess-user-config-v1';
 
     // 离散“可变棋”规格库。自动模式会把规格和坐标、方向放在同一次搜索中；
@@ -209,13 +211,18 @@
       try{
         const response=await fetch(GLOBAL_CONFIG_API,{cache:'no-store'});if(response.status===404)return false;
         const payload=await response.json();if(!response.ok)throw new Error(payload.detail||`HTTP ${response.status}`);
-        serverConfigProfiles={current:payload.config};
-        return applyServerConfigProfile('current');
+        serverConfigProfiles={global:payload.config,user:null};
+        try{const stored=localStorage.getItem(USER_GLOBAL_CONFIG_KEY);if(stored){const user=JSON.parse(stored);globalThis.RoomChessConfigContract.assertGlobalConfig(user);serverConfigProfiles.user=user}}catch(error){console.warn('浏览器用户配置无效，已忽略：',error);localStorage.removeItem(USER_GLOBAL_CONFIG_KEY);}
+        const preferred=localStorage.getItem(ACTIVE_CONFIG_SOURCE_KEY)==='user'&&serverConfigProfiles.user?'user':'global';activeConfigProfile=preferred;localStorage.setItem(ACTIVE_CONFIG_SOURCE_KEY,preferred);
+        return applyServerConfigProfile(preferred);
       }catch(error){console.error('全局配置读取失败：',error);return false;}
     }
     function applyServerConfigProfile(profileId){
-      const config=serverConfigProfiles.current;
+      const config=serverConfigProfiles[profileId]||serverConfigProfiles.global;
       return config?applyGlobalConfig(config):false;
+    }
+    function updateConfigSourceControl(){
+      if(!ui?.configSource)return;const userOption=ui.configSource.querySelector('option[value="user"]');if(userOption)userOption.disabled=!serverConfigProfiles.user;ui.configSource.value=activeConfigProfile;ui.configSaveStatus.textContent=activeConfigProfile==='user'?'当前使用：此浏览器的用户配置':'当前使用：服务器全局配置';
     }
     // 家具关系使用自己的接缝与碰撞净距，不被通用 25 mm 安全距推开。
     // 栅格仍只做 broad phase；是否允许贴合由毫米/浮点几何在 narrow phase 决定。
@@ -4457,7 +4464,7 @@
       autoInventory:document.getElementById('autoInventory'),
       customCabinet:document.getElementById('customCabinetEnabled'),
       exportConfig:document.getElementById('exportConfigBtn'),importConfig:document.getElementById('importConfigBtn'),resetConfig:document.getElementById('resetConfigBtn'),
-      importConfigFile:document.getElementById('importConfigFile'),configSaveStatus:document.getElementById('configSaveStatus'),
+      importConfigFile:document.getElementById('importConfigFile'),configSaveStatus:document.getElementById('configSaveStatus'),configSource:document.getElementById('configSourceSelect'),
       nodes:document.getElementById('metricNodes'), time:document.getElementById('metricTime'),
       us:document.getElementById('metricUs'), depthMetric:document.getElementById('metricDepth'), score:document.getElementById('metricScore'),
       furnitureConfig:document.getElementById('furnitureConfig'), furnitureList:document.getElementById('furnitureList'), scoreList:document.getElementById('scoreList'),
@@ -4552,7 +4559,7 @@
     let beamSuppressClick=false;
     let beamNeedsCenter=true;
     let lSofaDemoPending=false;
-    let configRunMode='current',activeConfigProfile='current',comparisonRuns={};
+    let configRunMode='single',activeConfigProfile='global',comparisonRuns={};
 
     function activateSolutionInventory(solution) {
       if (!solution?.inventoryConfig) return;
@@ -5474,7 +5481,7 @@
     }
 
     function comparisonButtonMarkup(profileId,run,buttonClass='config-compare-btn'){
-      const label='当前全局配置',solution=run?.result?.solutions?.[0],placed=solution?Object.keys(solution.poses||{}).length:0,total=solution?.evaluation?.total?.toFixed(1)??'无方案',ground=solution?.evaluation?.scores?.ground??'-',wall=solution?.evaluation?.scores?.storage??'-';
+      const label=profileId==='user'?'用户配置':'全局配置',solution=run?.result?.solutions?.[0],placed=solution?Object.keys(solution.poses||{}).length:0,total=solution?.evaluation?.total?.toFixed(1)??'无方案',ground=solution?.evaluation?.scores?.ground??'-',wall=solution?.evaluation?.scores?.storage??'-';
       return `<button class="${buttonClass} ${activeConfigProfile===profileId?'active':''}" type="button" data-config-profile="${profileId}"><strong>${label}</strong><span>${placed} 件 · 总分 ${total} · 地面 ${ground} · 墙面 ${wall}</span></button>`;
     }
     function renderConfigComparisonSwitches(){
@@ -5486,15 +5493,15 @@
     function activateComparisonRun(profileId){
       const run=comparisonRuns[profileId];if(!run)return;applyServerConfigProfile(profileId);setProgram(currentProgram);scene=run.scene;result=run.result;activeConfigProfile=profileId;activeSolution=0;
       if(result.solutions.length)activateSolutionInventory(result.solutions[0]);setupStaticUI();ui.multiplierOutput.textContent=`${scene.areaMultiplier.toFixed(2)}×`;ui.liveRoomArea.textContent=`${scene.area.toFixed(2)} m²`;ui.roomArea.textContent=`${scene.area.toFixed(2)} m² · ${scene.width.toFixed(2)}×${scene.depth.toFixed(2)} m · ${scene.compiledAnchors.length} 锚点`;ui.nodes.textContent=result.stats.nodes.toLocaleString();ui.time.textContent=result.stats.timeMs<10?`${result.stats.timeMs.toFixed(2)} ms`:`${result.stats.timeMs.toFixed(1)} ms`;ui.us.textContent=`${result.stats.avgUs.toFixed(2)} μs`;
-      if(!result.solutions.length){activeState={poses:{}};updateScores(null);ui.boardStatus.textContent='当前全局配置没有通过质量门槛的方案';renderSolutions();renderTrace();renderConfigComparisonSwitches();resizeAndDraw();renderBeamTree();return}
-      const trace=activePlanTrace();traceIndex=0;activeState=trace[0];ui.depthMetric.textContent=`${trace.length-1} / ${FURNITURE.length}`;beamRoundIndex=1;treeInspectNodeId=null;resetBeamBoardView();const solution=result.solutions[0];ui.boardStatus.textContent=`正在查看当前全局配置 · ${solution.evaluation.qualityPass?'已验收':'待优化'} · ${Object.keys(solution.poses||{}).length} 件 · 总分 ${solution.evaluation.total.toFixed(1)} · 地面 ${solution.evaluation.scores.ground} · 墙面 ${solution.evaluation.scores.storage}`;renderSolutions();renderTrace();showTraceStep(lSofaDemoPending?1:0);renderConfigComparisonSwitches();renderBeamTree();
+      const sourceLabel=profileId==='user'?'用户配置':'全局配置';if(!result.solutions.length){activeState={poses:{}};updateScores(null);ui.boardStatus.textContent=`${sourceLabel}没有通过质量门槛的方案`;renderSolutions();renderTrace();renderConfigComparisonSwitches();resizeAndDraw();renderBeamTree();return}
+      const trace=activePlanTrace();traceIndex=0;activeState=trace[0];ui.depthMetric.textContent=`${trace.length-1} / ${FURNITURE.length}`;beamRoundIndex=1;treeInspectNodeId=null;resetBeamBoardView();const solution=result.solutions[0];ui.boardStatus.textContent=`正在查看${sourceLabel} · ${solution.evaluation.qualityPass?'已验收':'待优化'} · ${Object.keys(solution.poses||{}).length} 件 · 总分 ${solution.evaluation.total.toFixed(1)} · 地面 ${solution.evaluation.scores.ground} · 墙面 ${solution.evaluation.scores.storage}`;renderSolutions();renderTrace();showTraceStep(lSofaDemoPending?1:0);renderConfigComparisonSwitches();renderBeamTree();
     }
 
     function performSearch() {
-      stopPlay();ui.generate.disabled=true;comparisonRuns={};const runIds=['current'];ui.boardStatus.textContent=`正在执行当前全局配置的${DENSITY_MODES[layoutDensityMode].label}布置…`;
+      stopPlay();ui.generate.disabled=true;comparisonRuns={};const sourceId=activeConfigProfile,runIds=[sourceId],sourceLabel=sourceId==='user'?'用户配置':'全局配置';ui.boardStatus.textContent=`正在执行${sourceLabel}的${DENSITY_MODES[layoutDensityMode].label}布置…`;
       const runSearch=()=>setTimeout(()=>{
         for(const profileId of runIds)comparisonRuns[profileId]=runSearchWithConfigProfile(profileId);
-        ui.generate.disabled=false;activateComparisonRun('current');
+        ui.generate.disabled=false;activateComparisonRun(sourceId);
         if(lSofaDemoPending){ui.boardStatus.textContent='L 形沙发已落子 · 茶几对齐主坐面，边几与单人沙发只在非贵妃侧';lSofaDemoPending=false;}
       },30);
       if(document.visibilityState==='hidden')runSearch();else requestAnimationFrame(runSearch);
@@ -5717,27 +5724,21 @@
     ui.autoInventory.addEventListener('change',()=>{setVariableSizeSearch(ui.autoInventory.checked);saveConfigToBrowser();setupStaticUI();compileCurrentScene(true);});
     ui.customCabinet.addEventListener('change',()=>{setCustomCabinetEnabled(ui.customCabinet.checked);saveConfigToBrowser(customCabinetEnabled?'已开启大模数定制柜':'已关闭定制柜生成');setupStaticUI();compileCurrentScene(true);});
     ui.exportConfig.addEventListener('click',()=>{
-      const blob=new Blob([JSON.stringify(currentConfigBundle(),null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');
-      link.href=url;link.download=`空间棋配置-${new Date().toISOString().slice(0,10)}.json`;link.click();setTimeout(()=>URL.revokeObjectURL(url),0);ui.configSaveStatus.textContent='配置 JSON 已导出';
+      const config=serverConfigProfiles[activeConfigProfile]||serverConfigProfiles.global;if(!config)return;const blob=new Blob([JSON.stringify(config,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');
+      link.href=url;link.download=`空间棋-${activeConfigProfile==='user'?'用户':'全局'}配置-${new Date().toISOString().slice(0,10)}.json`;link.click();setTimeout(()=>URL.revokeObjectURL(url),0);ui.configSaveStatus.textContent='完整规则 JSON 已导出';
     });
     ui.importConfig.addEventListener('click',()=>{ui.importConfigFile.value='';ui.importConfigFile.click();});
     ui.importConfigFile.addEventListener('change',async()=>{
       const file=ui.importConfigFile.files?.[0];if(!file)return;
-      try{applyUserConfig(JSON.parse(await file.text()));ui.configSaveStatus.textContent=`已加载：${file.name}`;}
+      try{const parsed=JSON.parse(await file.text());globalThis.RoomChessConfigContract.assertGlobalConfig(parsed);localStorage.setItem(USER_GLOBAL_CONFIG_KEY,JSON.stringify(parsed));localStorage.setItem(ACTIVE_CONFIG_SOURCE_KEY,'user');serverConfigProfiles.user=parsed;activeConfigProfile='user';applyServerConfigProfile('user');setProgram(currentProgram);updateConfigSourceControl();setupStaticUI();compileCurrentScene(true);ui.configSaveStatus.textContent=`已导入并启用用户配置：${file.name}`;}
       catch(error){ui.configSaveStatus.textContent=`配置加载失败：${error.message}`;}
     });
     ui.resetConfig.addEventListener('click',()=>{
-      if(!confirm('清除当前浏览器中的旧家具目录、配置档案和空间棋参数，并重新载入代码内置的最新默认配置？'))return;
-      [
-        LOCAL_CONFIG_KEY,
-        FURNITURE_CATALOG_KEY,
-        'room-chess-furniture-rule-profiles-v1',
-        'room-chess-furniture-rule-active-profile-v1'
-      ].forEach(key=>localStorage.removeItem(key));
-      // 旧目录是在脚本启动阶段编译进 PROGRAMS/FURNITURE_RULES 的，单纯修改表单无法撤销；
-      // 必须重新载入，让页面从源代码中的最新规则重新构建整个棋子库。
-      location.reload();
+      if(!serverConfigProfiles.user){ui.configSaveStatus.textContent='当前浏览器没有用户配置';return}if(!confirm('删除这个浏览器的用户配置并切换回服务器全局配置？'))return;
+      localStorage.removeItem(USER_GLOBAL_CONFIG_KEY);localStorage.setItem(ACTIVE_CONFIG_SOURCE_KEY,'global');serverConfigProfiles.user=null;activeConfigProfile='global';applyServerConfigProfile('global');setProgram(currentProgram);updateConfigSourceControl();setupStaticUI();compileCurrentScene(true);
     });
+    ui.configSource.addEventListener('change',()=>{const source=ui.configSource.value;if(source==='user'&&!serverConfigProfiles.user){updateConfigSourceControl();return}activeConfigProfile=source;localStorage.setItem(ACTIVE_CONFIG_SOURCE_KEY,source);applyServerConfigProfile(source);setProgram(currentProgram);updateConfigSourceControl();setupStaticUI();compileCurrentScene(true);});
+    window.addEventListener('storage',event=>{if(event.key!==USER_GLOBAL_CONFIG_KEY)return;try{serverConfigProfiles.user=event.newValue?JSON.parse(event.newValue):null;if(serverConfigProfiles.user)globalThis.RoomChessConfigContract.assertGlobalConfig(serverConfigProfiles.user);if(activeConfigProfile==='user'&&!serverConfigProfiles.user)activeConfigProfile='global';if(activeConfigProfile==='user'){applyServerConfigProfile('user');setProgram(currentProgram);setupStaticUI();compileCurrentScene(true)}updateConfigSourceControl();}catch(error){serverConfigProfiles.user=null;activeConfigProfile='global';localStorage.setItem(ACTIVE_CONFIG_SOURCE_KEY,'global');applyServerConfigProfile('global');updateConfigSourceControl();ui.configSaveStatus.textContent=`用户配置更新无效：${error.message}`;}});
     ui.multiplier.addEventListener('input',updateDimensionsLive);
     ui.generate.addEventListener('click',performSearch);
     ui.reset.addEventListener('click',()=>compileCurrentScene(false));
@@ -5833,7 +5834,7 @@
     window.addEventListener('resize',()=>{resizeAndDraw();renderBeamTree();drawFloorplanPreview();});
 
     const serverCatalogLoaded=await loadFurnitureCatalogFromServer();
-    if(serverCatalogLoaded){ui.configSaveStatus.textContent='当前全局配置已生效（唯一规则源）';}
+    if(serverCatalogLoaded){updateConfigSourceControl();}
     else{
       ui.configSaveStatus.textContent='全局配置无效或服务未启动，已停止排布';
       ui.boardStatus.textContent='请通过 python floorplan_api.py 启动，并检查 /api/furniture-config';
