@@ -85,6 +85,7 @@ setTimeout(() => {
       const placedTypeCount=typeId=>Object.keys(solution.poses||{}).filter(id=>itemById.get(id)?.typeId===typeId).length;
       const elevatedDecor=(solution.decorItems||[]).filter(row=>!['rug','postDisplayCabinet','activityZone'].includes(row.kind));
       const invalidActivityZones=(solution.decorItems||[]).filter(row=>row.kind==='activityZone'&&(row.layer!=='floor'||row.collision!=='ignore'||row.label!=='中央活动区'));
+      const unsupportedWallFurniture=Object.entries(solution.poses||{}).filter(([id,pose])=>(pose.anchor==='wall'||Number.isInteger(pose.wallIndex)&&pose.wallIndex>=0)&&!engine.fullBackWallSupport(itemById.get(id),pose,result.scene));
       const doorJambClearance=Math.max(0,Number(config.layoutConstraints.postLayout.wallComplements.doorJambClearance)||0);
       const minimumCabinetModule=Math.min(...Object.values(config.layoutConstraints.postLayout.wallComplements.programs).map(row=>Number(row.minWidth)||Infinity));
       const undersizedComplements=(solution.decorItems||[]).filter(row=>row.kind==='postDisplayCabinet'&&Number(row.runWidth)+1e-6<minimumCabinetModule);
@@ -150,6 +151,7 @@ setTimeout(() => {
       if(programId==='bedroom'&&room.area>=10&&room.area<12&&(placedTypeCount('desk')<1||placedTypeCount('chair')<1))failures.push(`${label}: 10–12㎡卧室仍缺少紧凑书桌椅组`);
       if(elevatedDecor.length)failures.push(`${label}: 仍生成非落地陈设 ${elevatedDecor.map(row=>row.kind).join('|')}`);
       if(invalidActivityZones.length)failures.push(`${label}: 中央活动区没有按配置作为地面解释层生成`);
+      if(unsupportedWallFurniture.length)failures.push(`${label}: 墙锚家具背边悬空 ${unsupportedWallFurniture.map(([id])=>id).join('|')}`);
       if(undersizedComplements.length)failures.push(`${label}: 仍生成小于 ${minimumCabinetModule.toFixed(2)}m 的填缝柜 ${undersizedComplements.map(row=>row.label).join('|')}`);
       if(doorSideComplements.length)failures.push(`${label}: 门框旁仍生成定制柜 ${doorSideComplements.map(row=>row.label).join('|')}`);
       if (assertSpeed && result.totalTimeMs > 2000) failures.push(`${label}: 搜索 ${result.totalTimeMs.toFixed(0)}ms，超过 2s 目标`);

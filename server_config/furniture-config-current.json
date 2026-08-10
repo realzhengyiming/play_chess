@@ -4357,7 +4357,7 @@
           },
           {
             "id": "sofa-zone",
-            "enabled": true,
+            "enabled": false,
             "mode": "zone",
             "rotations": [
               0,
@@ -10272,7 +10272,7 @@
           },
           {
             "id": "sofa-zone",
-            "enabled": true,
+            "enabled": false,
             "mode": "zone",
             "rotations": [
               0,

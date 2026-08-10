@@ -1256,6 +1256,18 @@
       return functionalZones(item,pose).filter(zone=>zone.hard||zone.blocksFurniture);
     }
 
+    function fullBackWallSupport(item,pose,scene,tolerance=.015) {
+      if(!Number.isInteger(pose.wallIndex)||pose.wallIndex<0)return pose.anchor!=='wall';
+      const wall=scene.walls[pose.wallIndex];if(!wall)return false;
+      const dims=itemLocalDims(item,pose),normal=pose.normal||wall.normal,wallDir=pose.wallDir||wall.dir;
+      const along=dot({x:pose.x-wall.a.x,y:pose.y-wall.a.y},wall.dir),start=along-dims.w/2,end=along+dims.w/2;
+      // “实体仍在多边形内”不等于“背后有墙”。关系候选会把一个原本合法的
+      // 墙点沿墙投影到目标家具中心线；投影后必须重新检查整条背边，而不能只
+      // 保留原 wallIndex。背边中心、起点、终点三者均由同一连续墙段支撑。
+      const backCenter=add(pose,normal,-dims.d/2),parallel=Math.abs(dot(wallDir,wall.dir))>=1-.01,facing=dot(normal,wall.normal)>=1-.01;
+      return parallel&&facing&&start>=-tolerance&&end<=wall.length+tolerance&&pointSegmentDistance(backCenter,wall.a,wall.b)<=tolerance;
+    }
+
     function ruleAllowsBody(zoneOwner,bodyItem,zone,bodyPose,zoneOwnerPose=null) {
       if (relationPairRule(zoneOwner,zoneOwnerPose,bodyItem,bodyPose)?.allowFunctionalOverlap) return true;
       if (!zone.allowBodyTypes?.includes(bodyItem.typeId)) return false;
@@ -1265,6 +1277,7 @@
     function staticFurnitureRulesPass(item,pose,scene,zones=hardFunctionalZones(item,pose)) {
       const rule=furnitureRule(item);
       if (rule.requiredAnchor==='wall'&&pose.anchor!=='wall'&&!(pose.wallIndex>=0)) return false;
+      if ((pose.anchor==='wall'||pose.wallIndex>=0)&&!fullBackWallSupport(item,pose,scene)) return false;
       if (rule.avoidWindow&&windowOverlap(item,pose,scene)) return false;
       for (const zone of zones) {
         if (!rectInsidePolygon(zone.rect,scene.polygon)) return false;
@@ -4042,6 +4055,13 @@
         if (objectiveId==='circulation'&&balancedPieces) candidateSequence=candidateSequence.filter(candidate=>candidate.estimate.pieces<=balancedPieces);
         if (objectiveId==='function'&&balancedPieces) candidateSequence=candidateSequence.filter(candidate=>candidate.estimate.pieces>=functionFloor);
         candidateSequence=candidateSequence.filter(candidate=>passesInventoryGates(candidate,objectiveId));
+        // 狭长多门客厅只有两个固定几何尝试预算。四椅餐组若失败，第二次应先
+        // 降为完整的双椅餐组，而不是反向增加到 14 件；后者既更慢，也会让
+        // 图中下半段这组“沙发与电视柜都完整背墙”的合法会客位来不及落地。
+        if(programId==='living'&&trialScene.shape==='recognized'&&trialAspect>=1.65&&diningTier&&candidateSequence.length>1){
+          const compactDining=candidateSequence.slice(1).find(candidate=>(candidate.counts.diningTable||0)>0&&(candidate.counts.diningChair||0)===2);
+          if(compactDining)candidateSequence=[candidateSequence[0],compactDining,...candidateSequence.slice(1).filter(candidate=>candidate!==compactDining)];
+        }
         for (const candidate of candidateSequence) {
           if (attempts>=attemptLimit) break;
           checkedSignatures.add(inventoryCountsSignature(programId,candidate.counts));
@@ -4404,7 +4424,7 @@
       });
     }
 
-    const Engine = { PROGRAMS, CONFIGS, SOFA_PRESETS, INVENTORY_VALUES, INVENTORY_OBJECTIVES, roomAreaTier, VARIABLE_SIZE_PRESETS, FURNITURE_RULES, getDesignGrammar:()=>JSON.parse(JSON.stringify(DESIGN_GRAMMAR)), applyFurnitureCatalog, applyDesignQualityRules, applyLayoutConstraints, applyGlobalConfig, validateLayoutConstraints, getDesignQualityRules:()=>JSON.parse(JSON.stringify(DESIGN_QUALITY_RULES)),getLayoutConstraints:()=>JSON.parse(JSON.stringify(LAYOUT_CONSTRAINTS)),getFlowRadii:()=>JSON.parse(JSON.stringify(FLOW_RADII)),getRoomAreaModules:()=>JSON.parse(JSON.stringify(ROOM_AREA_MODULES)), setProgram, refreshFurniture, setVariableSizeSearch, setLayoutDensityMode, setCustomCabinetEnabled, applyProgramSnapshot, autoSelectInventory, generateInventoryFrontier, stagedInventoryCandidates, inventoryEstimate, synthesizeSoftDecor, getFurniture:()=>FURNITURE, makeScene, search, searchMatrix, searchScalar, evaluateFull, traceEvaluationBreakdown, computeReachability, designMetrics, generateCandidates, validateState, isLegal, wallPoseCandidates, functionalZones, footprintRects, polygonArea, pointInPolygon, prepareRecognizedRooms,
+    const Engine = { PROGRAMS, CONFIGS, SOFA_PRESETS, INVENTORY_VALUES, INVENTORY_OBJECTIVES, roomAreaTier, VARIABLE_SIZE_PRESETS, FURNITURE_RULES, getDesignGrammar:()=>JSON.parse(JSON.stringify(DESIGN_GRAMMAR)), applyFurnitureCatalog, applyDesignQualityRules, applyLayoutConstraints, applyGlobalConfig, validateLayoutConstraints, getDesignQualityRules:()=>JSON.parse(JSON.stringify(DESIGN_QUALITY_RULES)),getLayoutConstraints:()=>JSON.parse(JSON.stringify(LAYOUT_CONSTRAINTS)),getFlowRadii:()=>JSON.parse(JSON.stringify(FLOW_RADII)),getRoomAreaModules:()=>JSON.parse(JSON.stringify(ROOM_AREA_MODULES)), setProgram, refreshFurniture, setVariableSizeSearch, setLayoutDensityMode, setCustomCabinetEnabled, applyProgramSnapshot, autoSelectInventory, generateInventoryFrontier, stagedInventoryCandidates, inventoryEstimate, synthesizeSoftDecor, getFurniture:()=>FURNITURE, makeScene, search, searchMatrix, searchScalar, evaluateFull, traceEvaluationBreakdown, computeReachability, designMetrics, generateCandidates, validateState, isLegal, fullBackWallSupport, wallPoseCandidates, functionalZones, footprintRects, polygonArea, pointInPolygon, prepareRecognizedRooms,
       setRecognizedRoomOverrideForTest:value=>{recognizedRoomOverride=value}
     };
     globalThis.RoomChessEngine = Engine;
