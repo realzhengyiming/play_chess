@@ -4558,7 +4558,7 @@
       solutionStrip:document.getElementById('solutionStrip'),solutionPreviewToolbar:document.getElementById('solutionPreviewToolbar'),configComparisonSwitch:document.getElementById('configComparisonSwitch'),
       beamSummary:document.getElementById('beamSummary'),beamRound:document.getElementById('beamRoundRange'),beamRoundOutput:document.getElementById('beamRoundOutput'),
       beamFilters:document.getElementById('beamFilters'),beamEmpty:document.getElementById('beamEmpty'),beamDetail:document.getElementById('beamDetail'),
-      beamBoardMode:document.getElementById('beamBoardMode'),beamOverviewMode:document.getElementById('beamOverviewMode'),beamExpandAll:document.getElementById('beamExpandAll'),beamFocusBest:document.getElementById('beamFocusBest'),beamResetView:document.getElementById('beamResetView'),beamFullscreen:document.getElementById('beamFullscreen'),beamPanel:document.querySelector('.beam-panel'),beamPlanSwitch:document.getElementById('beamPlanSwitch')
+      beamBoardMode:document.getElementById('beamBoardMode'),beamOverviewMode:document.getElementById('beamOverviewMode'),beamCollapseAll:document.getElementById('beamCollapseAll'),beamExpandAll:document.getElementById('beamExpandAll'),beamFocusBest:document.getElementById('beamFocusBest'),beamResetView:document.getElementById('beamResetView'),beamFullscreen:document.getElementById('beamFullscreen'),beamPanel:document.querySelector('.beam-panel'),beamPlanSwitch:document.getElementById('beamPlanSwitch')
     };
     const cloneConfig=value=>JSON.parse(JSON.stringify(value));
     function normalizeConfigBundle(raw) {
@@ -4633,10 +4633,10 @@
     let beamHitTargets=[];
     let treeInspectNodeId=null;
     let beamVisualMode='board';
-    // 搜索树默认只展开最终输出路径，避免几千个调试节点首次进入页面就全部绘制。
-    // 用户仍可通过“全部展开”查看完整 Beam 记录；该开关只影响可视化，不影响搜索计算。
-    let beamExpansionMode='focus';
-    let beamExpandedNodes=new Set(['n0']);
+    // 默认保留完整 Beam 记录但不展开任何分支。检查人员从根节点开始逐层点击“＋”，
+    // 可查看全部真实候选；折叠只影响画布绘制，不裁剪搜索树数据。
+    let beamExpansionMode='manual';
+    let beamExpandedNodes=new Set();
     let beamFocusPath=new Set(['n0']);
     let beamOutputPath=new Set();
     let beamBranchOffsets=new Map();
@@ -5277,13 +5277,13 @@
     }
 
     function resetBeamBoardView() {
-      const tree=activeBeamTree();beamExpandedNodes=new Set(['n0']);beamFocusPath=new Set(['n0']);beamOutputPath=new Set();beamBranchOffsets=new Map();
+      const tree=activeBeamTree();beamExpandedNodes=new Set();beamFocusPath=new Set(['n0']);beamOutputPath=new Set();beamBranchOffsets=new Map();
       const finalist=result?.solutions?.[activeSolution]?._treeNode?.id;
       let cursor=finalist?tree?.nodeById?.get(finalist):null;
-      while(cursor){beamFocusPath.add(cursor.id);if(cursor.parentId)beamExpandedNodes.add(cursor.parentId);cursor=cursor.parentId?tree.nodeById.get(cursor.parentId):null;}
+      while(cursor){beamFocusPath.add(cursor.id);if(beamExpansionMode==='focus'&&cursor.parentId)beamExpandedNodes.add(cursor.parentId);cursor=cursor.parentId?tree.nodeById.get(cursor.parentId):null;}
       if(tree){
-        for(const output of tree.outputs||[]){let branch=output;while(branch){beamOutputPath.add(branch.id);if(branch.parentId)beamExpandedNodes.add(branch.parentId);branch=branch.parentId?tree.nodeById.get(branch.parentId):null;}}
-        if(beamExpansionMode==='all')for(const round of tree.rounds)for(const node of round.nodes)if(node.status==='retained'||node.status==='finalist')beamExpandedNodes.add(node.id);
+        for(const output of tree.outputs||[]){let branch=output;while(branch){beamOutputPath.add(branch.id);if(beamExpansionMode==='focus'&&branch.parentId)beamExpandedNodes.add(branch.parentId);branch=branch.parentId?tree.nodeById.get(branch.parentId):null;}}
+        if(beamExpansionMode==='all'){beamExpandedNodes.add('n0');for(const round of tree.rounds)for(const node of round.nodes)if(node.status==='retained'||node.status==='finalist')beamExpandedNodes.add(node.id);}
       }
       beamViewport={x:52,y:70,scale:beamExpansionMode==='all'?.38:.68};beamNeedsCenter=true;treeInspectNodeId=null;
     }
@@ -5375,7 +5375,9 @@
         const actualRecords=tree.rounds.reduce((n,r)=>n+r.nodes.length,0),mapping='每张卡片都是棋子落下后真实形成的完整棋盘；终止节点右上角显示最终累计分，底部显示未进入下一回合的原因，不做合并。最终输出层中，金色、紫色、绿色粗框分别标记方案 A、B、C。';
         const modeText=beamExpansionMode==='all'
           ?`全部展开：逐条显示 ${visible.size.toLocaleString()} 个真实状态节点，不合并、不折叠`
-          :`聚焦优胜：只显示最终走到输出层的分支；绿色走廊标记完整胜出路径`;
+          :beamExpansionMode==='focus'
+            ?`聚焦优胜：只显示最终走到输出层的分支；绿色走廊标记完整胜出路径`
+            :`全部折叠：完整保留 ${actualRecords.toLocaleString()} 条搜索记录；点击节点右上角“＋”逐层展开所有真实分支`;
         ui.beamDetail.innerHTML=`<strong>${modeText} · 搜索记录 ${actualRecords.toLocaleString()} 条 · 输出 ${tree.outputCount||0} 个</strong><br>${mapping} 另有 ${tree.outputDuplicateRejected||0} 个最终视觉等价方案已合并。`;
       }
       beamCtx.fillStyle='rgba(24,35,31,.48)';beamCtx.font='700 10px system-ui';beamCtx.textAlign='right';beamCtx.fillText(`画布 ${Math.round(beamViewport.scale*100)}% · ${Math.round(contentWidth)}×${Math.round(contentHeight)}`,width-16,height-14);
@@ -5383,7 +5385,7 @@
 
     function renderBeamTree() {
       if(configRunMode!=='compare'){ui.beamPlanSwitch.hidden=true;ui.beamPlanSwitch.innerHTML='';}
-      ui.beamPanel.classList.toggle('board-mode',beamVisualMode==='board');ui.beamBoardMode.classList.toggle('active',beamVisualMode==='board');ui.beamOverviewMode.classList.toggle('active',beamVisualMode==='overview');ui.beamExpandAll.classList.toggle('active',beamExpansionMode==='all');ui.beamFocusBest.classList.toggle('active',beamExpansionMode==='focus');ui.beamFilters.hidden=beamVisualMode!=='overview';
+      ui.beamPanel.classList.toggle('board-mode',beamVisualMode==='board');ui.beamBoardMode.classList.toggle('active',beamVisualMode==='board');ui.beamOverviewMode.classList.toggle('active',beamVisualMode==='overview');ui.beamCollapseAll.classList.toggle('active',beamExpansionMode==='manual');ui.beamExpandAll.classList.toggle('active',beamExpansionMode==='all');ui.beamFocusBest.classList.toggle('active',beamExpansionMode==='focus');ui.beamFilters.hidden=beamVisualMode!=='overview';
       if(beamVisualMode==='board')renderBeamBoardTree();else renderBeamOverview();
     }
 
@@ -5895,6 +5897,7 @@
     ui.layoutView.addEventListener('click',()=>setAppView('layout'));ui.treeView.addEventListener('click',()=>setAppView('tree'));
     ui.beamBoardMode.addEventListener('click',()=>{beamVisualMode='board';resetBeamBoardView();renderBeamTree();});
     ui.beamOverviewMode.addEventListener('click',()=>{beamVisualMode='overview';treeInspectNodeId=null;renderBeamTree();});
+    ui.beamCollapseAll.addEventListener('click',()=>{beamExpansionMode='manual';beamVisualMode='board';resetBeamBoardView();renderBeamTree();});
     ui.beamExpandAll.addEventListener('click',()=>{beamExpansionMode='all';beamVisualMode='board';resetBeamBoardView();renderBeamTree();});
     ui.beamFocusBest.addEventListener('click',()=>{beamExpansionMode='focus';beamVisualMode='board';resetBeamBoardView();renderBeamTree();});
     ui.beamResetView.addEventListener('click',()=>{if(beamVisualMode==='board')resetBeamBoardView();else{beamRoundIndex=1;treeInspectNodeId=null;}renderBeamTree();});
