@@ -85,6 +85,13 @@ setTimeout(() => {
       const placedTypeCount=typeId=>Object.keys(solution.poses||{}).filter(id=>itemById.get(id)?.typeId===typeId).length;
       const elevatedDecor=(solution.decorItems||[]).filter(row=>!['rug','postDisplayCabinet','activityZone'].includes(row.kind));
       const invalidActivityZones=(solution.decorItems||[]).filter(row=>row.kind==='activityZone'&&(row.layer!=='floor'||row.collision!=='ignore'||row.label!=='中央活动区'));
+      const doorJambClearance=Math.max(0,Number(config.layoutConstraints.postLayout.wallComplements.doorJambClearance)||0);
+      const minimumCabinetModule=Math.min(...Object.values(config.layoutConstraints.postLayout.wallComplements.programs).map(row=>Number(row.minWidth)||Infinity));
+      const undersizedComplements=(solution.decorItems||[]).filter(row=>row.kind==='postDisplayCabinet'&&Number(row.runWidth)+1e-6<minimumCabinetModule);
+      const doorSideComplements=(solution.decorItems||[]).filter(row=>row.kind==='postDisplayCabinet'&&actualDoors.some(door=>{
+        const endpoints=door.a&&door.b?[door.a,door.b]:[{x:door.x0,y:door.y},{x:door.x1,y:door.y}];
+        return endpoints.some(point=>Math.abs(point.x-row.x)<=row.w/2+doorJambClearance&&Math.abs(point.y-row.y)<=row.d/2+doorJambClearance);
+      }));
       const wallDetails=solution.evaluation.diagnostics.wallDetails||{},groundDetails=solution.evaluation.diagnostics.ground||{};
       const roomAspect=Math.max(room.width/Math.max(room.depth,.001),room.depth/Math.max(room.width,.001));
       const hotelBedroom=programId==='bedroom'&&room.area>=15&&roomAspect>=1.65;
@@ -143,6 +150,8 @@ setTimeout(() => {
       if(programId==='bedroom'&&room.area>=10&&room.area<12&&(placedTypeCount('desk')<1||placedTypeCount('chair')<1))failures.push(`${label}: 10–12㎡卧室仍缺少紧凑书桌椅组`);
       if(elevatedDecor.length)failures.push(`${label}: 仍生成非落地陈设 ${elevatedDecor.map(row=>row.kind).join('|')}`);
       if(invalidActivityZones.length)failures.push(`${label}: 中央活动区没有按配置作为地面解释层生成`);
+      if(undersizedComplements.length)failures.push(`${label}: 仍生成小于 ${minimumCabinetModule.toFixed(2)}m 的填缝柜 ${undersizedComplements.map(row=>row.label).join('|')}`);
+      if(doorSideComplements.length)failures.push(`${label}: 门框旁仍生成定制柜 ${doorSideComplements.map(row=>row.label).join('|')}`);
       if (assertSpeed && result.totalTimeMs > 2000) failures.push(`${label}: 搜索 ${result.totalTimeMs.toFixed(0)}ms，超过 2s 目标`);
       if (verbose) console.dir({label, plans:result.plans, trials:result.trials, alternatives:(result.probe?.solutions||[]).map(row=>({total:row.evaluation.total,qualityPass:row.evaluation.qualityPass,placed:Object.keys(row.poses||{}).length,deskW:row.poses?.desk?.overrideW,sizePolicy:row.evaluation.diagnostics?.sizePolicy})), scores:solution.evaluation.scores, diagnostics:solution.evaluation.diagnostics, poses:Object.keys(solution.poses), decor:(solution.decorItems||[]).map(row=>({kind:row.kind,label:row.label}))}, {depth:5});
       if (!reach.hardPass) failures.push(`${label}: 存在不可达家具或孤岛`);

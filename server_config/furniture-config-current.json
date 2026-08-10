@@ -1271,6 +1271,7 @@
         "minUnusedWallImprovement": 0.04,
         "maxWallScoreDrop": 0.02,
         "closureExtensionMax": 0.12,
+        "doorJambClearance": 0.24,
         "dedupeClearance": 0.08,
         "candidateMultiplier": 3,
         "priorityUsefulWidth": 1.2,
@@ -1279,7 +1280,7 @@
           "bedroom": {
             "minimumArea": 0,
             "depth": 0.34,
-            "minWidth": 0.1,
+            "minWidth": 0.6,
             "maxWidth": 4.8,
             "maxBudget": 5,
             "budgetByArea": [
@@ -1297,7 +1298,7 @@
               }
             ],
             "mediaFlank": {
-              "minWidth": 0.3,
+              "minWidth": 0.6,
               "maxWidth": 0.8,
               "minDepth": 0.22,
               "maxDepth": 0.3
@@ -1306,7 +1307,7 @@
           "living": {
             "minimumArea": 0,
             "depth": 0.38,
-            "minWidth": 0.1,
+            "minWidth": 0.6,
             "maxWidth": 8,
             "maxBudget": 7,
             "budgetByArea": [
@@ -1324,7 +1325,7 @@
               }
             ],
             "mediaFlank": {
-              "minWidth": 0.3,
+              "minWidth": 0.6,
               "maxWidth": 0.8,
               "minDepth": 0.22,
               "maxDepth": 0.3

@@ -92,8 +92,8 @@
         perParent:{coreTypes:['bed','sofa','tv','wardrobe'],largeLivingArea:28,normal:{core:28,optional:12,required:18},largeLiving:{core:24,optional:9,required:14}}
       },
       postLayout:{floorOnly:true,wallComplements:{enabled:true,repairOnly:true,countTowardRichMinimum:false,maxRecoverableIslandArea:.20,allowProgressiveIslandRepair:true,minIslandImprovement:.015,minUnusedWallImprovement:.04,maxWallScoreDrop:.02,closureExtensionMax:.12,dedupeClearance:.08,candidateMultiplier:3,priorityUsefulWidth:1.2,closureReserve:2,programs:{
-        bedroom:{minimumArea:0,depth:.34,minWidth:.10,maxWidth:4.8,maxBudget:5,budgetByArea:[{minArea:0,value:2},{minArea:28,value:3},{minArea:40,value:5}],mediaFlank:{minWidth:.30,maxWidth:.80,minDepth:.22,maxDepth:.30}},
-        living:{minimumArea:0,depth:.38,minWidth:.10,maxWidth:8.0,maxBudget:5,budgetByArea:[{minArea:0,value:2},{minArea:28,value:3},{minArea:40,value:5}],mediaFlank:{minWidth:.30,maxWidth:.80,minDepth:.22,maxDepth:.30}}
+        bedroom:{minimumArea:0,depth:.34,minWidth:.60,maxWidth:4.8,maxBudget:5,budgetByArea:[{minArea:0,value:2},{minArea:28,value:3},{minArea:40,value:5}],mediaFlank:{minWidth:.60,maxWidth:.80,minDepth:.22,maxDepth:.30}},
+        living:{minimumArea:0,depth:.38,minWidth:.60,maxWidth:8.0,maxBudget:5,budgetByArea:[{minArea:0,value:2},{minArea:28,value:3},{minArea:40,value:5}],mediaFlank:{minWidth:.60,maxWidth:.80,minDepth:.22,maxDepth:.30}}
       }}}
     };
     const row=(program,id,label,width,depth,category,role,color,rule={})=>({

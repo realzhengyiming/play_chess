@@ -230,7 +230,7 @@
       const furniture=[];
       const orderedTypes=[...program.types].sort((a,b)=>program.order.indexOf(a.id)-program.order.indexOf(b.id));
       for (const type of orderedTypes) {
-        // 填缝/定制收口不再作为 Beam 棋子。它与活动区一样，只读取最终硬家具
+        // 沿墙定制展示柜不作为 Beam 棋子。它与活动区一样，只读取最终硬家具
         // 留下的真实墙面余量做一次后处理，避免面积放大时把墙段候选乘进搜索树。
         if(FURNITURE_RULES[type.id]?.infill)continue;
         const count=Math.min(type.maxCount,Math.max(type.minCount??0,Math.round(config.counts[type.id]??1)));
@@ -4133,9 +4133,16 @@
         // 超大房间沿每面空墙无限补柜，也不会把这些柜体重新带回搜索树。
         const areaTarget=configuredAreaValue(programRules.budgetByArea,roomScene.area);
         const target=Math.min(programRules.maxBudget,Math.max(areaTarget,infillWallBudget(currentProgram,roomScene)));
-        // 0.10–0.59m 不是一件独立家具，而是定制柜的封板/窄柜模块；它专门解决
-        // 角落和柜间死缝。仍作为实体参加最终通行复核，不能偷偷侵占走道。
+        // 只生成达到配置最小模数的真实柜体。小于该宽度的安装余缝留给现场
+        // 收边处理，不再把 0.1–0.2m 的封板伪装成一件家具。
         const depth=programRules.depth,minWidth=programRules.minWidth,maxWidth=programRules.maxWidth;
+        // 门前矩形只保护门扇扫掠/通行深度，门洞端点还需要独立保护。否则与门洞
+        // 相接的垂直短墙会被误判成可用碎缝，最终画出“门框旁窄柜”。
+        const doorJambClearance=Math.max(0,Number(complementRules.doorJambClearance)||0);
+        const touchesDoorJamb=rect=>doorJambClearance>0&&sceneDoors(roomScene).some(door=>{
+          const {a,b}=openingEndpoints(door);
+          return pointInRect(a,rect,doorJambClearance)||pointInRect(b,rect,doorJambClearance);
+        });
         const candidates=[],tvFlanks=[],faux={id:'postWallDisplay',typeId:currentProgram==='living'?'display':'bedroomDisplay',w:1,d:depth,shape:'box'};
         const tvEntry=currentProgram==='bedroom'?first('tvbench'):null,tvBody=bodyOf(tvEntry),tvWallIndex=tvEntry?.pose?.wallIndex;
         for(const wall of roomScene.walls){
@@ -4159,7 +4166,7 @@
                 if(width>=mediaRules.minWidth){
                   const t=left?end-width/2:start+width/2,wallPoint={x:wall.a.x+wall.dir.x*t,y:wall.a.y+wall.dir.y*t},center={x:wallPoint.x+wall.normal.x*mediaDepth/2,y:wallPoint.y+wall.normal.y*mediaDepth/2};
                   const rect={x:center.x,y:center.y,w:horizontal?width:mediaDepth,d:horizontal?mediaDepth:width,rotation:0};
-                  if(rectInsidePolygon(rect,roomScene.polygon)&&!overlapsDoorClearance(rect,roomScene,.025)&&!baseOccupied.some(body=>rectsOverlap(rect,body,-.005))&&!baseHard.some(zone=>rectsOverlap(rect,zone,0)))tvFlanks.push({...rect,wallIndex:wall.index,runWidth:width,available,gapKind:'media-flank',mediaSide:left?'左':'右',score:180+width*12});
+                  if(rectInsidePolygon(rect,roomScene.polygon)&&!overlapsDoorClearance(rect,roomScene,.025)&&!touchesDoorJamb(rect)&&!baseOccupied.some(body=>rectsOverlap(rect,body,-.005))&&!baseHard.some(zone=>rectsOverlap(rect,zone,0)))tvFlanks.push({...rect,wallIndex:wall.index,runWidth:width,available,gapKind:'media-flank',mediaSide:left?'左':'右',score:180+width*12});
                 }
               }
             }
@@ -4172,8 +4179,8 @@
             for(const t of slots){
               const wallPoint={x:wall.a.x+wall.dir.x*t,y:wall.a.y+wall.dir.y*t},center={x:wallPoint.x+wall.normal.x*depth/2,y:wallPoint.y+wall.normal.y*depth/2};
               const horizontal=Math.abs(wall.dir.x)>Math.abs(wall.dir.y),rect={x:center.x,y:center.y,w:horizontal?width:depth,d:horizontal?depth:width,rotation:0};
-              if(!rectInsidePolygon(rect,roomScene.polygon)||overlapsDoorClearance(rect,roomScene,.025))continue;
-              // 收口板本来就要与相邻柜体/电视柜贴合；负 5mm 仅消除“边界相接被
+              if(!rectInsidePolygon(rect,roomScene.polygon)||overlapsDoorClearance(rect,roomScene,.025)||touchesDoorJamb(rect))continue;
+              // 展示柜可以与相邻柜体/电视柜贴合；负 5mm 仅消除“边界相接被
               // 当作碰撞”的数值误判，真实实体重叠仍会被拒绝。
               if(baseOccupied.some(body=>rectsOverlap(rect,body,-.005))||baseHard.some(zone=>rectsOverlap(rect,zone,0)))continue;
               const closurePriority=available<=DESIGN_QUALITY_RULES.wall.severeGapMax?72:available<DESIGN_QUALITY_RULES.wall.usefulBayMin?42:0;
@@ -4181,15 +4188,15 @@
             }
           }
         }
-        // 角落/柜间碎缝优先修，但不能让五个 10cm 收口板吃完全部预算。
-        // 大客厅最多预留两个碎缝位，其余候选优先覆盖 0.7m 以上的真正空墙。
+        // 角落/柜间如果能容纳一个完整柜体则优先修；小于最小模数的碎缝不会
+        // 进入候选，因此也不会耗尽补全预算。
         const closures=candidates.filter(row=>row.gapKind==='closure').sort((a,b)=>b.score-a.score);
         const useful=candidates.filter(row=>row.gapKind==='useful').sort((a,b)=>b.runWidth-a.runWidth||b.score-a.score);
         const selected=[],append=rows=>{for(const candidate of rows){if(selected.some(row=>rectsOverlap(candidate,row,complementRules.dedupeClearance)))continue;selected.push(candidate);if(selected.length>=target*complementRules.candidateMultiplier)break}};
-        // 一整面空墙比十几厘米收口更影响视觉。至少先保留一个 1.2m 以上的
-        // 有效墙段候选，再用剩余预算修角落，避免两个小封板耗尽全部补全名额。
+        // 一整面空墙更影响视觉。至少先保留一个 1.2m 以上的有效墙段候选，
+        // 再用剩余预算补充其他达到成品柜模数的墙段。
         append(tvFlanks.sort((a,b)=>a.mediaSide.localeCompare(b.mediaSide)||b.runWidth-a.runWidth));append(useful.filter(row=>row.runWidth>=complementRules.priorityUsefulWidth).slice(0,1));append(closures.slice(0,Math.min(complementRules.closureReserve,target)));append(useful);append(closures.slice(Math.min(complementRules.closureReserve,target)));
-        return selected.map((body,index)=>({kind:'postDisplayCabinet',label:body.gapKind==='media-flank'?`电视墙${body.mediaSide}侧薄柜 ${body.runWidth.toFixed(1)} m`:`${body.runWidth<.6?'定制收口':'定制展示柜'} ${body.runWidth.toFixed(1)} m`,x:body.x,y:body.y,w:body.w,d:body.d,runWidth:body.runWidth,rotation:0,color:body.gapKind==='media-flank'?'#607d75':body.runWidth<.6?'#789087':index?'#71877e':'#5d7f78',layer:'overlay',collision:'post-layout',wallIndex:body.wallIndex,postLayoutBudget:target}));
+        return selected.map((body,index)=>({kind:'postDisplayCabinet',label:body.gapKind==='media-flank'?`电视墙${body.mediaSide}侧薄柜 ${body.runWidth.toFixed(1)} m`:`定制展示柜 ${body.runWidth.toFixed(1)} m`,x:body.x,y:body.y,w:body.w,d:body.d,runWidth:body.runWidth,rotation:0,color:body.gapKind==='media-flank'?'#607d75':index?'#71877e':'#5d7f78',layer:'overlay',collision:'post-layout',wallIndex:body.wallIndex,postLayoutBudget:target}));
       };
 
       // 若 Beam 没有保留硬休闲椅，则用最多 8 个墙角候选做一次收尾；实体背边/侧边
@@ -4284,7 +4291,11 @@
         if(candidateWall.severeGaps>priorSevere||wallScoreDropped||(!wallCoverageImproved&&candidateWall.score<(currentWall?.score??0)-EPS)){postRejectSummary.wall++;postRejected.push({label:row.label,wallIndex:row.wallIndex,reason:'wall',beforeUnused:round(currentWall?.unusedWallRatio||0,3),afterUnused:round(candidateWall.unusedWallRatio,3),beforeSevere:priorSevere,afterSevere:candidateWall.severeGaps,gaps:candidateWall.gapDetails});continue;}
         solids.push(rect);acceptedPostLayout++;if(row.kind==='postDisplayCabinet')wallSolids.push(row);accepted.push(row);currentGround=candidateGround;currentWall=candidateWall;currentReach=candidateReach;
       }
-      const wall=currentWall||baselineWall;
+      const rawWall=currentWall||baselineWall,minimumCabinetModule=Math.max(DESIGN_QUALITY_RULES.wall.installGapMax,Number(LAYOUT_CONSTRAINTS.postLayout.wallComplements.programs[currentProgram]?.minWidth)||0);
+      // 仍保留小余缝的连续性/角落软扣分，但既然产品层已取消小填缝柜，低于
+      // 最小柜体模数的缝隙不能再触发最终“严重缺陷”硬失败。
+      const submoduleSevere=(rawWall.gapDetails||[]).filter(row=>row.severity==='severe'&&Number(row.width)<minimumCabinetModule-EPS),actionableSevere=(rawWall.gapDetails||[]).filter(row=>row.severity==='severe'&&Number(row.width)>=minimumCabinetModule-EPS);
+      const wall={...rawWall,severeGaps:actionableSevere.length,severe:actionableSevere.length>0,submoduleSevereGaps:submoduleSevere.length};
       const finalReach=computeReachability(plan,scene,FLOW_RADII,solids);
       const scores=plan.evaluation.scores;scores.ground=Math.round((currentGround||baseline).score*100);scores.storage=Math.round(wall.score*100);
       let total=configuredGlobalTotal(scores);
@@ -4640,7 +4651,7 @@
       }).join('');
       const dependencyNote=currentProgram==='living'?'选择餐椅会自动启用餐桌。':'选择梳妆凳会自动启用梳妆台。';
       const modeNote=ui.autoInventory.checked?`当前由系统自动选择类型、数量、尺寸档位与沙发形式；布置丰满度为“${DENSITY_MODES[layoutDensityMode].label}”。关闭开关后可手动指定。`:'当前为手动数量与尺寸模式。';
-      const requiredNote=currentProgram==='living'?'沙发、电视柜为必选主家具；茶几及其余家具均允许 0–N。拓展填缝定制柜始终排在最后，宽度输入仅作选配估算，真正落子宽度由该分支的剩余连续墙段反算。':'床为 1–2 张、衣柜为必选家具；自动模式会把单人床、双人床、大床以及多种床头柜规格与位置一起搜索，手动模式则严格采用输入尺寸。';
+      const requiredNote=currentProgram==='living'?'沙发、电视柜为必选主家具；茶几及其余家具均允许 0–N。大模数定制展示柜始终排在最后，只在连续墙段至少可容纳 0.6m 柜体时生成。':'床为 1–2 张、衣柜为必选家具；自动模式会把单人床、双人床、大床以及多种床头柜规格与位置一起搜索，手动模式则严格采用输入尺寸。';
       ui.furnitureConfig.innerHTML=`${sofaSelect}
         <div class="config-head"><span>家具类型</span><span>宽 m</span><span>深 m</span><span>数量上限</span></div>
         ${rows}
@@ -4660,7 +4671,7 @@
         (doorKinds.has('slide')?'<span><i style="border:1px dashed #168c83;background:rgba(22,140,131,.08)"></i>推拉门浅缓冲</span>':'')+
         (doorKinds.has('opening')?'<span><i style="border:1px dashed #bc765f;background:rgba(188,118,95,.07)"></i>门洞通行缓冲</span>':'');
       ui.legend.innerHTML=rows.map(item=>`<span><i style="background:${item.color}"></i>${item.label.replace(/\s+[A-Z]$/,'')}</span>`).join('')+
-        (hasPost?'<span><i style="background:#5d7f78"></i>定制收口柜</span>':'')+
+        (hasPost?'<span><i style="background:#5d7f78"></i>定制展示柜</span>':'')+
         doorLegend+
         '<span><i style="border:1px dashed #2f8a78;background:rgba(47,138,120,.06)"></i>家具软使用区</span>'+
         (hasActivity?'<span><i style="border:1px dashed #2f8a78;background:rgba(47,138,120,.10)"></i>最后活动区</span>':'');
@@ -5684,7 +5695,7 @@
     };
     [ui.width,ui.depth].forEach(input=>input.addEventListener('input',updateDimensionsLive));
     ui.autoInventory.addEventListener('change',()=>{setVariableSizeSearch(ui.autoInventory.checked);saveConfigToBrowser();setupStaticUI();compileCurrentScene(true);});
-    ui.customCabinet.addEventListener('change',()=>{setCustomCabinetEnabled(ui.customCabinet.checked);saveConfigToBrowser(customCabinetEnabled?'已开启常规模数定制柜收口':'已关闭定制柜生成');setupStaticUI();compileCurrentScene(true);});
+    ui.customCabinet.addEventListener('change',()=>{setCustomCabinetEnabled(ui.customCabinet.checked);saveConfigToBrowser(customCabinetEnabled?'已开启大模数定制柜':'已关闭定制柜生成');setupStaticUI();compileCurrentScene(true);});
     ui.exportConfig.addEventListener('click',()=>{
       const blob=new Blob([JSON.stringify(currentConfigBundle(),null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');
       link.href=url;link.download=`空间棋配置-${new Date().toISOString().slice(0,10)}.json`;link.click();setTimeout(()=>URL.revokeObjectURL(url),0);ui.configSaveStatus.textContent='配置 JSON 已导出';
