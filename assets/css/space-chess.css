@@ -115,7 +115,7 @@
       background: #edf0eb;
     }
     .baseline-config-badge { display:inline-flex; align-items:center; min-height:40px; padding:0 13px; border:1px solid #bbb5ed; border-radius:12px; color:#5142b6; background:#f1efff; font-size:12px; font-weight:850; white-space:nowrap; }
-    .config-source-control{display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:0 9px 0 12px;border:1px solid #bbb5ed;border-radius:12px;color:#5142b6;background:#f1efff;font-size:12px;font-weight:850;white-space:nowrap}.config-source-control select{height:30px;padding:0 7px;border:1px solid rgba(81,66,182,.24);border-radius:8px;color:#403697;background:#fff;font-weight:850}.config-source-control select:disabled{opacity:.55}
+    .config-source-control{position:relative;display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:0 8px 0 12px;border:1px solid #bbb5ed;border-radius:999px;color:#5142b6;background:#f1efff;font-size:12px;font-weight:850;white-space:nowrap}.config-source-control::after{content:'⌄';position:absolute;right:17px;top:50%;z-index:1;transform:translateY(-56%);color:#5142b6;font-size:13px;line-height:1;pointer-events:none}.config-source-control select{height:32px;padding:0 30px 0 13px;border:1px solid rgba(81,66,182,.28);border-radius:999px;outline:0;color:#403697;background:#fff;font-weight:850;appearance:none;-webkit-appearance:none;cursor:pointer}.config-source-control select:hover,.config-source-control select:focus{border-color:#7768d1;box-shadow:0 0 0 3px rgba(119,104,209,.12)}.config-source-control select:disabled{opacity:.55;cursor:default}
 
     .shape-tab, .program-tab, .density-tab, .config-run-tab, .ghost-btn, .icon-btn, .solution-card {
       border: 0;
