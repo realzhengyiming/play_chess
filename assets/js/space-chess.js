@@ -222,7 +222,12 @@
       return config?applyGlobalConfig(config):false;
     }
     function updateConfigSourceControl(){
-      if(!ui?.configSource)return;const userOption=ui.configSource.querySelector('option[value="user"]');if(userOption)userOption.disabled=!serverConfigProfiles.user;ui.configSource.value=activeConfigProfile;ui.configSaveStatus.textContent=activeConfigProfile==='user'?'当前使用：此浏览器的用户配置':'当前使用：服务器全局配置';
+      if(!ui?.configSource)return;
+      const hasUserConfig=Boolean(serverConfigProfiles.user),userOption=ui.configSource.querySelector('option[value="user"]');
+      if(userOption)userOption.disabled=!hasUserConfig;
+      ui.configSource.value=activeConfigProfile;
+      ui.configSourceCluster?.classList.toggle('has-user',hasUserConfig);
+      ui.configSaveStatus.textContent=activeConfigProfile==='user'?'当前使用：此浏览器的用户配置':'当前使用：服务器全局配置';
     }
     // 家具关系使用自己的接缝与碰撞净距，不被通用 25 mm 安全距推开。
     // 栅格仍只做 broad phase；是否允许贴合由毫米/浮点几何在 narrow phase 决定。
@@ -4463,11 +4468,11 @@
       appTitle:document.getElementById('appTitle'), legend:document.getElementById('legend'), furnitureKicker:document.getElementById('furnitureKicker'),
       autoInventory:document.getElementById('autoInventory'),
       customCabinet:document.getElementById('customCabinetEnabled'),
-      exportConfig:document.getElementById('exportConfigBtn'),importConfig:document.getElementById('importConfigBtn'),resetConfig:document.getElementById('resetConfigBtn'),
-      importConfigFile:document.getElementById('importConfigFile'),configSaveStatus:document.getElementById('configSaveStatus'),configSource:document.getElementById('configSourceSelect'),
+      importConfig:document.getElementById('importConfigBtn'),resetConfig:document.getElementById('resetConfigBtn'),
+      importConfigFile:document.getElementById('importConfigFile'),configSaveStatus:document.getElementById('configSaveStatus'),configSource:document.getElementById('configSourceSelect'),configSourceCluster:document.querySelector('.config-source-cluster'),
       nodes:document.getElementById('metricNodes'), time:document.getElementById('metricTime'),
       us:document.getElementById('metricUs'), depthMetric:document.getElementById('metricDepth'), score:document.getElementById('metricScore'),
-      furnitureConfig:document.getElementById('furnitureConfig'), furnitureList:document.getElementById('furnitureList'), scoreList:document.getElementById('scoreList'),
+      furnitureConfig:document.getElementById('furnitureConfig'),manualConfigPanel:document.getElementById('manualConfigPanel'),furnitureList:document.getElementById('furnitureList'),scoreList:document.getElementById('scoreList'),
       traceKicker:document.getElementById('traceKicker'), traceStatus:document.getElementById('traceStatus'), traceLog:document.getElementById('traceLog'),
       prev:document.getElementById('prevBtn'), next:document.getElementById('nextBtn'), play:document.getElementById('playBtn'),
       traceRange:document.getElementById('traceRange'), traceRangeOutput:document.getElementById('traceRangeOutput'),
@@ -4515,7 +4520,7 @@
       return {schema:'room-chess-config',version:1,exportedAt:new Date().toISOString(),programs:cloneConfig(CONFIGS),preferences:{autoInventory:ui.autoInventory.checked,variableSizeSearch,layoutDensityMode,customCabinetEnabled}};
     }
     function saveConfigToBrowser(message='配置已自动保存到当前浏览器') {
-      if(!ENABLE_LOCAL_CONFIG_PERSISTENCE){ui.configSaveStatus.textContent='无本地保存模式：配置仅在本次页面有效，刷新恢复默认';return;}
+      if(!ENABLE_LOCAL_CONFIG_PERSISTENCE){updateConfigSourceControl();return;}
       try{localStorage.setItem(LOCAL_CONFIG_KEY,JSON.stringify(currentConfigBundle()));ui.configSaveStatus.textContent=message;}
       catch(error){ui.configSaveStatus.textContent=`本地保存失败：${error.message}`;}
     }
@@ -4709,8 +4714,9 @@
       ui.appTitle.textContent=program.title;
       document.title=program.title.replace('卧室','居住').replace('客厅','居住');
       canvas.setAttribute('aria-label',`${currentProgram==='living'?'客厅':'卧室'}家具排布棋盘`);
-      ui.furnitureKicker.textContent=`上限 ${FURNITURE.length} 件 · ${ui.autoInventory.checked?'自动选配':'手动上限'}`;
+      ui.furnitureKicker.textContent=`上限 ${FURNITURE.length} 件 · ${ui.autoInventory.checked?'自动选配':'手动尺寸与数量'}`;
       ui.generate.innerHTML=`<span>▶</span>${ui.autoInventory.checked?'自动选配并生成方案':'搜索 3 个方案'}`;
+      ui.manualConfigPanel.hidden=ui.autoInventory.checked;
       renderFurnitureConfig();
       ui.furnitureList.innerHTML=FURNITURE.map(item=>{
         const rule=furnitureRule(item),zone=rule.service||FURNITURE_RULES.default.service;
@@ -5723,10 +5729,6 @@
     [ui.width,ui.depth].forEach(input=>input.addEventListener('input',updateDimensionsLive));
     ui.autoInventory.addEventListener('change',()=>{setVariableSizeSearch(ui.autoInventory.checked);saveConfigToBrowser();setupStaticUI();compileCurrentScene(true);});
     ui.customCabinet.addEventListener('change',()=>{setCustomCabinetEnabled(ui.customCabinet.checked);saveConfigToBrowser(customCabinetEnabled?'已开启大模数定制柜':'已关闭定制柜生成');setupStaticUI();compileCurrentScene(true);});
-    ui.exportConfig.addEventListener('click',()=>{
-      const config=serverConfigProfiles[activeConfigProfile]||serverConfigProfiles.global;if(!config)return;const blob=new Blob([JSON.stringify(config,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');
-      link.href=url;link.download=`空间棋-${activeConfigProfile==='user'?'用户':'全局'}配置-${new Date().toISOString().slice(0,10)}.json`;link.click();setTimeout(()=>URL.revokeObjectURL(url),0);ui.configSaveStatus.textContent='完整规则 JSON 已导出';
-    });
     ui.importConfig.addEventListener('click',()=>{ui.importConfigFile.value='';ui.importConfigFile.click();});
     ui.importConfigFile.addEventListener('change',async()=>{
       const file=ui.importConfigFile.files?.[0];if(!file)return;

@@ -49,7 +49,12 @@
               <button class="density-tab" data-density="standard" disabled aria-disabled="true" title="当前集中优化丰富模式">标准</button>
               <button class="density-tab active" data-density="rich">丰富</button>
             </div>
-            <label class="config-source-control" title="切换服务器全局配置或当前浏览器的用户实验配置"><span>配置</span><select id="configSourceSelect"><option value="global">全局配置</option><option value="user">用户配置</option></select></label>
+            <div class="config-source-cluster">
+              <label class="config-source-control" title="切换服务器全局配置或当前浏览器的用户实验配置"><span>配置</span><select id="configSourceSelect"><option value="global">全局配置</option><option value="user">用户配置</option></select></label>
+              <button class="config-import-btn" id="importConfigBtn" type="button">导入 JSON</button>
+              <button class="config-clear-btn" id="resetConfigBtn" type="button" title="删除此浏览器的用户配置">清除</button>
+              <input id="importConfigFile" type="file" accept="application/json,.json" hidden />
+            </div>
             <label class="check-pill" title="在最后一轮只用 0.6m 以上的常规模数柜体补齐可用空墙；关闭后不生成，也不要求定制柜"><input id="customCabinetEnabled" type="checkbox" checked /><span>大模数定制柜</span></label>
             <label class="dimension-control">基准宽 <input id="roomWidth" type="number" min="2.4" max="7.0" step="0.1" value="3.6" /> m</label>
             <label class="dimension-control">基准深 <input id="roomDepth" type="number" min="2.4" max="7.0" step="0.1" value="3.8" /> m</label>
@@ -141,20 +146,13 @@
 
         <section class="panel side-section">
           <div class="section-head">
-            <h2 class="section-title">家具棋子库</h2>
+            <h2 class="section-title">家具棋子</h2>
             <span class="section-kicker" id="furnitureKicker">尺寸与数量可调</span>
           </div>
           <label class="inventory-mode"><input id="autoInventory" type="checkbox" checked />自动根据空间选择家具与数量</label>
-          <div class="config-actions">
-            <button class="ghost-btn" id="exportConfigBtn" type="button">导出当前规则</button>
-            <button class="ghost-btn" id="importConfigBtn" type="button">导入用户配置</button>
-            <button class="ghost-btn" id="resetConfigBtn" type="button">删除用户配置</button>
-            <a class="ghost-btn" href="furniture-rule-editor.html">编辑用户配置</a>
-            <input id="importConfigFile" type="file" accept="application/json,.json" hidden />
-          </div>
           <p class="config-save-status" id="configSaveStatus">正在读取全局配置与浏览器用户配置</p>
-          <div class="furniture-config" id="furnitureConfig"></div>
-          <div class="furniture-list" id="furnitureList"></div>
+          <div id="manualConfigPanel"><div class="furniture-config" id="furnitureConfig"></div></div>
+          <details class="furniture-list-details"><summary>查看当前棋子清单</summary><div class="furniture-list" id="furnitureList"></div></details>
         </section>
 
         <section class="panel side-section">
