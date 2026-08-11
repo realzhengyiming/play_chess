@@ -26,7 +26,7 @@
 推荐在项目根目录启动统一服务：
 
 ```powershell
-python floorplan_api.py
+uv run --frozen room-chess-server
 ```
 
 然后访问：

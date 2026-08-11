@@ -143,6 +143,8 @@ uv run --frozen python scripts/batch_recognize_samples.py
 
 两阶段改进目标见 [`docs/codex-layout-goal.md`](docs/codex-layout-goal.md)，设计距离与资料来源见 [`docs/design-rules-sources.md`](docs/design-rules-sources.md)。7 张卧室/融合客厅俯视参考图提炼出的配置、局部评分和全局评分建议见 [`docs/designer-top-view-layout-patterns.md`](docs/designer-top-view-layout-patterns.md)。
 
+当前完整 Demo、卧室模块棋升级版、页面路由和两套提速路径的简要对照见 [`docs/demo-pages-and-speed-summary.md`](docs/demo-pages-and-speed-summary.md)。
+
 还应在浏览器检查：
 
 1. 卧室、客厅及矩形/L 形/凹槽房型都能生成方案。
