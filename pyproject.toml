@@ -1,0 +1,20 @@
+[project]
+name = "room-chess"
+version = "0.1.0"
+description = "空间棋 AI 的静态页面、户型识别代理和全局配置服务"
+readme = "README.md"
+requires-python = ">=3.11,<4.0"
+dependencies = [
+  "fastapi>=0.115,<1.0",
+  "uvicorn>=0.32,<1.0",
+]
+
+[project.scripts]
+room-chess-server = "floorplan_api:main"
+
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["floorplan_api"]

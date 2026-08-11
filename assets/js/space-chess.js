@@ -1514,9 +1514,15 @@
       return {total,progress,completed,orphaned};
     }
 
-    function candidateStaticScore(item, pose, state, scene) {
-      let score = pose.anchor === 'wall' ? 8 : 15;
-      const candidateConfig=furnitureRule(item)?.candidate,candidateRows=Array.isArray(candidateConfig?.rules)?candidateConfig.rules:[],configuredEntry=candidateRows.find(row=>(row.id||row.relation)===pose.candidateRuleId)||candidateRows.find(row=>row.relation&&row.relation===pose.relation);if(configuredEntry)score+=24+(clamp(Number(configuredEntry.weight)||1,0,3)-1)*14;
+    function candidateStaticScore(item, pose, state, scene, scoreBreakdown=null) {
+      let score = 0,trackedScore=0;
+      const addScore=(label,value,group='通用规则')=>{
+        const amount=Number(value)||0;score+=amount;trackedScore+=amount;
+        if(Array.isArray(scoreBreakdown)&&Math.abs(amount)>EPS)scoreBreakdown.push({label,group,value:amount});
+        return amount;
+      };
+      addScore(pose.anchor === 'wall'?'贴墙基础分':'关系/区域基础分',pose.anchor === 'wall' ? 8 : 15,'候选基础');
+      const candidateConfig=furnitureRule(item)?.candidate,candidateRows=Array.isArray(candidateConfig?.rules)?candidateConfig.rules:[],configuredEntry=candidateRows.find(row=>(row.id||row.relation)===pose.candidateRuleId)||candidateRows.find(row=>row.relation&&row.relation===pose.relation);if(configuredEntry){addScore('命中候选规则',24,'配置规则');addScore(`候选规则权重 ×${clamp(Number(configuredEntry.weight)||1,0,3).toFixed(2)}`,(clamp(Number(configuredEntry.weight)||1,0,3)-1)*14,'配置规则')}
       const rect = poseRect(pose,item);
       const roomCenter = {x:scene.width/2,y:scene.depth/2};
       const distanceFromEntry = dist(pose,scene.door.entry);
@@ -1532,8 +1538,8 @@
         score+=bedWallModuleScore(item,pose,scene);
       }
       if (item.id === 'wardrobe') {
-        score += 22;
-        if (windowOverlap(item,pose,scene)) score -= 58;
+        addScore('衣柜类型基础分',22,'家具语义');
+        if (windowOverlap(item,pose,scene)) addScore('衣柜遮挡窗户',-58,'门窗关系');
       }
       if (item.id === 'desk') {
         score += 16;
@@ -1611,9 +1617,9 @@
         // 避免所有沿墙家具同时抢邻接位点而压缩后续可摆容量。
         const closureGap=pose.wallEndGap;
         const wall=scene.walls[pose.wallIndex],actual=itemLocalDims(item,pose),residual=Math.max(0,(wall?.length||actual.w)-actual.w),balancedDeskInstall=item.typeId==='desk'&&residual>DESIGN_QUALITY_RULES.wall.installGapMax&&residual<=DESIGN_QUALITY_RULES.wall.installGapMax*2+EPS;
-        if(balancedDeskInstall){const targetGap=residual/2;score+=18-Math.min(24,Math.abs(closureGap-targetGap)*240)}
-        else score+=closureGap<=.025?(storageLike?22:16):closureGap<=DESIGN_QUALITY_RULES.wall.installGapMax?(storageLike?13:9):
-          closureGap<=DESIGN_QUALITY_RULES.wall.severeGapMax?-44:closureGap<DESIGN_QUALITY_RULES.wall.usefulBayMin?-17:0;
+        if(balancedDeskInstall){const targetGap=residual/2;addScore('墙端均分安装缝',18-Math.min(24,Math.abs(closureGap-targetGap)*240),'墙面收口')}
+        else {const closureScore=closureGap<=.025?(storageLike?22:16):closureGap<=DESIGN_QUALITY_RULES.wall.installGapMax?(storageLike?13:9):
+          closureGap<=DESIGN_QUALITY_RULES.wall.severeGapMax?-44:closureGap<DESIGN_QUALITY_RULES.wall.usefulBayMin?-17:0;addScore(`墙端余缝 ${Math.max(0,closureGap).toFixed(2)}m`,closureScore,'墙面收口')}
         // 家具贴到墙端时，还要检查与相邻转角短墙的深度收口。
         // 例如 0.32m 深浅柜靠在 0.49m 返墙旁，会留下 0.17m 死缝；
         // 这种候选应在落子时被压低，不等最终墙面验收才淘汰整盘。
@@ -1623,9 +1629,9 @@
         if(endGap<=DESIGN_QUALITY_RULES.wall.installGapMax+EPS)adjacentWalls.push(scene.walls[(pose.wallIndex+1)%scene.walls.length]);
         for(const adjacent of adjacentWalls){
           const returnGap=(adjacent?.length||0)-actual.d;
-          if(returnGap<=DESIGN_QUALITY_RULES.wall.installGapMax+EPS)score+=10;
-          else if(returnGap<=DESIGN_QUALITY_RULES.wall.severeGapMax+EPS)score-=86;
-          else if(returnGap<DESIGN_QUALITY_RULES.wall.usefulBayMin-EPS)score-=30;
+          if(returnGap<=DESIGN_QUALITY_RULES.wall.installGapMax+EPS)addScore(`转角返墙余缝 ${Math.max(0,returnGap).toFixed(2)}m`,10,'墙面收口');
+          else if(returnGap<=DESIGN_QUALITY_RULES.wall.severeGapMax+EPS)addScore(`转角返墙死缝 ${returnGap.toFixed(2)}m`,-86,'墙面收口');
+          else if(returnGap<DESIGN_QUALITY_RULES.wall.usefulBayMin-EPS)addScore(`转角返墙无效余量 ${returnGap.toFixed(2)}m`,-30,'墙面收口');
         }
       }
       if (!configuredEntry&&item.id === 'hamper') score += pose.relation === 'utility-corner' ? 32 : -8;
@@ -1718,14 +1724,14 @@
       const zone = serviceZone(item,pose);
       const zoneRule=(furnitureRule(item)?.service||FURNITURE_RULES.default.service);
       const insideSamples = rectSamples(zone).filter(p => pointInPolygon(p,scene.polygon)).length;
-      score += insideSamples / 9 * 10;
+      addScore(`使用区位于室内 ${insideSamples}/9`,insideSamples / 9 * 10,'使用区');
       for (const [id, otherPose] of Object.entries(state.poses)) {
         const overlaps=footprintRects(ITEM_BY_ID[id],otherPose).some(otherRect=>rectsOverlap(zone,otherRect,0));
         if (overlaps) {
           // 柜前取物、展示柜浏览等软使用区只影响舒适度，不再等同碰撞。
           // 门扇、主通道和明确标为 hard 的工作区仍维持高惩罚。
           const softPenalty=furnitureRule(item)?.requiredAnchor==='wall'?2.5:4.5;
-          score -= item.id.startsWith('night') && id === 'bed' ? 2 : zoneRule.hard?13:softPenalty;
+          addScore(`使用区与${ITEM_BY_ID[id]?.label||id}重叠`,-(item.id.startsWith('night') && id === 'bed' ? 2 : zoneRule.hard?13:softPenalty),'使用区');
         }
       }
 
@@ -1741,15 +1747,19 @@
           const b0=otherAlong-otherWidth/2,b1=otherAlong+otherWidth/2,gap=Math.max(a0,b0)-Math.min(a1,b1);
           if(gap>=-.03)nearest=Math.min(nearest,Math.max(0,gap));
         }
-        if(Number.isFinite(nearest))score+=nearest<=DESIGN_QUALITY_RULES.wall.installGapMax?22:nearest<=DESIGN_QUALITY_RULES.wall.severeGapMax?-64:nearest<DESIGN_QUALITY_RULES.wall.usefulBayMin?-22:0;
+        if(Number.isFinite(nearest)){const neighborScore=nearest<=DESIGN_QUALITY_RULES.wall.installGapMax?22:nearest<=DESIGN_QUALITY_RULES.wall.severeGapMax?-64:nearest<DESIGN_QUALITY_RULES.wall.usefulBayMin?-22:0;addScore(`同墙家具净缝 ${nearest.toFixed(2)}m`,neighborScore,'墙面收口')}
       }
 
       const corridorPoint = {x:scene.door.entry.x,y:(scene.door.entry.y+roomCenter.y)/2};
-      if (pointInRect(corridorPoint,rect,.18)) score -= 18;
+      if (pointInRect(corridorPoint,rect,.18)) addScore('占用入口通道参考点',-18,'通行');
       // 组团推进分完全读取 layoutIntelligence.functionalGroups；新增家具或修改组员
       // 只调配置，不再为床组、沙发组、餐组分别追加 if/else。
-      score+=functionalGroupStepMerit(item,pose,state,scene).total;
-      score += ((item.preferenceWeight??furnitureRule(item).preferenceWeight??1)-1)*18;
+      addScore('功能组推进',functionalGroupStepMerit(item,pose,state,scene).total,'功能组');
+      addScore(`家具偏好权重 ×${Number(item.preferenceWeight??furnitureRule(item).preferenceWeight??1).toFixed(2)}`,((item.preferenceWeight??furnitureRule(item).preferenceWeight??1)-1)*18,'配置规则');
+      if(Array.isArray(scoreBreakdown)){
+        const untracked=score-trackedScore;
+        if(Math.abs(untracked)>EPS)scoreBreakdown.splice(Math.min(3,scoreBreakdown.length),0,{label:'家具语义、关系与尺寸适配',group:'家具语义',value:untracked});
+      }
       return score;
     }
 
@@ -4632,6 +4642,7 @@
     let beamFilter='all';
     let beamHitTargets=[];
     let treeInspectNodeId=null;
+    let beamCompareNodeIds=new Set();
     let beamVisualMode='board';
     // 默认保留完整 Beam 记录但不展开任何分支。检查人员从根节点开始逐层点击“＋”，
     // 可查看全部真实候选；折叠只影响画布绘制，不裁剪搜索树数据。
@@ -4823,7 +4834,7 @@
       if (searchDebounce) clearTimeout(searchDebounce);
       resetBoardViewport(false);
       scene=makeScene(shape,Number(ui.width.value),Number(ui.depth.value),Number(ui.multiplier.value));
-      result=null; activeState={poses:{}}; activeSolution=0; traceIndex=0;candidateSnapshotCache={key:null,value:null};treeInspectNodeId=null;beamRoundIndex=1;
+      result=null; activeState={poses:{}}; activeSolution=0; traceIndex=0;candidateSnapshotCache={key:null,value:null};treeInspectNodeId=null;beamCompareNodeIds.clear();beamRoundIndex=1;
       ui.multiplierOutput.textContent=`${scene.areaMultiplier.toFixed(2)}×`;
       ui.liveRoomArea.textContent=`${scene.area.toFixed(2)} m²`;
       ui.roomArea.textContent=`${scene.area.toFixed(2)} m² · ${scene.width.toFixed(2)}×${scene.depth.toFixed(2)} m · ${scene.compiledAnchors.length} 锚点`;
@@ -5247,8 +5258,8 @@
       sorted.forEach((node,index)=>childY.set(node.id,sorted.length===1?(plotTop+plotBottom)/2:plotTop+index*(plotBottom-plotTop)/(sorted.length-1)));
       beamCtx.lineWidth=.65;
       for(const node of sorted){const py=parentY.get(node.parentId);if(py==null)continue;const ny=childY.get(node.id);beamCtx.strokeStyle=(BEAM_STATUS[node.status]?.color||'#9aa39f')+'32';beamCtx.beginPath();beamCtx.moveTo(leftX+4,py);beamCtx.bezierCurveTo(width*.34,py,width*.66,ny,rightX-4,ny);beamCtx.stroke();}
-      for(const parent of parents){const y=parentY.get(parent.id),selected=treeInspectNodeId===parent.id;beamCtx.beginPath();beamCtx.arc(leftX,y,selected?5:Math.max(1.5,3.2-Math.log10(parents.length+1)),0,Math.PI*2);beamCtx.fillStyle=selected?'#ff5b38':'#18231f';beamCtx.fill();beamHitTargets.push({type:'node',id:parent.id,x:leftX,y,r:7});}
-      for(const node of sorted){const y=childY.get(node.id),selected=treeInspectNodeId===node.id,color=BEAM_STATUS[node.status]?.color||'#9aa39f';beamCtx.beginPath();beamCtx.arc(rightX,y,selected?6:(sorted.length>900?1.35:sorted.length>300?1.8:2.8),0,Math.PI*2);beamCtx.fillStyle=color;beamCtx.fill();if(selected){beamCtx.strokeStyle='#18231f';beamCtx.lineWidth=2;beamCtx.stroke();}beamHitTargets.push({type:'node',id:node.id,x:rightX,y,r:Math.max(6,sorted.length>500?4:7)});}
+      for(const parent of parents){const y=parentY.get(parent.id),selected=treeInspectNodeId===parent.id,compared=beamCompareNodeIds.has(parent.id);beamCtx.beginPath();beamCtx.arc(leftX,y,selected?5:compared?4:Math.max(1.5,3.2-Math.log10(parents.length+1)),0,Math.PI*2);beamCtx.fillStyle=selected?'#ff5b38':compared?'#5c46be':'#18231f';beamCtx.fill();beamHitTargets.push({type:'node',id:parent.id,x:leftX,y,r:7});}
+      for(const node of sorted){const y=childY.get(node.id),selected=treeInspectNodeId===node.id,compared=beamCompareNodeIds.has(node.id),color=BEAM_STATUS[node.status]?.color||'#9aa39f';beamCtx.beginPath();beamCtx.arc(rightX,y,selected?6:compared?5:(sorted.length>900?1.35:sorted.length>300?1.8:2.8),0,Math.PI*2);beamCtx.fillStyle=compared?'#5c46be':color;beamCtx.fill();if(selected||compared){beamCtx.strokeStyle=selected?'#18231f':'#5c46be';beamCtx.lineWidth=2;beamCtx.stroke();}beamHitTargets.push({type:'node',id:node.id,x:rightX,y,r:Math.max(6,sorted.length>500?4:7)});}
       if(!sorted.length){beamCtx.fillStyle='#69736f';beamCtx.font='700 12px system-ui';beamCtx.textAlign='center';beamCtx.fillText('当前筛选条件下没有节点',width/2,(plotTop+plotBottom)/2);}
       beamCtx.fillStyle='#89918d';beamCtx.font='700 9px system-ui';beamCtx.textAlign='left';beamCtx.fillText('上方 = 累计启发分更高',18,height-15);
     }
@@ -5285,7 +5296,7 @@
         for(const output of tree.outputs||[]){let branch=output;while(branch){beamOutputPath.add(branch.id);if(beamExpansionMode==='focus'&&branch.parentId)beamExpandedNodes.add(branch.parentId);branch=branch.parentId?tree.nodeById.get(branch.parentId):null;}}
         if(beamExpansionMode==='all'){beamExpandedNodes.add('n0');for(const round of tree.rounds)for(const node of round.nodes)if(node.status==='retained'||node.status==='finalist')beamExpandedNodes.add(node.id);}
       }
-      beamViewport={x:52,y:70,scale:beamExpansionMode==='all'?.38:.68};beamNeedsCenter=true;treeInspectNodeId=null;
+      beamViewport={x:52,y:70,scale:beamExpansionMode==='all'?.38:.68};beamNeedsCenter=true;treeInspectNodeId=null;beamCompareNodeIds.clear();
     }
 
     function drawBeamMiniBoard(node,x,y,w,h) {
@@ -5332,12 +5343,12 @@
       if(beamExpansionMode==='focus')for(const [parentId,rows] of displayChildren){const p=positions.get(parentId);if(!p||!beamOutputPath.has(parentId))continue;for(const child of rows){if(!beamOutputPath.has(child.id))continue;const c=positions.get(child.id);beamCtx.strokeStyle='rgba(21,154,123,.16)';beamCtx.lineWidth=22;beamCtx.beginPath();beamCtx.moveTo(p.x+cardW,p.y+p.h/2);beamCtx.bezierCurveTo(p.x+cardW+columnGap*.48,p.y+p.h/2,c.x-columnGap*.48,c.y+c.h/2,c.x,c.y+c.h/2);beamCtx.stroke();}}
       for(const [parentId,rows] of displayChildren){const p=positions.get(parentId);if(!p)continue;for(const child of rows){const c=positions.get(child.id),topColor=child.topRank===1?'#f0a52b':child.topRank===2?'#7d63d5':child.topRank===3?'#159a7b':null,isFocus=beamExpansionMode==='focus'&&beamOutputPath.has(parentId)&&beamOutputPath.has(child.id);beamCtx.strokeStyle=topColor||(isFocus?'rgba(21,154,123,.92)':child.status==='output'?'rgba(92,70,190,.66)':(BEAM_STATUS[child.status]?.color||'#126c5c')+'55');beamCtx.lineWidth=child.topRank?3.6:child.status==='output'?2.4:isFocus?3:1.25;beamCtx.beginPath();beamCtx.moveTo(p.x+cardW,p.y+p.h/2);beamCtx.bezierCurveTo(p.x+cardW+columnGap*.48,p.y+p.h/2,c.x-columnGap*.48,c.y+c.h/2,c.x,c.y+c.h/2);beamCtx.stroke();}}
       const activePlanTreeId=result?.solutions?.[activeSolution]?._treeId;
-      for(const [id,node] of visible){const p=positions.get(id),status=BEAM_STATUS[node.status]||BEAM_STATUS.retained,selected=treeInspectNodeId===id,compact=isCompact(node),isFocus=beamExpansionMode==='focus'&&beamOutputPath.has(id);
+      for(const [id,node] of visible){const p=positions.get(id),status=BEAM_STATUS[node.status]||BEAM_STATUS.retained,selected=treeInspectNodeId===id,compared=beamCompareNodeIds.has(id),compact=isCompact(node),isFocus=beamExpansionMode==='focus'&&beamOutputPath.has(id);
         const isOutput=node.status==='output',topColor=node.topRank===1?'#f0a52b':node.topRank===2?'#7d63d5':node.topRank===3?'#159a7b':null;
         const spaceSolutionIndex=isOutput?(result?.autoSelection?(node.parentId===activePlanTreeId?activeSolution:null):node.solutionIndex):null;
         beamCtx.shadowColor=topColor?'rgba(240,165,43,.28)':'rgba(35,45,40,.10)';beamCtx.shadowBlur=selected?14:topColor?15:compact?3:9;beamCtx.shadowOffsetY=compact?1:4;beamCtx.fillStyle=topColor?'#fffcf3':compact?`${status.color}12`:'#fff';beamCtx.strokeStyle=topColor||status.color;beamCtx.lineWidth=topColor?3:isFocus?2.8:compact?1:1.5;beamCtx.beginPath();beamCtx.roundRect(p.x,p.y,cardW,p.h,compact?7:14);beamCtx.fill();beamCtx.stroke();beamCtx.shadowColor='transparent';
         if(isFocus&&!compact){beamCtx.save();beamCtx.setLineDash([7,5]);beamCtx.strokeStyle='rgba(21,154,123,.88)';beamCtx.lineWidth=2;beamCtx.beginPath();beamCtx.roundRect(p.x-7,p.y-7,cardW+14,p.h+14,18);beamCtx.stroke();beamCtx.restore();}
-        if(selected){beamCtx.save();beamCtx.setLineDash([6,5]);beamCtx.strokeStyle='rgba(49,92,147,.9)';beamCtx.lineWidth=1.6;beamCtx.beginPath();beamCtx.roundRect(p.x-6,p.y-6,cardW+12,p.h+12,compact?10:18);beamCtx.stroke();beamCtx.restore();}
+        if(selected||compared){beamCtx.save();beamCtx.setLineDash(selected?[6,5]:[3,4]);beamCtx.strokeStyle=selected?'rgba(49,92,147,.95)':'rgba(92,70,190,.82)';beamCtx.lineWidth=selected?2.2:1.8;beamCtx.beginPath();beamCtx.roundRect(p.x-6,p.y-6,cardW+12,p.h+12,compact?10:18);beamCtx.stroke();beamCtx.restore();}
         const item=node.itemId?ITEM_BY_ID[node.itemId]:null,sizeName=node.skipped?' · 跳过（0 件）':node.pose?.sizeLabel?` · ${node.pose.sizeLabel}`:'';beamCtx.fillStyle=topColor||isOutput?'#5c46be':'#18231f';if(topColor)beamCtx.fillStyle=topColor;beamCtx.font='800 11px system-ui';beamCtx.textAlign='left';beamCtx.textBaseline='middle';const outputTitle=node.topRank?`方案 ${String.fromCharCode(64+node.topRank)} · 最终输出`:`输出方案 ${node.outputIndex}`;const nodeTitle=node.depth?`${node.depth}. ${itemStepLabel(item)||node.itemId}${sizeName}`:'0. 空房间';beamCtx.fillText(fitText(isOutput?outputTitle:nodeTitle,cardW-20),p.x+10,p.y+14);beamCtx.fillStyle=topColor||status.color;beamCtx.font='800 9px system-ui';beamCtx.textAlign='right';const continued=node.status==='retained'||node.status==='finalist'||node.status==='output';const scoreText=isOutput?`总分 ${node.score.toFixed(1)}`:continued?`排名 #${node.rank||'-'} · 累计 ${node.score.toFixed(1)} 分`:`最终累计 ${node.score.toFixed(1)} 分`;beamCtx.fillText(fitText(scoreText,cardW-20),p.x+cardW-10,p.y+30);
         if(compact){beamCtx.fillStyle=status.color;beamCtx.font='750 8px system-ui';beamCtx.textAlign='left';beamCtx.fillText(`${status.label}${node.reason?` · ${node.reason}`:''}`.slice(0,36),p.x+10,p.y+21);}
         else{
@@ -5389,14 +5400,41 @@
       if(beamVisualMode==='board')renderBeamBoardTree();else renderBeamOverview();
     }
 
+    function beamNodeScoreDetails(node){
+      const tree=activeBeamTree(),item=node?.itemId?ITEM_BY_ID[node.itemId]:null,pose=node?.pose;
+      if(!item||!pose||node.skipped)return {rows:[],parentScore:Number(node?.score||0)-Number(node?.merit||0),merit:Number(node?.merit||0)};
+      const parent=tree?.nodeById?.get(node.parentId),parentState={poses:{...(parent?.poses||{})}},rows=[];
+      const staticScore=candidateStaticScore(item,pose,parentState,scene,rows),sizeScore=sizePolicyMerit(item,pose,scene);
+      if(Math.abs(sizeScore)>EPS)rows.push({label:'尺寸策略',group:'尺寸适配',value:sizeScore});
+      const correction=Number(node.merit||0)-(staticScore+sizeScore);
+      if(Math.abs(correction)>.01)rows.push({label:'搜索记录校正',group:'搜索记录',value:correction});
+      return {rows,parentScore:Number(node.score||0)-Number(node.merit||0),merit:Number(node.merit||0)};
+    }
+
+    function beamScoreComparisonHtml(nodes){
+      if(nodes.length<2)return '';
+      const details=nodes.map(node=>beamNodeScoreDetails(node)),keys=[],labels=new Map();
+      for(const detail of details)for(const row of detail.rows){const key=`${row.group}\u0000${row.label}`;if(!labels.has(key)){labels.set(key,row);keys.push(key)}}
+      const nodeLabel=(node,index)=>`${String.fromCharCode(65+index)} · #${node.rank||'—'} · ${node.score.toFixed(1)}`;
+      const valuesFor=key=>details.map(detail=>detail.rows.filter(row=>`${row.group}\u0000${row.label}`===key).reduce((sum,row)=>sum+row.value,0));
+      return `<div class="beam-score-compare"><div class="beam-compare-heading"><strong>同级节点评分对比 · 第 ${nodes[0].depth} 手</strong><button type="button" data-beam-compare-clear>清空对比</button></div><div class="beam-compare-scroll"><table><thead><tr><th>评分项目</th>${nodes.map((node,index)=>`<th>${nodeLabel(node,index)}</th>`).join('')}</tr></thead><tbody><tr class="summary"><td>父局面累计</td>${details.map(detail=>`<td>${detail.parentScore.toFixed(2)}</td>`).join('')}</tr><tr class="summary"><td>本手合计</td>${details.map(detail=>`<td>${detail.merit>=0?'+':''}${detail.merit.toFixed(2)}</td>`).join('')}</tr>${keys.map(key=>{const row=labels.get(key),values=valuesFor(key),max=Math.max(...values),min=Math.min(...values),changed=max-min>.01;return `<tr class="${changed?'changed':''}"><td><em>${row.group}</em>${row.label}</td>${values.map(value=>`<td class="${changed&&value===max?'best':''} ${value<0?'negative':value>0?'positive':''}">${value>=0?'+':''}${value.toFixed(2)}</td>`).join('')}</tr>`}).join('')}</tbody></table></div><p>紫色虚线为已加入对比的节点；黄色单元格表示该评分项在本组中的最高值。继续点击同一级节点可加入或移除，最多对比 4 个。</p></div>`;
+    }
+
     function inspectBeamNode(id) {
-      const node=activeBeamTree()?.nodeById?.get(id);if(!node)return;
+      const tree=activeBeamTree(),node=tree?.nodeById?.get(id);if(!node)return;
+      if(node.depth){const selected=[...beamCompareNodeIds].map(nodeId=>tree.nodeById.get(nodeId)).filter(Boolean);if(selected.length&&selected[0].depth!==node.depth)beamCompareNodeIds.clear();if(beamCompareNodeIds.has(id))beamCompareNodeIds.delete(id);else{if(beamCompareNodeIds.size>=4)beamCompareNodeIds.delete(beamCompareNodeIds.values().next().value);beamCompareNodeIds.add(id)}}
       treeInspectNodeId=id;activeState={poses:{...(node.poses||{})}};candidateSnapshotCache={key:null,value:null};
       const item=node.itemId?ITEM_BY_ID[node.itemId]:null,status=BEAM_STATUS[node.status]||BEAM_STATUS.pending;
       const pose=node.pose;
       const poseDetail=node.skipped?`；本槽位选择 0 件，本手 ${node.merit.toFixed(2)} 分，累计 ${node.score.toFixed(2)} 分`:pose?`；坐标 (${pose.x.toFixed(2)}, ${pose.y.toFixed(2)}) m，旋转 ${pose.rotation||0}°，本手 ${node.merit.toFixed(2)} 分，累计 ${node.score.toFixed(2)} 分${node.forwardDomain!=null?`，下一手合法域 ${node.forwardDomain} 个`:''}`:'';
       const heading=node.status==='output'?(node.topRank?`全局总分 TOP ${node.topRank} · 空间方案 ${String.fromCharCode(64+node.topRank)}`:`最终输出方案 ${node.outputIndex}`):node.depth?`第 ${node.depth} 回合 · ${itemStepLabel(item)||node.itemId}${node.skipped?' · 跳过（0 件）':pose?.sizeLabel?` · ${pose.sizeLabel} ${pose.overrideW.toFixed(2)}×${pose.overrideD.toFixed(2)} m`:''}`:'起始空房间';
-      ui.beamDetail.innerHTML=`<strong>${heading} · ${status.label}</strong><br>${node.reason||'Beam 保留局面'}${poseDetail}。`;
+      let scoreHtml='';
+      if(item&&pose&&!node.skipped){
+        const detail=beamNodeScoreDetails(node);
+        scoreHtml=`<div class="beam-score-breakdown"><div class="beam-score-equation"><span>父局面累计 <b>${detail.parentScore.toFixed(2)}</b></span><i>+</i><span>本手 <b>${node.merit.toFixed(2)}</b></span><i>=</i><span>当前累计 <b>${node.score.toFixed(2)}</b></span></div><div class="beam-score-rows">${detail.rows.map(row=>`<div class="beam-score-row"><span><em>${row.group}</em>${row.label}</span><b class="${row.value>=0?'positive':'negative'}">${row.value>=0?'+':''}${row.value.toFixed(2)}</b></div>`).join('')}</div></div>`;
+      }
+      const compareNodes=[...beamCompareNodeIds].map(nodeId=>tree.nodeById.get(nodeId)).filter(Boolean);
+      ui.beamDetail.innerHTML=`<strong>${heading} · ${status.label}</strong><br>${node.reason||'Beam 保留局面'}${poseDetail}。${scoreHtml}${beamScoreComparisonHtml(compareNodes)}`;
       ui.depthMetric.textContent=`${node.depth} / ${FURNITURE.length}`;ui.boardStatus.textContent=`正在查看 Beam 节点 ${node.id} · ${status.label}`;
       updateScores(evaluateFull(activeState,scene));renderBeamTree();resizeAndDraw();
     }
@@ -5902,6 +5940,7 @@
     ui.beamFocusBest.addEventListener('click',()=>{beamExpansionMode='focus';beamVisualMode='board';resetBeamBoardView();renderBeamTree();});
     ui.beamResetView.addEventListener('click',()=>{if(beamVisualMode==='board')resetBeamBoardView();else{beamRoundIndex=1;treeInspectNodeId=null;}renderBeamTree();});
     ui.beamFullscreen.addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await ui.beamPanel.requestFullscreen();}catch{ui.beamDetail.innerHTML='<strong>无法进入全屏</strong><br>当前浏览器限制了本地文件的全屏权限，可使用浏览器菜单或 F11。';}});
+    ui.beamDetail.addEventListener('click',event=>{if(!event.target.closest('[data-beam-compare-clear]'))return;beamCompareNodeIds.clear();treeInspectNodeId=null;ui.beamDetail.innerHTML='<strong>对比已清空</strong><br>继续点击同一回合的节点，可重新建立评分对比。';renderBeamTree();});
     document.addEventListener('fullscreenchange',()=>{ui.beamFullscreen.textContent=document.fullscreenElement?'退出全屏':'全屏查看';requestAnimationFrame(renderBeamTree);});
     ui.beamRound.addEventListener('input',()=>{beamRoundIndex=Number(ui.beamRound.value);treeInspectNodeId=null;renderBeamTree();});
     ui.beamFilters.addEventListener('click',event=>{const button=event.target.closest('[data-beam-filter]');if(!button)return;beamFilter=button.dataset.beamFilter;treeInspectNodeId=null;ui.beamFilters.querySelectorAll('[data-beam-filter]').forEach(btn=>btn.classList.toggle('active',btn===button));renderBeamTree();});

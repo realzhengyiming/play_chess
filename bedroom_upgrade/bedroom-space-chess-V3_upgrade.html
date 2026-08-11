@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>卧室空间棋 AI · Upgrade</title>
+  <link rel="stylesheet" href="assets/bedroom-upgrade.css?v=20260810-8">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">ROOM / CHESS ENGINE · BEDROOM UPGRADE</p>
+        <h1>卧室空间棋 AI</h1>
+        <p class="version-note">独立升级分支 V2.8 · 多棋谱竞赛 + 局部重排 + 全局家具能力包</p>
+      </div>
+      <div class="hero-copy">
+        <strong>这一版不再逐件家具扩大采样。</strong>
+        <span>先判断局型，匹配卧室棋谱，再以睡眠组、收纳组、工作组等完整模块作为一手棋。</span>
+        <a href="bedroom-golden-regression.html?v=20260810-8">打开金牌批量回归台 ↗</a>
+        <a href="../bedroom-space-chess-V3.html">打开旧版基线 ↗</a>
+      </div>
+    </header>
+
+    <section class="toolbar panel">
+      <div class="preset-group" aria-label="房间预设">
+        <button data-room="compact">紧凑卧室</button>
+        <button class="active" data-room="standard">标准卧室</button>
+        <button data-room="long">狭长卧室</button>
+        <button data-room="suite">大卧室</button>
+      </div>
+      <label>宽 <input id="roomWidth" type="number" min="2.7" max="8" step="0.1" value="3.6"> m</label>
+      <label>深 <input id="roomDepth" type="number" min="2.7" max="8" step="0.1" value="3.8"> m</label>
+      <label>棋谱
+        <select id="patternSelect">
+          <option value="auto">自动识别</option>
+        </select>
+      </label>
+      <button class="primary" id="generateBtn">▶ 下模块棋</button>
+      <button id="localReplanBtn">锁定后局部重排</button>
+      <button id="resetBtn">恢复标准房间</button>
+      <button id="exportBtn">导出拓扑与方案 JSON</button>
+      <span class="config-state" id="furnitureConfigState">家具：内置稳定模数</span>
+      <label class="toggle"><input id="showZones" type="checkbox" checked><span>显示模块使用区</span></label>
+      <label class="toggle"><input id="showDirections" type="checkbox" checked><span>显示家具方向</span></label>
+      <label class="toggle"><input id="showRelations" type="checkbox" checked><span>显示关系检查</span></label>
+      <label class="toggle"><input id="showGrid" type="checkbox" checked><span>显示 0.1m 参考网格</span></label>
+    </section>
+
+    <section class="recognition-bar panel">
+      <div class="recognition-intro"><strong>读取旧版户型识别 JSON</strong><span>选择内置样例或本地 JSON，再选择其中的卧室。正交异形轮廓、真实门窗会直接进入模块棋。</span></div>
+      <select id="sampleSelect" aria-label="旧版户型样例">
+        <option value="">选择内置样例</option>
+        <option value="demo-family-100.json" data-area="100">三室户型 100㎡</option>
+        <option value="demo-family-73.json" data-area="73">紧凑户型 73㎡</option>
+        <option value="case_1_145.json" data-area="145">户型样例 1 · 145㎡</option>
+        <option value="case_2_61.4.json" data-area="61.4">户型样例 2 · 61.4㎡</option>
+        <option value="case_3_150.json" data-area="150">户型样例 3 · 150㎡</option>
+        <option value="case_4_87.7.json" data-area="87.7">户型样例 4 · 87.7㎡</option>
+        <option value="case_5_53.6.json" data-area="53.6">户型样例 5 · 53.6㎡</option>
+        <option value="case_6_60.json" data-area="60">户型样例 6 · 60㎡</option>
+        <option value="case_18_80.json" data-area="80">户型样例 18 · 80㎡</option>
+        <option value="case_19_47.9.json" data-area="47.9">户型样例 19 · 47.9㎡</option>
+      </select>
+      <button id="loadSampleBtn" type="button">载入内置样例</button>
+      <label class="json-file">选择本地 JSON<input id="recognizedJsonFile" type="file" accept="application/json,.json"></label>
+      <label>户型总面积 <input id="recognizedArea" type="number" min="1" step="0.1" value="100">㎡</label>
+      <select id="recognizedRoomSelect" disabled><option value="">载入后选择卧室</option></select>
+      <div class="recognition-state" id="recognitionState">尚未载入识别 JSON</div>
+    </section>
+
+    <section class="workspace">
+      <div class="main-column">
+        <section class="board-panel panel">
+          <div class="panel-head">
+            <div>
+              <p class="kicker" id="patternKicker">等待识别局型</p>
+              <h2 id="patternTitle">标准外围型</h2>
+              <p id="patternDescription">准备生成卧室模块方案。</p>
+            </div>
+            <div class="status" id="boardStatus">等待下棋</div>
+          </div>
+          <div class="canvas-wrap">
+            <canvas id="board" aria-label="卧室模块棋盘"></canvas>
+            <div class="canvas-badge" id="canvasBadge">空房间</div>
+            <div class="legend">
+              <span><i class="sleep"></i>睡眠组</span>
+              <span><i class="storage"></i>收纳组</span>
+              <span><i class="infill"></i>定制柜</span>
+              <span><i class="work"></i>工作组</span>
+              <span><i class="media"></i>媒体组</span>
+              <span><i class="lounge"></i>休闲组</span>
+              <span><i class="zone"></i>共享使用区</span>
+              <span><i class="door-zone"></i>门前禁占区</span>
+              <span><i class="relation"></i>软正对关系</span>
+              <span><i class="orientation"></i>家具语义正面</span>
+            </div>
+          </div>
+          <div class="metrics">
+            <div><span>模块动作节点</span><strong id="metricNodes">0</strong></div>
+            <div><span>原始语义走法</span><strong id="metricActions">0</strong></div>
+            <div><span>Beam 宽度</span><strong id="metricBeam">16</strong></div>
+            <div><span>总运行时间</span><strong id="metricTime">—</strong></div>
+            <div><span>通行连通率</span><strong id="metricFlow">—</strong></div>
+            <div><span>空间利用评分</span><strong id="metricComplete">—</strong></div>
+          </div>
+        </section>
+
+        <section class="panel solutions-panel">
+          <div class="panel-head compact"><div><p class="kicker">TOP 3</p><h2>模块棋方案</h2></div><span>点击方案切换棋盘</span></div>
+          <div class="solution-strip" id="solutionStrip"></div>
+        </section>
+
+        <section class="panel trace-panel">
+          <div class="panel-head compact"><div><p class="kicker">MOVE TRACE</p><h2>模块落子过程</h2></div><span>一手棋可以展开成多件家具</span></div>
+          <div class="trace-strip" id="traceStrip"></div>
+        </section>
+
+        <section class="panel tree-panel">
+          <div class="panel-head compact"><div><p class="kicker">BEAM SEARCH TREE</p><h2>压缩棋谱树</h2></div><span>每层展示候选、保留、选中分支与微秒耗时</span></div>
+          <div class="chess-tree" id="chessTree"></div>
+        </section>
+      </div>
+
+      <aside class="sidebar">
+        <section class="panel side-panel">
+          <p class="kicker">ROOM SIGNATURE</p>
+          <h2>房间局型</h2>
+          <dl class="signature" id="signature"></dl>
+          <div class="pattern-ranking" id="patternRanking"></div>
+        </section>
+
+        <section class="panel side-panel">
+          <p class="kicker">CHESS BOOK</p>
+          <h2>本局棋谱</h2>
+          <ol class="module-plan" id="modulePlan"></ol>
+        </section>
+
+        <section class="panel side-panel">
+          <p class="kicker">BOARD STATE</p>
+          <h2>已落模块</h2>
+          <div class="module-list" id="moduleList"></div>
+        </section>
+
+        <section class="panel side-panel">
+          <p class="kicker">SPACE OPPORTUNITY</p>
+          <h2>空间机会裁判</h2>
+          <div class="opportunity-summary" id="opportunitySummary"></div>
+          <div class="opportunity-list" id="opportunityList"></div>
+        </section>
+
+        <section class="panel side-panel note-panel">
+          <p class="kicker">V1 EXPERIMENT</p>
+          <h2>当前边界</h2>
+          <p>V2 已接入正交异形多边形、真实门窗、定制柜填缝与模块软关系。当前边界是斜墙尚未进入模块棋，且关系棋谱仍需要更多优质卧室样例校准。</p>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <script src="data/bedroom-patterns.js?v=20260810-8"></script>
+  <script src="assets/recognized-room-adapter.js?v=20260810-8"></script>
+  <script src="assets/bedroom-room-topology.js?v=20260810-8"></script>
+  <script src="assets/bedroom-module-engine.js?v=20260810-8"></script>
+  <script src="assets/bedroom-upgrade-ui.js?v=20260810-8"></script>
+</body>
+</html>

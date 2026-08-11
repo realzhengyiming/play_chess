@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "description": "卧室模块棋首批金牌回归条件。金牌条件保存语义和验收下限，不锁死绝对坐标。",
+  "cases": [
+    {
+      "id": "preset-compact",
+      "label": "紧凑矩形卧室",
+      "source": {"kind": "preset", "width": 2.9, "depth": 3.4},
+      "expected": {"pattern": "standard-perimeter", "requiredTypes": ["sleep", "storage"], "minScore": 80, "maxOpportunityCount": 0, "maxTimeMs": 150}
+    },
+    {
+      "id": "preset-standard",
+      "label": "标准矩形卧室",
+      "source": {"kind": "preset", "width": 3.6, "depth": 3.8},
+      "expected": {"pattern": "standard-perimeter", "requiredTypes": ["sleep", "storage", "work"], "minScore": 90, "maxOpportunityCount": 0, "maxTimeMs": 150}
+    },
+    {
+      "id": "preset-long",
+      "label": "狭长矩形卧室",
+      "source": {"kind": "preset", "width": 3.1, "depth": 5.6},
+      "expected": {"pattern": "hotel-long-axis", "requiredTypes": ["sleep", "media", "storage", "work"], "minScore": 90, "maxOpportunityCount": 0, "maxTimeMs": 150}
+    },
+    {
+      "id": "preset-suite",
+      "label": "大卧室套间",
+      "source": {"kind": "preset", "width": 5.2, "depth": 4.8},
+      "expected": {"pattern": "suite-zoned", "requiredTypes": ["sleep", "storage", "work", "lounge", "dressing"], "minScore": 90, "maxOpportunityCount": 0, "maxTimeMs": 180}
+    },
+    {
+      "id": "demo-100-bedroom-1",
+      "label": "100㎡样例·L形狭长卧室",
+      "source": {"kind": "recognized", "file": "demo-family-100.json", "totalArea": 100, "roomLabel": "卧室 1"},
+      "expected": {"pattern": "hotel-long-axis", "requiredTypes": ["sleep", "media", "storage", "work", "infill"], "sleepSize": "S2", "minNightstands": 2, "infillFacing": {"x": 1, "y": 0}, "maxCabinetWallShadow": 0.2, "maxOpportunityCount": 0, "minScore": 88, "maxTimeMs": 220}
+    },
+    {
+      "id": "demo-100-bedroom-2",
+      "label": "100㎡样例·六角异形卧室",
+      "source": {"kind": "recognized", "file": "demo-family-100.json", "totalArea": 100, "roomLabel": "卧室 2"},
+      "expected": {"pattern": "hotel-long-axis", "requiredTypes": ["sleep", "media", "storage", "work", "lounge"], "minNightstands": 2, "maxOpportunityCount": 0, "minScore": 90, "maxTimeMs": 220}
+    },
+    {
+      "id": "case-1-bedroom-2",
+      "label": "145㎡样例·大卧室异形套间",
+      "source": {"kind": "recognized", "file": "case_1_145.json", "totalArea": 145, "roomLabel": "卧室 2"},
+      "expected": {"pattern": "suite-zoned", "requiredTypes": ["sleep", "storage", "work", "lounge", "dressing"], "maxOpportunityCount": 0, "minScore": 90, "maxTimeMs": 250}
+    }
+  ]
+}

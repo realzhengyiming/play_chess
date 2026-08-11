@@ -1,3 +1,12 @@
+Metadata-Version: 2.4
+Name: room-chess
+Version: 0.1.0
+Summary: 空间棋 AI 的静态页面、户型识别代理和全局配置服务
+Requires-Python: <4.0,>=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: fastapi<1.0,>=0.115
+Requires-Dist: uvicorn<1.0,>=0.32
+
 # 空间棋 AI · Prototype 09
 
 这是一个以“落子”方式生成卧室、客厅家具布局的前端原型。页面在离散网格上生成候选点，执行碰撞、功能区和通行约束检查，再用 Beam Search 保留较优的中间状态并输出多套方案。
@@ -6,32 +15,32 @@
 
 ## 快速启动
 
-项目使用 [uv](https://docs.astral.sh/uv/) 管理 Python 版本、虚拟环境和依赖。服务器需预装 `uv` 和 Node.js（全局配置接口会调用 Node.js 校验规则）。首次拉取代码后，在项目目录运行：
+项目使用 [uv](https://docs.astral.sh/uv/) 管理 Python 版本、虚拟环境和依赖。首次拉取代码后，在项目目录运行：
 
 ```powershell
 uv sync --frozen
-uv run --frozen room-chess-server
+uv run room-chess-server
 ```
 
-`uv sync --frozen` 严格按照仓库内的 `uv.lock` 创建 `.venv`，后续启动只需运行第二条命令。默认监听 `0.0.0.0:8765`；本机浏览器仍使用 `http://127.0.0.1:8765/` 访问。
+`uv sync --frozen` 严格按照仓库内的 `uv.lock` 创建 `.venv`，后续启动只需运行第二条命令。
 
 开发时自动重载：
 
 ```powershell
-uv run --frozen uvicorn floorplan_api:app --host 127.0.0.1 --port 8765 --reload
+uv run uvicorn floorplan_api:app --host 127.0.0.1 --port 8765 --reload
 ```
 
 Linux 服务器监听所有网卡：
 
 ```bash
 uv sync --frozen
-ROOM_CHESS_HOST=0.0.0.0 ROOM_CHESS_PORT=8765 uv run --frozen room-chess-server
+ROOM_CHESS_HOST=0.0.0.0 ROOM_CHESS_PORT=8765 uv run room-chess-server
 ```
 
 也可以直接使用 Uvicorn 参数：
 
 ```bash
-uv run --frozen uvicorn floorplan_api:app --host 0.0.0.0 --port 8765
+uv run uvicorn floorplan_api:app --host 0.0.0.0 --port 8765
 ```
 
 打开：
@@ -128,13 +137,13 @@ node test_layout_stress.js
 node tests/config_contract_test.js
 node tests/layout_quality_benchmark.js --assert-quality
 node tests/recognized_room_suite.js --assert-quality --assert-speed
-uv run --frozen python -m py_compile floorplan_api.py
+uv run python -m py_compile floorplan_api.py
 ```
 
 新增户型图片时，可将文件按 `case_编号_面积.jpg/png` 命名后放入 `样例图片数据`，启动本地服务并运行：
 
 ```powershell
-uv run --frozen python scripts/batch_recognize_samples.py
+uv run python scripts/batch_recognize_samples.py
 ```
 
 脚本会跳过已有 JSON；需要重新请求全部结果时追加 `--force`。

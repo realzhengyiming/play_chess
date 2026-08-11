@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>卧室空间棋·金牌批量回归台</title>
+  <style>
+    :root{--ink:#18231f;--muted:#68736e;--paper:#f5f2ea;--green:#116c5c;--line:#dce0da}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif}.shell{width:min(1500px,calc(100% - 28px));margin:auto;padding:28px 0 50px}.head{display:flex;justify-content:space-between;align-items:end;gap:20px}.head h1{margin:0;font-size:clamp(34px,5vw,64px);letter-spacing:-.06em}.head p{margin:8px 0 0;color:var(--muted)}a{color:var(--green);font-weight:800;text-decoration:none}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:22px 0 14px}.metric,.panel{border:1px solid var(--line);border-radius:16px;background:#fff}.metric{padding:13px}.metric span{display:block;color:var(--muted);font-size:10px}.metric strong{display:block;margin-top:5px;font-size:24px}.panel{overflow:auto}.notice{padding:13px 15px;border-radius:13px;background:#fff0db;color:#8a4a17;margin:16px 0}.notice.ok{background:#e3f2ed;color:#0c6657}table{width:100%;min-width:1050px;border-collapse:collapse}th,td{padding:12px 13px;border-bottom:1px solid var(--line);text-align:left;font-size:11px;vertical-align:top}th{position:sticky;top:0;background:#f2f4f0;color:var(--muted)}tr.fail{background:#fff1ed}.pass{color:var(--green);font-weight:900}.fail-text,.errors{color:#bb3f22;font-weight:900}.modules{max-width:410px;line-height:1.55}@media(max-width:720px){.summary{grid-template-columns:repeat(2,1fr)}.head{display:block}.head a{display:inline-block;margin-top:14px}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="head"><div><h1>金牌批量回归台</h1><p>固定语义验收下限，不锁死家具绝对坐标。</p></div><a href="bedroom-space-chess-V3_upgrade.html?v=20260810-6">返回卧室棋盘 ↗</a></header>
+    <div class="notice" id="notice">正在读取最新回归报告……</div>
+    <section class="summary"><div class="metric"><span>总样例</span><strong id="total">—</strong></div><div class="metric"><span>通过</span><strong id="passed">—</strong></div><div class="metric"><span>失败</span><strong id="failed">—</strong></div><div class="metric"><span>生成时间</span><strong id="generated" style="font-size:13px">—</strong></div></section>
+    <section class="panel"><table><thead><tr><th>结果</th><th>金牌样例</th><th>局型</th><th>全局分</th><th>模块</th><th>漏摆机会</th><th>节点/走法</th><th>耗时</th><th>失败原因</th></tr></thead><tbody id="rows"></tbody></table></section>
+  </main>
+  <script>
+    const $=id=>document.getElementById(id);fetch(`artifacts/golden-regression-latest.json?v=${Date.now()}`).then(response=>{if(!response.ok)throw new Error(`HTTP ${response.status}`);return response.json();}).then(report=>{$('total').textContent=report.summary.total;$('passed').textContent=report.summary.passed;$('failed').textContent=report.summary.failed;$('generated').textContent=new Date(report.generatedAt).toLocaleString();$('notice').className=`notice ${report.summary.failed?'':'ok'}`;$('notice').textContent=report.summary.failed?`有 ${report.summary.failed} 个金牌样例回归失败，请查看红色行。`:'全部金牌样例通过。';$('rows').innerHTML=report.cases.map(row=>`<tr class="${row.passed?'':'fail'}"><td class="${row.passed?'pass':'fail-text'}">${row.passed?'通过':'失败'}</td><td><strong>${row.label}</strong><br><small>${row.id}</small></td><td>${row.pattern||'—'}<br><small>${row.room?`${row.room.area}㎡ · ${row.room.shape} · ${row.room.walls}墙段`:''}</small></td><td>${row.result?.score??'—'}${row.result?.baseScore!==row.result?.score?`<br><small>扣机会分前 ${row.result?.baseScore}</small>`:''}</td><td class="modules">${row.result?.modules.join(' + ')||'—'}</td><td>${row.result?.opportunities??'—'}</td><td>${row.stats?`${row.stats.nodes} / ${row.stats.rawActions}`:'—'}</td><td>${row.stats?`${row.stats.timeMs} ms`:'—'}</td><td class="errors">${row.errors?.join('<br>')||'—'}</td></tr>`).join('');}).catch(error=>{$('notice').textContent=`回归报告读取失败：${error.message}。请先在项目根目录运行 node bedroom_upgrade/tests/bedroom-golden-regression.test.js`});
+  </script>
+</body>
+</html>

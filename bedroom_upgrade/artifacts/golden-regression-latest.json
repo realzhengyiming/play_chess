@@ -1,0 +1,269 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-11T02:47:47.804Z",
+  "summary": {
+    "total": 7,
+    "passed": 7,
+    "failed": 0
+  },
+  "cases": [
+    {
+      "id": "preset-compact",
+      "label": "紧凑矩形卧室",
+      "passed": true,
+      "errors": [],
+      "pattern": "standard-perimeter",
+      "room": {
+        "area": 9.86,
+        "shape": "rectangle",
+        "walls": 4
+      },
+      "result": {
+        "score": 85.7,
+        "baseScore": 85.7,
+        "modules": [
+          "sleep:S",
+          "storage:S",
+          "infill:1.8m"
+        ],
+        "opportunities": 0,
+        "cabinetWallShadow": 0.72,
+        "flow": 1
+      },
+      "stats": {
+        "nodes": 61,
+        "rawActions": 1261,
+        "opportunityChecks": 135,
+        "timeMs": 33.72,
+        "portfolioRuns": [
+          "standard-perimeter"
+        ]
+      },
+      "wallMs": 35
+    },
+    {
+      "id": "preset-standard",
+      "label": "标准矩形卧室",
+      "passed": true,
+      "errors": [],
+      "pattern": "standard-perimeter",
+      "room": {
+        "area": 13.68,
+        "shape": "rectangle",
+        "walls": 4
+      },
+      "result": {
+        "score": 95.1,
+        "baseScore": 95.1,
+        "modules": [
+          "sleep:M",
+          "storage:S",
+          "work:L"
+        ],
+        "opportunities": 0,
+        "cabinetWallShadow": 0,
+        "flow": 1
+      },
+      "stats": {
+        "nodes": 305,
+        "rawActions": 3786,
+        "opportunityChecks": 138,
+        "timeMs": 57.76,
+        "portfolioRuns": [
+          "standard-perimeter",
+          "hotel-long-axis"
+        ]
+      },
+      "wallMs": 58
+    },
+    {
+      "id": "preset-long",
+      "label": "狭长矩形卧室",
+      "passed": true,
+      "errors": [],
+      "pattern": "hotel-long-axis",
+      "room": {
+        "area": 17.36,
+        "shape": "rectangle",
+        "walls": 4
+      },
+      "result": {
+        "score": 96,
+        "baseScore": 96,
+        "modules": [
+          "sleep:M",
+          "media:L",
+          "storage:S",
+          "work:L",
+          "lounge:S",
+          "infill:1.8m"
+        ],
+        "opportunities": 0,
+        "cabinetWallShadow": 0,
+        "flow": 0.987
+      },
+      "stats": {
+        "nodes": 364,
+        "rawActions": 4195,
+        "opportunityChecks": 108,
+        "timeMs": 49.22,
+        "portfolioRuns": [
+          "hotel-long-axis",
+          "suite-zoned"
+        ]
+      },
+      "wallMs": 50
+    },
+    {
+      "id": "preset-suite",
+      "label": "大卧室套间",
+      "passed": true,
+      "errors": [],
+      "pattern": "suite-zoned",
+      "room": {
+        "area": 24.96,
+        "shape": "rectangle",
+        "walls": 4
+      },
+      "result": {
+        "score": 97,
+        "baseScore": 97,
+        "modules": [
+          "sleep:L",
+          "storage:L",
+          "work:M",
+          "lounge:L",
+          "dressing:L",
+          "infill:0.5m"
+        ],
+        "opportunities": 0,
+        "cabinetWallShadow": 0,
+        "flow": 1
+      },
+      "stats": {
+        "nodes": 395,
+        "rawActions": 2878,
+        "opportunityChecks": 0,
+        "timeMs": 31.85,
+        "portfolioRuns": [
+          "suite-zoned"
+        ]
+      },
+      "wallMs": 32
+    },
+    {
+      "id": "demo-100-bedroom-1",
+      "label": "100㎡样例·L形狭长卧室",
+      "passed": true,
+      "errors": [],
+      "pattern": "hotel-long-axis",
+      "room": {
+        "area": 17.78,
+        "shape": "orthogonal-polygon",
+        "walls": 8
+      },
+      "result": {
+        "score": 95.4,
+        "baseScore": 95.4,
+        "modules": [
+          "sleep:S2",
+          "media:L",
+          "storage:S",
+          "work:L",
+          "lounge:S",
+          "infill:0.5m"
+        ],
+        "opportunities": 0,
+        "cabinetWallShadow": 0,
+        "flow": 1
+      },
+      "stats": {
+        "nodes": 326,
+        "rawActions": 2579,
+        "opportunityChecks": 0,
+        "timeMs": 64.57,
+        "portfolioRuns": [
+          "hotel-long-axis"
+        ]
+      },
+      "wallMs": 66
+    },
+    {
+      "id": "demo-100-bedroom-2",
+      "label": "100㎡样例·六角异形卧室",
+      "passed": true,
+      "errors": [],
+      "pattern": "hotel-long-axis",
+      "room": {
+        "area": 22.65,
+        "shape": "orthogonal-polygon",
+        "walls": 6
+      },
+      "result": {
+        "score": 96.1,
+        "baseScore": 96.1,
+        "modules": [
+          "sleep:S2",
+          "media:L",
+          "storage:S",
+          "work:L",
+          "lounge:M",
+          "infill:1.6m",
+          "infill:1.8m"
+        ],
+        "opportunities": 0,
+        "cabinetWallShadow": 0,
+        "flow": 0.998
+      },
+      "stats": {
+        "nodes": 770,
+        "rawActions": 6972,
+        "opportunityChecks": 0,
+        "timeMs": 92.73,
+        "portfolioRuns": [
+          "hotel-long-axis",
+          "suite-zoned"
+        ]
+      },
+      "wallMs": 93
+    },
+    {
+      "id": "case-1-bedroom-2",
+      "label": "145㎡样例·大卧室异形套间",
+      "passed": true,
+      "errors": [],
+      "pattern": "suite-zoned",
+      "room": {
+        "area": 27.57,
+        "shape": "orthogonal-polygon",
+        "walls": 8
+      },
+      "result": {
+        "score": 96.1,
+        "baseScore": 96.1,
+        "modules": [
+          "sleep:L",
+          "storage:L",
+          "work:L",
+          "lounge:S",
+          "dressing:L",
+          "infill:1.8m"
+        ],
+        "opportunities": 0,
+        "cabinetWallShadow": 0,
+        "flow": 0.992
+      },
+      "stats": {
+        "nodes": 782,
+        "rawActions": 6607,
+        "opportunityChecks": 48,
+        "timeMs": 163.77,
+        "portfolioRuns": [
+          "suite-zoned",
+          "hotel-long-axis"
+        ]
+      },
+      "wallMs": 164
+    }
+  ]
+}

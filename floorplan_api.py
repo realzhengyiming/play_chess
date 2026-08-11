@@ -23,6 +23,7 @@ ROOT = Path(__file__).resolve().parent
 HTML_FILE = ROOT / "bedroom-space-chess-V3.html"
 EDITOR_FILE = ROOT / "furniture-rule-editor.html"
 MODULE_GROWTH_FILE = ROOT / "module-growth-prototype.html"
+BEDROOM_UPGRADE_DIR = ROOT / "bedroom_upgrade"
 SAMPLE_DIR = ROOT / "samples"
 ASSET_DIR = ROOT / "assets"
 CONFIG_DIR = ROOT / "server_config"
@@ -41,6 +42,11 @@ app.add_middleware(
 )
 app.mount("/samples", StaticFiles(directory=SAMPLE_DIR), name="samples")
 app.mount("/assets", StaticFiles(directory=ASSET_DIR), name="assets")
+app.mount(
+    "/bedroom_upgrade",
+    StaticFiles(directory=BEDROOM_UPGRADE_DIR, html=True),
+    name="bedroom-upgrade",
+)
 _config_lock = threading.Lock()
 
 
@@ -247,5 +253,15 @@ async def recognize(request: Request) -> Response:
     return await _proxy(request, REMOTE_RECOGNIZE)
 
 
+def main() -> None:
+    """启动本地/服务器进程；监听地址和端口可通过环境变量覆盖。"""
+    host = os.environ.get("ROOM_CHESS_HOST", "0.0.0.0")
+    try:
+        port = int(os.environ.get("ROOM_CHESS_PORT", "8765"))
+    except ValueError as error:
+        raise SystemExit("ROOM_CHESS_PORT 必须是整数") from error
+    uvicorn.run(app, host=host, port=port)
+
+
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8765)
+    main()
